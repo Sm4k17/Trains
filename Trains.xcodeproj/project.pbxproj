@@ -6,23 +6,34 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		F19E1E262ECB477C00183F02 /* OpenAPIRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = F19E1E252ECB477C00183F02 /* OpenAPIRuntime */; };
+		F19E1E292ECB479900183F02 /* OpenAPIURLSession in Frameworks */ = {isa = PBXBuildFile; productRef = F19E1E282ECB479900183F02 /* OpenAPIURLSession */; };
+		F19E1E462ECB4C2F00183F02 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F19E1E422ECB4C2F00183F02 /* Assets.xcassets */; };
+		F19E1E472ECB4C2F00183F02 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19E1E432ECB4C2F00183F02 /* ContentView.swift */; };
+		F19E1E482ECB4C2F00183F02 /* TrainsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19E1E442ECB4C2F00183F02 /* TrainsApp.swift */; };
+		F19E1E4B2ECB4C7000183F02 /* openapi.yaml in Resources */ = {isa = PBXBuildFile; fileRef = F19E1E4A2ECB4C7000183F02 /* openapi.yaml */; };
+		F19E1E4D2ECB4F9100183F02 /* openapi-generator-config.yaml in Resources */ = {isa = PBXBuildFile; fileRef = F19E1E4C2ECB4F9100183F02 /* openapi-generator-config.yaml */; };
+		F19E1E5D2ECDA50F00183F02 /* NearestStationsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19E1E5C2ECDA50F00183F02 /* NearestStationsService.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		F19E1E0C2ECB3C2800183F02 /* Trains.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Trains.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F19E1E422ECB4C2F00183F02 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F19E1E432ECB4C2F00183F02 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		F19E1E442ECB4C2F00183F02 /* TrainsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainsApp.swift; sourceTree = "<group>"; };
+		F19E1E4A2ECB4C7000183F02 /* openapi.yaml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = openapi.yaml; sourceTree = "<group>"; };
+		F19E1E4C2ECB4F9100183F02 /* openapi-generator-config.yaml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = "openapi-generator-config.yaml"; sourceTree = "<group>"; };
+		F19E1E5C2ECDA50F00183F02 /* NearestStationsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NearestStationsService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		F19E1E0E2ECB3C2800183F02 /* Trains */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Trains;
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		F19E1E092ECB3C2800183F02 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F19E1E292ECB479900183F02 /* OpenAPIURLSession in Frameworks */,
+				F19E1E262ECB477C00183F02 /* OpenAPIRuntime in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -32,7 +43,8 @@
 		F19E1E032ECB3C2800183F02 = {
 			isa = PBXGroup;
 			children = (
-				F19E1E0E2ECB3C2800183F02 /* Trains */,
+				F19E1E452ECB4C2F00183F02 /* Trains */,
+				F19E1E342ECB4A2C00183F02 /* Frameworks */,
 				F19E1E0D2ECB3C2800183F02 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -43,6 +55,50 @@
 				F19E1E0C2ECB3C2800183F02 /* Trains.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		F19E1E342ECB4A2C00183F02 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		F19E1E452ECB4C2F00183F02 /* Trains */ = {
+			isa = PBXGroup;
+			children = (
+				F19E1E562ECDA4EE00183F02 /* Views */,
+				F19E1E522ECDA4A600183F02 /* Services */,
+				F19E1E492ECB4C4300183F02 /* Resources */,
+				F19E1E442ECB4C2F00183F02 /* TrainsApp.swift */,
+			);
+			path = Trains;
+			sourceTree = "<group>";
+		};
+		F19E1E492ECB4C4300183F02 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F19E1E422ECB4C2F00183F02 /* Assets.xcassets */,
+				F19E1E4A2ECB4C7000183F02 /* openapi.yaml */,
+				F19E1E4C2ECB4F9100183F02 /* openapi-generator-config.yaml */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		F19E1E522ECDA4A600183F02 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				F19E1E5C2ECDA50F00183F02 /* NearestStationsService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		F19E1E562ECDA4EE00183F02 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				F19E1E432ECB4C2F00183F02 /* ContentView.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -59,12 +115,12 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				F19E1E0E2ECB3C2800183F02 /* Trains */,
+				F19E1E412ECB4B7100183F02 /* PBXTargetDependency */,
 			);
 			name = Trains;
 			packageProductDependencies = (
+				F19E1E252ECB477C00183F02 /* OpenAPIRuntime */,
+				F19E1E282ECB479900183F02 /* OpenAPIURLSession */,
 			);
 			productName = Trains;
 			productReference = F19E1E0C2ECB3C2800183F02 /* Trains.app */;
@@ -94,6 +150,11 @@
 			);
 			mainGroup = F19E1E032ECB3C2800183F02;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				F19E1E242ECB477C00183F02 /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */,
+				F19E1E272ECB479900183F02 /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */,
+				F19E1E372ECB4AD600183F02 /* XCRemoteSwiftPackageReference "swift-openapi-generator" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F19E1E0D2ECB3C2800183F02 /* Products */;
 			projectDirPath = "";
@@ -109,6 +170,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F19E1E462ECB4C2F00183F02 /* Assets.xcassets in Resources */,
+				F19E1E4B2ECB4C7000183F02 /* openapi.yaml in Resources */,
+				F19E1E4D2ECB4F9100183F02 /* openapi-generator-config.yaml in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -119,10 +183,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F19E1E472ECB4C2F00183F02 /* ContentView.swift in Sources */,
+				F19E1E5D2ECDA50F00183F02 /* NearestStationsService.swift in Sources */,
+				F19E1E482ECB4C2F00183F02 /* TrainsApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F19E1E412ECB4B7100183F02 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = F19E1E402ECB4B7100183F02 /* OpenAPIGenerator */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		F19E1E152ECB3C2900183F02 /* Debug */ = {
@@ -261,6 +335,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -293,6 +368,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -332,6 +408,51 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		F19E1E242ECB477C00183F02 /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-openapi-runtime/";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.8.3;
+			};
+		};
+		F19E1E272ECB479900183F02 /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-openapi-urlsession";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.0;
+			};
+		};
+		F19E1E372ECB4AD600183F02 /* XCRemoteSwiftPackageReference "swift-openapi-generator" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-openapi-generator";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.10.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F19E1E252ECB477C00183F02 /* OpenAPIRuntime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F19E1E242ECB477C00183F02 /* XCRemoteSwiftPackageReference "swift-openapi-runtime" */;
+			productName = OpenAPIRuntime;
+		};
+		F19E1E282ECB479900183F02 /* OpenAPIURLSession */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F19E1E272ECB479900183F02 /* XCRemoteSwiftPackageReference "swift-openapi-urlsession" */;
+			productName = OpenAPIURLSession;
+		};
+		F19E1E402ECB4B7100183F02 /* OpenAPIGenerator */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F19E1E372ECB4AD600183F02 /* XCRemoteSwiftPackageReference "swift-openapi-generator" */;
+			productName = "plugin:OpenAPIGenerator";
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F19E1E042ECB3C2800183F02 /* Project object */;
 }
