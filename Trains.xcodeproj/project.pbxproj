@@ -15,6 +15,13 @@
 		F19E1E4B2ECB4C7000183F02 /* openapi.yaml in Resources */ = {isa = PBXBuildFile; fileRef = F19E1E4A2ECB4C7000183F02 /* openapi.yaml */; };
 		F19E1E4D2ECB4F9100183F02 /* openapi-generator-config.yaml in Resources */ = {isa = PBXBuildFile; fileRef = F19E1E4C2ECB4F9100183F02 /* openapi-generator-config.yaml */; };
 		F19E1E5D2ECDA50F00183F02 /* NearestStationsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19E1E5C2ECDA50F00183F02 /* NearestStationsService.swift */; };
+		F19E1E9B2ECF373500183F02 /* CopyrightService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19E1E9A2ECF373500183F02 /* CopyrightService.swift */; };
+		F19E1E9E2ECF37D300183F02 /* SearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19E1E9D2ECF37D300183F02 /* SearchService.swift */; };
+		F19E1EA12ECF37F100183F02 /* ScheduleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19E1EA02ECF37F100183F02 /* ScheduleService.swift */; };
+		F19E1EA42ECF380D00183F02 /* ThreadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19E1EA32ECF380D00183F02 /* ThreadService.swift */; };
+		F19E1EA82ECF382E00183F02 /* NearestSettlementService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19E1EA72ECF382E00183F02 /* NearestSettlementService.swift */; };
+		F19E1EAB2ECF384600183F02 /* CarrierService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19E1EAA2ECF384600183F02 /* CarrierService.swift */; };
+		F19E1EAE2ECF385D00183F02 /* StationsListService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19E1EAD2ECF385D00183F02 /* StationsListService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,6 +32,13 @@
 		F19E1E4A2ECB4C7000183F02 /* openapi.yaml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = openapi.yaml; sourceTree = "<group>"; };
 		F19E1E4C2ECB4F9100183F02 /* openapi-generator-config.yaml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = "openapi-generator-config.yaml"; sourceTree = "<group>"; };
 		F19E1E5C2ECDA50F00183F02 /* NearestStationsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NearestStationsService.swift; sourceTree = "<group>"; };
+		F19E1E9A2ECF373500183F02 /* CopyrightService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CopyrightService.swift; sourceTree = "<group>"; };
+		F19E1E9D2ECF37D300183F02 /* SearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchService.swift; sourceTree = "<group>"; };
+		F19E1EA02ECF37F100183F02 /* ScheduleService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleService.swift; sourceTree = "<group>"; };
+		F19E1EA32ECF380D00183F02 /* ThreadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreadService.swift; sourceTree = "<group>"; };
+		F19E1EA72ECF382E00183F02 /* NearestSettlementService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NearestSettlementService.swift; sourceTree = "<group>"; };
+		F19E1EAA2ECF384600183F02 /* CarrierService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierService.swift; sourceTree = "<group>"; };
+		F19E1EAD2ECF385D00183F02 /* StationsListService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationsListService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,6 +103,13 @@
 			isa = PBXGroup;
 			children = (
 				F19E1E5C2ECDA50F00183F02 /* NearestStationsService.swift */,
+				F19E1E9A2ECF373500183F02 /* CopyrightService.swift */,
+				F19E1E9D2ECF37D300183F02 /* SearchService.swift */,
+				F19E1EA02ECF37F100183F02 /* ScheduleService.swift */,
+				F19E1EA32ECF380D00183F02 /* ThreadService.swift */,
+				F19E1EA72ECF382E00183F02 /* NearestSettlementService.swift */,
+				F19E1EAA2ECF384600183F02 /* CarrierService.swift */,
+				F19E1EAD2ECF385D00183F02 /* StationsListService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -183,9 +204,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F19E1EAB2ECF384600183F02 /* CarrierService.swift in Sources */,
+				F19E1EA12ECF37F100183F02 /* ScheduleService.swift in Sources */,
+				F19E1EA82ECF382E00183F02 /* NearestSettlementService.swift in Sources */,
 				F19E1E472ECB4C2F00183F02 /* ContentView.swift in Sources */,
+				F19E1EAE2ECF385D00183F02 /* StationsListService.swift in Sources */,
+				F19E1EA42ECF380D00183F02 /* ThreadService.swift in Sources */,
 				F19E1E5D2ECDA50F00183F02 /* NearestStationsService.swift in Sources */,
+				F19E1E9E2ECF37D300183F02 /* SearchService.swift in Sources */,
 				F19E1E482ECB4C2F00183F02 /* TrainsApp.swift in Sources */,
+				F19E1E9B2ECF373500183F02 /* CopyrightService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

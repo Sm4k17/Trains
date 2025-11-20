@@ -11,52 +11,78 @@ import OpenAPIURLSession
 struct ContentView: View {
     var body: some View {
         VStack {
-            Image(systemName: "globe")
+            Image(systemName: "train.side.front.car")
                 .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+                .foregroundStyle(.red)
+            Text("Яндекс Расписания")
+                .font(.title2)
+            Text("Тест всех API сервисов")
+                .font(.subheadline)
+                .foregroundColor(.gray)
         }
         .padding()
         .onAppear{
-            testFetchStations()
+            testAllServices()
         }
     }
 }
 
-// Функция для тестового вызова API
-func testFetchStations() {
-    // Создаём Task для выполнения асинхронного кода
+func testAllServices() {
     Task {
         do {
-            // 1. Создаём экземпляр сгенерированного клиента
             let client = Client(
-                // Используем URL сервера, также сгенерированный из openapi.yaml (если он там определён)
                 serverURL: try Servers.Server1.url(),
-                // Указываем, какой транспорт использовать для отправки запросов
                 transport: URLSessionTransport()
             )
             
-            // 2. Создаём экземпляр нашего сервиса, передавая ему клиент и API-ключ
-            let service = NearestStationsService(
-                client: client,
-                apikey: "a63c3bd4-fd50-47a4-a56b-def74416d733" // !!! ЗАМЕНИТЕ НА СВОЙ РЕАЛЬНЫЙ КЛЮЧ !!!
-            )
+            let apikey = "a63c3bd4-fd50-47a4-a56b-def74416d733"
             
-            // 3. Вызываем метод сервиса
-            print("Fetching stations...")
-            let stations = try await service.getNearestStations(
-                lat: 59.864177, // Пример координат
-                lng: 30.319163, // Пример координат
-                distance: 50    // Пример дистанции
-            )
+            // 1. Тест Copyright
+            let copyrightService = CopyrightService(client: client, apikey: apikey)
+            let copyright = try await copyrightService.getCopyright()
+            print("📄 Copyright: \(copyright.copyright?.text ?? "нет данных")")
             
-            // 4. Если всё успешно, печатаем результат в консоль
-            print("Successfully fetched stations: \(stations)")
+            // 2. Тест Nearest Stations
+            let stationsService = NearestStationsService(client: client, apikey: apikey)
+            let stations = try await stationsService.getNearestStations(
+                lat: 55.7558, lng: 37.6173, distance: 5
+            )
+            print("📍 Ближайшие станции: \(stations.stations?.count ?? 0) шт")
+            
+            // 3. Тест Search
+            let searchService = SearchService(client: client, apikey: apikey)
+            let searchResult = try await searchService.search(
+                from: "s9600213",
+                to: "s9600366"
+            )
+            print("🔍 Поиск: \(searchResult.segments?.count ?? 0) маршрутов")
+            
+            // 4. Тест Schedule
+            let scheduleService = ScheduleService(client: client, apikey: apikey)
+            let schedule = try await scheduleService.getSchedule(station: "s9600213")
+            print("🕒 Расписание: \(schedule.schedule?.count ?? 0) рейсов")
+            
+            // 5. Тест Nearest Settlement
+            let settlementService = NearestSettlementService(client: client, apikey: apikey)
+            let settlement = try await settlementService.getNearestSettlement(lat: 55.7558, lng: 37.6173)
+            print("🏙️ Ближайший город: \(settlement.title ?? "не определен")")
+            
+            // 6. Тест Stations List
+            let stationsListService = StationsListService(client: client, apikey: apikey)
+            let stationsList = try await stationsListService.getStationsList()
+            print("📋 Список станций: \(stationsList.count) символов")
+            
+            // 7. Тест Carrier
+            let carrierService = CarrierService(client: client, apikey: apikey)
+            let carrierResponse = try await carrierService.getCarrier(code: "680")
+            if let carrier = carrierResponse.carrier ?? carrierResponse.carriers?.first {
+                print("✈️ Перевозчик: \(carrier.title ?? "неизвестен")")
+            }
+            
+            print("\n✅ Все API сервисы работают корректно!")
+            
         } catch {
-            // 5. Если произошла ошибка на любом из этапов (создание клиента, вызов сервиса, обработка ответа),
-            //    она будет поймана здесь, и мы выведем её в консоль
-            print("Error fetching stations: \(error)")
-            // В реальном приложении здесь должна быть логика обработки ошибок (показ алерта и т. д.)
+            print("❌ Ошибка: \(error)")
         }
     }
 }
