@@ -79,6 +79,22 @@ func testAllServices() {
                 print("✈️ Перевозчик: \(carrier.title ?? "неизвестен")")
             }
             
+            // 8. Тест Thread (информация о нитке)
+            let threadService = ThreadService(client: client, apikey: apikey)
+            if let firstSegment = searchResult.segments?.first,
+               let threadUid = firstSegment.thread?.uid,
+               let threadTitle = firstSegment.thread?.title {
+                
+                print("🚂 Название нитки из поиска: \(threadTitle)")
+                
+                let threadDetails = try await threadService.getThread(uid: threadUid)
+                print("🚂 Детали нитки:")
+                print("   UID: \(threadDetails.uid ?? "нет данных")")
+                print("   Номер: \(threadDetails.number ?? "нет номера")")
+                print("   Дата: \(threadDetails.start_date ?? "нет даты")")
+                print("   Остановок: \(threadDetails.stops?.count ?? 0)")
+            }
+            
             print("\n✅ Все API сервисы работают корректно!")
             
         } catch {
