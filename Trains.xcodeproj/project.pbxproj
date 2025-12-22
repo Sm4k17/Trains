@@ -22,6 +22,7 @@
 		F19E1EA82ECF382E00183F02 /* NearestSettlementService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19E1EA72ECF382E00183F02 /* NearestSettlementService.swift */; };
 		F19E1EAB2ECF384600183F02 /* CarrierService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19E1EAA2ECF384600183F02 /* CarrierService.swift */; };
 		F19E1EAE2ECF385D00183F02 /* StationsListService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19E1EAD2ECF385D00183F02 /* StationsListService.swift */; };
+		F1E7C62C2EF96B4400814681 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F1E7C62B2EF96B4400814681 /* LaunchScreen.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,6 +40,7 @@
 		F19E1EA72ECF382E00183F02 /* NearestSettlementService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NearestSettlementService.swift; sourceTree = "<group>"; };
 		F19E1EAA2ECF384600183F02 /* CarrierService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierService.swift; sourceTree = "<group>"; };
 		F19E1EAD2ECF385D00183F02 /* StationsListService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationsListService.swift; sourceTree = "<group>"; };
+		F1E7C62B2EF96B4400814681 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -92,6 +94,7 @@
 		F19E1E492ECB4C4300183F02 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				F1E7C62B2EF96B4400814681 /* LaunchScreen.storyboard */,
 				F19E1E422ECB4C2F00183F02 /* Assets.xcassets */,
 				F19E1E4A2ECB4C7000183F02 /* openapi.yaml */,
 				F19E1E4C2ECB4F9100183F02 /* openapi-generator-config.yaml */,
@@ -192,6 +195,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F19E1E462ECB4C2F00183F02 /* Assets.xcassets in Resources */,
+				F1E7C62C2EF96B4400814681 /* LaunchScreen.storyboard in Resources */,
 				F19E1E4B2ECB4C7000183F02 /* openapi.yaml in Resources */,
 				F19E1E4D2ECB4F9100183F02 /* openapi-generator-config.yaml in Resources */,
 			);
@@ -360,7 +364,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 17;
@@ -393,7 +398,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 17;
