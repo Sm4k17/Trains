@@ -9,8 +9,59 @@ import SwiftUI
 
 struct RouteInputSectionView: View {
     
+    private enum Constants {
+        enum Padding {
+            static let horizontal: CGFloat = 16.0
+            static let vertical: CGFloat = 16.0
+            static let leading: CGFloat = 20.0
+        }
+        enum Size {
+            static let viewHeight: CGFloat = 128.0
+            static let button: CGFloat = 36.0
+            static let searchButtonWidth: CGFloat = 150.0
+            static let searchButtonHeight: CGFloat = 60.0
+        }
+        enum Spacing {
+            static let view: CGFloat = 12.0
+            static let field: CGFloat = 8.0
+        }
+        enum FontSize {
+            static let label: CGFloat = 17.0
+            static let labelButton: CGFloat = 17
+        }
+        enum Colors {
+            static let textField: Color = .ypGray
+            static let squarepathButton: Color = .ypWhiteUniversal
+            static let cardBackground: Color = .ypWhiteUniversal
+            static let searchButtonBackground: Color = .ypBlue
+        }
+        enum CornerRadius {
+            static let view: Double = 20.0
+            static let searchButton: CGFloat = 16.0
+        }
+        enum Animation {
+            static let duration: Double = 0.2
+            static let swapSpringResponse: Double = 0.25
+            static let swapSpringDamping: Double = 0.9
+        }
+        enum Placeholder {
+            static let from = "Откуда"
+            static let to   = "Куда"
+        }
+        enum Titles {
+            static let searchButton = "Найти"
+        }
+        enum Images {
+            enum System {
+                static let squarePathButton = "arrow.2.squarepath"
+            }
+        }
+    }
+    
     @State private var from: String = ""
     @State private var to: String = ""
+    @State private var isShowingFromSearch = false
+    @State private var isShowingToSearch = false
     
     private var hasBothInputs: Bool {
         !from.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
@@ -18,45 +69,80 @@ struct RouteInputSectionView: View {
     }
     
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: Constants.Spacing.view) {
             ZStack {
-                Color.blue.cornerRadius(20)
+                Color.ypBlue.cornerRadius(Constants.CornerRadius.view)
                 HStack {
                     searchCityField
                     squarePathButton
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 16)
+                .padding(.horizontal, Constants.Padding.horizontal)
+                .padding(.vertical, Constants.Padding.vertical)
             }
-            .frame(height: 128)
-            .padding(.horizontal, 16)
+            .frame(height: Constants.Size.viewHeight)
+            .padding(.horizontal, Constants.Padding.horizontal)
             
             if hasBothInputs {
-                searchButton
-                    .transition(.opacity.combined(with: .scale))
+                NavigationLink(destination: CarrierListView(headerFrom: from, headerTo: to)) {
+                    Text(Constants.Titles.searchButton)
+                        .font(.system(size: Constants.FontSize.labelButton, weight: .bold))
+                        .foregroundColor(.ypWhiteUniversal)
+                        .frame(width: Constants.Size.searchButtonWidth, height: Constants.Size.searchButtonHeight)
+                        .background(Constants.Colors.searchButtonBackground)
+                        .cornerRadius(Constants.CornerRadius.searchButton)
+                }
+                .buttonStyle(.plain)
+                .disabled(!hasBothInputs)
+                .transition(.opacity.combined(with: .scale))
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: hasBothInputs)
+        .animation(.easeInOut(duration: Constants.Animation.duration), value: hasBothInputs)
+        .fullScreenCover(isPresented: $isShowingFromSearch) {
+            CitySearchView { city in
+                from = city
+                isShowingFromSearch = false
+            }
+        }
+        .fullScreenCover(isPresented: $isShowingToSearch) {
+            CitySearchView { city in
+                to = city
+                isShowingToSearch = false
+            }
+        }
     }
     
     private var searchCityField: some View {
         ZStack {
             HStack {
-                VStack(alignment: .leading, spacing: 8) {
-                    TextField("Откуда", text: $from)
-                        .foregroundColor(.primary)
-                        .font(.system(size: 17, weight: .regular))
+                VStack(alignment: .leading, spacing: Constants.Spacing.field) {
+                    Button { isShowingFromSearch = true } label: {
+                        HStack {
+                            Text(from.isEmpty ? Constants.Placeholder.from : from)
+                                .foregroundColor(from.isEmpty ? Constants.Colors.textField : .ypBlackUniversal)
+                                .font(.system(size: Constants.FontSize.label, weight: .regular))
+                            Spacer()
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
                     
                     Spacer().frame(height: 14)
                     
-                    TextField("Куда", text: $to)
-                        .foregroundColor(.primary)
-                        .font(.system(size: 17, weight: .regular))
+                    Button { isShowingToSearch = true } label: {
+                        HStack {
+                            Text(to.isEmpty ? Constants.Placeholder.to : to)
+                                .foregroundColor(to.isEmpty ? Constants.Colors.textField : .ypBlackUniversal)
+                                .font(.system(size: Constants.FontSize.label, weight: .regular))
+                            Spacer()
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
                 }
-                .padding(.vertical, 16)
-                .padding(.horizontal, 20)
-                .background(Color.white)
-                .cornerRadius(20)
+                .padding(.vertical, Constants.Padding.vertical)
+                .padding(.horizontal, Constants.Padding.leading)
+                .background(Color.ypWhiteUniversal)
+                .cornerRadius(Constants.CornerRadius.view)
                 .frame(height: 96)
             }
         }
@@ -66,35 +152,23 @@ struct RouteInputSectionView: View {
         let isDisabled = from.isEmpty && to.isEmpty
         
         return Button {
-            withAnimation(.spring(response: 0.25, dampingFraction: 0.9)) {
+            withAnimation(.spring(response: Constants.Animation.swapSpringResponse,
+                                  dampingFraction: Constants.Animation.swapSpringDamping)) {
                 swap(&from, &to)
             }
         } label: {
-            Image(systemName: "arrow.2.squarepath")
-                .foregroundColor(.blue)
-                .frame(width: 36, height: 36)
+            Image(systemName: Constants.Images.System.squarePathButton)
+                .foregroundColor(.ypBlue)
+                .frame(width: Constants.Size.button, height: Constants.Size.button)
         }
-        .background(Color.white)
+        .background(Constants.Colors.squarepathButton)
         .clipShape(Circle())
         .disabled(isDisabled)
-    }
-    
-    private var searchButton: some View {
-        Button {
-            // Поиск рейсов
-        } label: {
-            Text("Найти")
-                .font(.system(size: 17, weight: .bold))
-                .foregroundColor(.white)
-                .frame(width: 150, height: 60)
-                .background(hasBothInputs ? .blue : .gray)
-                .cornerRadius(16)
-        }
-        .buttonStyle(.plain)
-        .disabled(!hasBothInputs)
     }
 }
 
 #Preview {
-    RouteInputSectionView()
+    NavigationStack {
+        RouteInputSectionView()
+    }
 }
