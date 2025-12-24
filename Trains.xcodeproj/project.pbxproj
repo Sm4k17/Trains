@@ -23,6 +23,12 @@
 		F19E1EAB2ECF384600183F02 /* CarrierService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19E1EAA2ECF384600183F02 /* CarrierService.swift */; };
 		F19E1EAE2ECF385D00183F02 /* StationsListService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19E1EAD2ECF385D00183F02 /* StationsListService.swift */; };
 		F1E7C62C2EF96B4400814681 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F1E7C62B2EF96B4400814681 /* LaunchScreen.storyboard */; };
+		F1E7C6A62EFBEB4B00814681 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6A52EFBEB4B00814681 /* MainTabView.swift */; };
+		F1E7C6B22EFBFAB900814681 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6B12EFBFAB900814681 /* SettingsView.swift */; };
+		F1E7C6C52EFBFC0C00814681 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6C42EFBFC0C00814681 /* AppState.swift */; };
+		F1E7C6D02EFC2A6B00814681 /* ErrorState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6CF2EFC2A6B00814681 /* ErrorState.swift */; };
+		F1E7C6D42EFC2CAA00814681 /* ErrorStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6D32EFC2CAA00814681 /* ErrorStateView.swift */; };
+		F1E7C6D82EFC2CC400814681 /* GlobalErrorPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6D72EFC2CC400814681 /* GlobalErrorPresenter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -41,6 +47,12 @@
 		F19E1EAA2ECF384600183F02 /* CarrierService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierService.swift; sourceTree = "<group>"; };
 		F19E1EAD2ECF385D00183F02 /* StationsListService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationsListService.swift; sourceTree = "<group>"; };
 		F1E7C62B2EF96B4400814681 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		F1E7C6A52EFBEB4B00814681 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		F1E7C6B12EFBFAB900814681 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		F1E7C6C42EFBFC0C00814681 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		F1E7C6CF2EFC2A6B00814681 /* ErrorState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorState.swift; sourceTree = "<group>"; };
+		F1E7C6D32EFC2CAA00814681 /* ErrorStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorStateView.swift; sourceTree = "<group>"; };
+		F1E7C6D72EFC2CC400814681 /* GlobalErrorPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalErrorPresenter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -120,9 +132,31 @@
 		F19E1E562ECDA4EE00183F02 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				F1E7C6C02EFBFBF300814681 /* Error */,
+				F1E7C6B72EFBFAD500814681 /* Main */,
 				F19E1E432ECB4C2F00183F02 /* ContentView.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		F1E7C6B72EFBFAD500814681 /* Main */ = {
+			isa = PBXGroup;
+			children = (
+				F1E7C6A52EFBEB4B00814681 /* MainTabView.swift */,
+				F1E7C6B12EFBFAB900814681 /* SettingsView.swift */,
+			);
+			path = Main;
+			sourceTree = "<group>";
+		};
+		F1E7C6C02EFBFBF300814681 /* Error */ = {
+			isa = PBXGroup;
+			children = (
+				F1E7C6C42EFBFC0C00814681 /* AppState.swift */,
+				F1E7C6CF2EFC2A6B00814681 /* ErrorState.swift */,
+				F1E7C6D32EFC2CAA00814681 /* ErrorStateView.swift */,
+				F1E7C6D72EFC2CC400814681 /* GlobalErrorPresenter.swift */,
+			);
+			path = Error;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -213,9 +247,15 @@
 				F19E1EA82ECF382E00183F02 /* NearestSettlementService.swift in Sources */,
 				F19E1E472ECB4C2F00183F02 /* ContentView.swift in Sources */,
 				F19E1EAE2ECF385D00183F02 /* StationsListService.swift in Sources */,
+				F1E7C6A62EFBEB4B00814681 /* MainTabView.swift in Sources */,
+				F1E7C6D02EFC2A6B00814681 /* ErrorState.swift in Sources */,
 				F19E1EA42ECF380D00183F02 /* ThreadService.swift in Sources */,
+				F1E7C6D82EFC2CC400814681 /* GlobalErrorPresenter.swift in Sources */,
 				F19E1E5D2ECDA50F00183F02 /* NearestStationsService.swift in Sources */,
+				F1E7C6D42EFC2CAA00814681 /* ErrorStateView.swift in Sources */,
 				F19E1E9E2ECF37D300183F02 /* SearchService.swift in Sources */,
+				F1E7C6B22EFBFAB900814681 /* SettingsView.swift in Sources */,
+				F1E7C6C52EFBFC0C00814681 /* AppState.swift in Sources */,
 				F19E1E482ECB4C2F00183F02 /* TrainsApp.swift in Sources */,
 				F19E1E9B2ECF373500183F02 /* CopyrightService.swift in Sources */,
 			);

@@ -12,6 +12,9 @@ struct TrainsApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                // Больше не нужно передавать environment здесь
+                // AppState.shared будет доступен через GlobalErrorPresenter
+                .withGlobalErrors()
         }
     }
 }
