@@ -29,6 +29,7 @@
 		F1E7C6D02EFC2A6B00814681 /* ErrorState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6CF2EFC2A6B00814681 /* ErrorState.swift */; };
 		F1E7C6D42EFC2CAA00814681 /* ErrorStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6D32EFC2CAA00814681 /* ErrorStateView.swift */; };
 		F1E7C6D82EFC2CC400814681 /* GlobalErrorPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6D72EFC2CC400814681 /* GlobalErrorPresenter.swift */; };
+		F1E7C6F52EFC50E600814681 /* RouteInputSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6F42EFC50E600814681 /* RouteInputSectionView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -53,6 +54,7 @@
 		F1E7C6CF2EFC2A6B00814681 /* ErrorState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorState.swift; sourceTree = "<group>"; };
 		F1E7C6D32EFC2CAA00814681 /* ErrorStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorStateView.swift; sourceTree = "<group>"; };
 		F1E7C6D72EFC2CC400814681 /* GlobalErrorPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalErrorPresenter.swift; sourceTree = "<group>"; };
+		F1E7C6F42EFC50E600814681 /* RouteInputSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteInputSectionView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,6 +134,7 @@
 		F19E1E562ECDA4EE00183F02 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				F1E7C6FB2EFC528900814681 /* Search */,
 				F1E7C6C02EFBFBF300814681 /* Error */,
 				F1E7C6B72EFBFAD500814681 /* Main */,
 				F19E1E432ECB4C2F00183F02 /* ContentView.swift */,
@@ -144,6 +147,7 @@
 			children = (
 				F1E7C6A52EFBEB4B00814681 /* MainTabView.swift */,
 				F1E7C6B12EFBFAB900814681 /* SettingsView.swift */,
+				F1E7C6F42EFC50E600814681 /* RouteInputSectionView.swift */,
 			);
 			path = Main;
 			sourceTree = "<group>";
@@ -157,6 +161,13 @@
 				F1E7C6D72EFC2CC400814681 /* GlobalErrorPresenter.swift */,
 			);
 			path = Error;
+			sourceTree = "<group>";
+		};
+		F1E7C6FB2EFC528900814681 /* Search */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Search;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -255,6 +266,7 @@
 				F1E7C6D42EFC2CAA00814681 /* ErrorStateView.swift in Sources */,
 				F19E1E9E2ECF37D300183F02 /* SearchService.swift in Sources */,
 				F1E7C6B22EFBFAB900814681 /* SettingsView.swift in Sources */,
+				F1E7C6F52EFC50E600814681 /* RouteInputSectionView.swift in Sources */,
 				F1E7C6C52EFBFC0C00814681 /* AppState.swift in Sources */,
 				F19E1E482ECB4C2F00183F02 /* TrainsApp.swift in Sources */,
 				F19E1E9B2ECF373500183F02 /* CopyrightService.swift in Sources */,

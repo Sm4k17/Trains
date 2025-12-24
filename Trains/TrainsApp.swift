@@ -11,7 +11,7 @@ import SwiftUI
 struct TrainsApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainTabView()
                 // Больше не нужно передавать environment здесь
                 // AppState.shared будет доступен через GlobalErrorPresenter
                 .withGlobalErrors()
