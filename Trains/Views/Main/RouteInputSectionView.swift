@@ -103,13 +103,17 @@ struct RouteInputSectionView: View {
         .animation(.easeInOut(duration: Constants.Animation.duration), value: hasBothInputs)
         .fullScreenCover(isPresented: $isShowingFromSearch) {
             CitySearchView { city in
-                from = city
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    from = city
+                }
                 isShowingFromSearch = false
             }
         }
         .fullScreenCover(isPresented: $isShowingToSearch) {
             CitySearchView { city in
-                to = city
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    to = city
+                }
                 isShowingToSearch = false
             }
         }
@@ -124,6 +128,7 @@ struct RouteInputSectionView: View {
                             Text(from.isEmpty ? Constants.Placeholder.from : from)
                                 .foregroundColor(from.isEmpty ? Constants.Colors.textField : .ypBlackUniversal)
                                 .font(.system(size: Constants.FontSize.label, weight: .regular))
+                                .animation(.default, value: from)
                             Spacer()
                         }
                         .contentShape(Rectangle())
@@ -137,6 +142,7 @@ struct RouteInputSectionView: View {
                             Text(to.isEmpty ? Constants.Placeholder.to : to)
                                 .foregroundColor(to.isEmpty ? Constants.Colors.textField : .ypBlackUniversal)
                                 .font(.system(size: Constants.FontSize.label, weight: .regular))
+                                .animation(.default, value: from)
                             Spacer()
                         }
                         .contentShape(Rectangle())

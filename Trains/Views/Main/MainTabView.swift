@@ -26,7 +26,7 @@ struct MainTabView: View {
                 RouteInputSectionView(navigationPath: $navigationPath, from: $fromCity, to: $toCity)
                     .navigationDestination(for: String.self) { destination in
                         if destination == "CarrierList" {
-                            CarrierListView(headerFrom: fromCity, headerTo: toCity)
+                            CarrierListView(headerFrom: $fromCity, headerTo: $toCity)
                         }
                     }
             }
