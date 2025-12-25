@@ -9,6 +9,8 @@ import SwiftUI
 
 struct CarrierListView: View {
     
+    // MARK: - Constants
+    
     private enum Constants {
         enum Spacing {
             static let view: CGFloat = 12
@@ -32,6 +34,8 @@ struct CarrierListView: View {
         }
     }
     
+    // MARK: - Properties
+    
     @Binding var headerFrom: String
     @Binding var headerTo: String
     
@@ -40,7 +44,8 @@ struct CarrierListView: View {
     @State private var showFilters = false
     @State private var isLoading = true
     
-    // Мок-данные
+    // MARK: - Mock Data
+    
     private let mockItems = [
         (carrierName: "РЖД", logoSystemName: "rzd",
          dateText: "14 января", departTime: "22:30", arriveTime: "08:15",
@@ -52,6 +57,8 @@ struct CarrierListView: View {
          dateText: "15 января", departTime: "12:30", arriveTime: "21:00",
          durationText: "9 часов", note: nil)
     ]
+    
+    // MARK: - Body
     
     var body: some View {
         ZStack {
@@ -65,8 +72,7 @@ struct CarrierListView: View {
                     .padding(.top, Constants.Spacing.titleTop)
                 
                 if isLoading {
-                    ProgressView()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    loadingView
                 } else if mockItems.isEmpty {
                     emptyStateView
                 } else {
@@ -78,10 +84,7 @@ struct CarrierListView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button(action: { dismiss() }) {
-                    Image(systemName: "chevron.left")
-                        .foregroundColor(.ypBlack)
-                }
+                backButton
             }
         }
         .toolbarBackground(.hidden, for: .navigationBar)
@@ -89,26 +92,18 @@ struct CarrierListView: View {
             ScheduleFilterView()
         }
         .safeAreaInset(edge: .bottom) {
-            HStack {
-                Button("Уточнить время") {
-                    showFilters = true
-                }
-                .font(.system(size: Constants.FontSize.bottomButton, weight: .bold))
-                .frame(maxWidth: .infinity, minHeight: Constants.Size.bottomButtonHeight)
-                .background(Color.ypBlue)
-                .foregroundColor(.ypWhiteUniversal)
-                .cornerRadius(Constants.Corner.bottomButton)
-            }
-            .padding(.horizontal, Constants.Spacing.horizontal)
-            .padding(.bottom, Constants.Spacing.bottom)
-            .background(Color(.systemBackground))
+            bottomButtonView
         }
         .task {
-            // Имитация загрузки
-            isLoading = true
-            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 секунды
-            isLoading = false
+            await loadData()
         }
+    }
+    
+    // MARK: - Main Content Views
+    
+    private var loadingView: some View {
+        ProgressView()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     private var emptyStateView: some View {
@@ -122,7 +117,6 @@ struct CarrierListView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
-    @ViewBuilder
     private var listView: some View {
         List(0..<mockItems.count, id: \.self) { index in
             let item = mockItems[index]
@@ -152,7 +146,43 @@ struct CarrierListView: View {
         .contentMargins(.bottom, Constants.Spacing.listBottom,
                         for: .scrollContent)
     }
+    
+    // MARK: - UI Components
+    
+    private var backButton: some View {
+        Button(action: { dismiss() }) {
+            Image(systemName: "chevron.left")
+                .foregroundColor(.ypBlack)
+        }
+    }
+    
+    private var bottomButtonView: some View {
+        HStack {
+            Button("Уточнить время") {
+                showFilters = true
+            }
+            .font(.system(size: Constants.FontSize.bottomButton, weight: .bold))
+            .frame(maxWidth: .infinity, minHeight: Constants.Size.bottomButtonHeight)
+            .background(Color.ypBlue)
+            .foregroundColor(.ypWhiteUniversal)
+            .cornerRadius(Constants.Corner.bottomButton)
+        }
+        .padding(.horizontal, Constants.Spacing.horizontal)
+        .padding(.bottom, Constants.Spacing.bottom)
+        .background(Color(.systemBackground))
+    }
+    
+    // MARK: - Private Methods
+    
+    private func loadData() async {
+        // Имитация загрузки данных
+        isLoading = true
+        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 секунды
+        isLoading = false
+    }
 }
+
+// MARK: - Preview
 
 #Preview {
     struct PreviewWrapper: View {

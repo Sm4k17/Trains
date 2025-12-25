@@ -11,19 +11,15 @@ import Observation
 @MainActor
 @Observable
 final class AppState {
-    // Синглтон
+    // MARK: - Синглтон
     static let shared = AppState()
     
+    // MARK: - Публичные свойства
     var errorState: ErrorState? = nil
     var isLoading: Bool = false
     
-    // Игнорируем это свойство для отслеживания UI, так как это внутренняя логика
-    @ObservationIgnored private var retryTask: Task<Void, Never>?
+    // MARK: - Публичные методы
     
-    // Приватный инициализатор для синглтона
-    private init() {}
-    
-    // MARK: - Простые методы
     func showError(_ error: ErrorState) {
         errorState = error
     }
@@ -34,7 +30,6 @@ final class AppState {
         retryTask = nil
     }
     
-    // MARK: - Улучшенный метод с async/await
     func showErrorAndRetry(
         _ error: ErrorState,
         delay: TimeInterval = 3,
@@ -52,36 +47,6 @@ final class AppState {
         }
     }
     
-    // MARK: - Приватный метод с async/await
-    private func retryWithDelay(
-        _ error: ErrorState,
-        delay: TimeInterval,
-        remainingAttempts: Int,
-        retryAction: @escaping () async throws -> Void
-    ) async {
-        guard remainingAttempts > 0 else { return }
-        
-        try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
-        
-        guard !Task.isCancelled else { return }
-        
-        do {
-            try await retryAction()
-            hideError()
-            
-        } catch let caughtError {
-            let errorState = mapErrorToErrorState(caughtError)
-            
-            await retryWithDelay(
-                errorState,
-                delay: delay,
-                remainingAttempts: remainingAttempts - 1,
-                retryAction: retryAction
-            )
-        }
-    }
-    
-    // MARK: - Упрощенный метод для большинства случаев
     func executeWithRetry(
         title: String = "Повторить",
         maxRetries: Int = 3,
@@ -121,7 +86,41 @@ final class AppState {
         }
     }
     
-    // MARK: - Вспомогательный метод
+    // MARK: - Приватные свойства
+    
+    // Игнорируем это свойство для отслеживания UI, так как это внутренняя логика
+    @ObservationIgnored private var retryTask: Task<Void, Never>?
+    
+    // MARK: - Приватные методы
+    
+    private func retryWithDelay(
+        _ error: ErrorState,
+        delay: TimeInterval,
+        remainingAttempts: Int,
+        retryAction: @escaping () async throws -> Void
+    ) async {
+        guard remainingAttempts > 0 else { return }
+        
+        try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+        
+        guard !Task.isCancelled else { return }
+        
+        do {
+            try await retryAction()
+            hideError()
+            
+        } catch let caughtError {
+            let errorState = mapErrorToErrorState(caughtError)
+            
+            await retryWithDelay(
+                errorState,
+                delay: delay,
+                remainingAttempts: remainingAttempts - 1,
+                retryAction: retryAction
+            )
+        }
+    }
+    
     private func mapErrorToErrorState(_ error: Error) -> ErrorState {
         let nsError = error as NSError
         
@@ -145,4 +144,9 @@ final class AppState {
         
         return .custom(description.isEmpty ? "Произошла непредвиденная ошибка" : description)
     }
+    
+    // MARK: - Инициализация
+    
+    // Приватный инициализатор для синглтона
+    private init() {}
 }

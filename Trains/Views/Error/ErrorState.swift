@@ -12,21 +12,31 @@ enum ErrorState: Equatable, Identifiable {
     case server
     case custom(String)
     
+    // MARK: - Identifiable
+    
     var id: String { title }
+    
+    // MARK: - Computed Properties
     
     var title: String {
         switch self {
-        case .offline: return "Нет интернета"
-        case .server: return "Ошибка сервера"
-        case .custom(let text): return text
+        case .offline:
+            return "Нет интернета"
+        case .server:
+            return "Ошибка сервера"
+        case .custom(let text):
+            return text
         }
     }
     
     var assetName: String {
         switch self {
-        case .offline: return "noInternet"
-        case .server: return "serverError"
-        case .custom: return "serverError" // изображение по умолчанию
+        case .offline:
+            return "noInternet"
+        case .server:
+            return "serverError"
+        case .custom:
+            return "serverError" // изображение по умолчанию
         }
     }
 }

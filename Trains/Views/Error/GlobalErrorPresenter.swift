@@ -8,25 +8,37 @@
 import SwiftUI
 
 struct GlobalErrorPresenter: ViewModifier {
-    // Используем синглтон напрямую
+    
+    // MARK: - Properties
+    
     @State private var appState = AppState.shared
+    
+    // MARK: - Body
     
     func body(content: Content) -> some View {
         content
             .environment(appState) // Делаем доступным для вложенных вью
             .overlay(
-                ZStack {
-                    if let error = appState.errorState {
-                        ErrorStateView(state: error)
-                            .transition(.opacity)
-                            .zIndex(1)
-                            .edgesIgnoringSafeArea(.all)
-                    }
-                }
-                .animation(.default, value: appState.errorState)
+                errorOverlay
             )
     }
+    
+    // MARK: - UI Components
+    
+    private var errorOverlay: some View {
+        ZStack {
+            if let error = appState.errorState {
+                ErrorStateView(state: error)
+                    .transition(.opacity)
+                    .zIndex(1)
+                    .edgesIgnoringSafeArea(.all)
+            }
+        }
+        .animation(.default, value: appState.errorState)
+    }
 }
+
+// MARK: - View Extension
 
 extension View {
     func withGlobalErrors() -> some View {

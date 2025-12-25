@@ -9,6 +9,8 @@ import SwiftUI
 
 struct CarrierTableRow: View {
     
+    // MARK: - Constants
+    
     private enum Constants {
         enum Spacing {
             static let outer: CGFloat = 10
@@ -42,7 +44,11 @@ struct CarrierTableRow: View {
         }
     }
     
+    // MARK: - Properties
+    
     let viewModel: CarrierRowViewModel
+    
+    // MARK: - Body
     
     var body: some View {
         VStack(alignment: .leading, spacing: Constants.Spacing.outer) {
@@ -60,6 +66,8 @@ struct CarrierTableRow: View {
                 .stroke(Color.ypGray.opacity(Constants.Opacity.card), lineWidth: Constants.Size.lineWidth)
         )
     }
+    
+    // MARK: - Header Content
     
     private var headerContent: some View {
         HStack(spacing: Constants.Spacing.inner) {
@@ -88,6 +96,8 @@ struct CarrierTableRow: View {
         }
     }
     
+    // MARK: - Time Content
+    
     private var timeContent: some View {
         HStack(spacing: Constants.Spacing.inner) {
             departTimeText
@@ -97,6 +107,8 @@ struct CarrierTableRow: View {
             arriveTimeText
         }
     }
+    
+    // MARK: - Time Components
     
     private var departTimeText: some View {
         Text(viewModel.departTime)
@@ -116,12 +128,16 @@ struct CarrierTableRow: View {
             .foregroundColor(.ypBlackUniversal)
     }
     
+    // MARK: - UI Components
+    
     private var line: some View {
         Rectangle()
             .fill(Color.ypGray)
             .frame(height: Constants.Size.lineHeight)
             .frame(maxWidth: .infinity)
     }
+    
+    // MARK: - Logo View
     
     @ViewBuilder
     private var logoView: some View {
@@ -143,6 +159,8 @@ struct CarrierTableRow: View {
         }
     }
 }
+
+// MARK: - Preview
 
 #Preview {
     CarrierTableRow(

@@ -9,43 +9,92 @@ import SwiftUI
 
 struct MainTabView: View {
     
+    // MARK: - Tab Enum
+    
+    enum Tab {
+        case routes
+        case settings
+    }
+    
+    // MARK: - Constants
+    
+    private enum Constants {
+        static let tabIconSize: CGFloat = 30
+        static let tabBarLineColor = Color.ypGray
+        static let routesTabIcon = "arrow.up.message.fill"
+        static let settingsTabIcon = "Vector"
+    }
+    
+    // MARK: - Properties
+    
     @Environment(AppState.self) private var appState
     @State private var navigationPath = NavigationPath()
     @State private var fromCity: String = ""
     @State private var toCity: String = ""
+    @Environment(\.colorScheme) private var colorScheme
+    @State private var selectedTab: Tab = .routes
     
-    private enum Constants {
-        static let tabIconSize: CGFloat = 30
-        static let firstTabSystemImage = "arrow.up.message.fill"
-        static let secondTabAssetImage = "Vector"
+    // MARK: - Computed Properties
+    
+    private var isTabBarHidden: Bool {
+        return !navigationPath.isEmpty
     }
     
+    // MARK: - Body
+    
     var body: some View {
-        TabView {
-            NavigationStack(path: $navigationPath) {
-                RouteInputSectionView(navigationPath: $navigationPath, from: $fromCity, to: $toCity)
+        ZStack(alignment: .bottom) {
+            TabView(selection: $selectedTab) {
+                NavigationStack(path: $navigationPath) {
+                    RouteInputSectionView(
+                        navigationPath: $navigationPath,
+                        from: $fromCity,
+                        to: $toCity
+                    )
                     .navigationDestination(for: String.self) { destination in
                         if destination == "CarrierList" {
                             CarrierListView(headerFrom: $fromCity, headerTo: $toCity)
+                                .toolbar(.hidden, for: .tabBar)
                         }
                     }
+                }
+                .tabItem {
+                    Image(systemName: Constants.routesTabIcon)
+                        .frame(width: Constants.tabIconSize, height: Constants.tabIconSize)
+                }
+                .tag(Tab.routes)
+                
+                NavigationStack {
+                    SettingsView()
+                }
+                .tabItem {
+                    Image(Constants.settingsTabIcon)
+                        .frame(width: Constants.tabIconSize, height: Constants.tabIconSize)
+                }
+                .tag(Tab.settings)
             }
-            .tabItem {
-                Image(systemName: Constants.firstTabSystemImage)
-            }
-            .tag(0)
+            .tint(.ypBlack)
             
-            NavigationStack {
-                SettingsView()
+            // MARK: - TabBar Top Line
+            if colorScheme == .light && !isTabBarHidden {
+                GeometryReader { geometry in
+                    let tabBarHeight: CGFloat = 49
+                    let safeAreaBottom = geometry.safeAreaInsets.bottom
+                    
+                    Rectangle()
+                        .fill(Constants.tabBarLineColor)
+                        .frame(height: 1.0 / UIScreen.main.scale)
+                        .frame(width: geometry.size.width)
+                        .offset(y: -safeAreaBottom - tabBarHeight + 0.5)
+                }
+                .ignoresSafeArea(edges: .bottom)
+                .frame(height: 0)
             }
-            .tabItem {
-                Image(Constants.secondTabAssetImage)
-            }
-            .tag(1)
         }
-        .tint(.ypBlack)
     }
 }
+
+// MARK: - Preview
 
 #Preview {
     MainTabView()
