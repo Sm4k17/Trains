@@ -58,8 +58,10 @@ struct RouteInputSectionView: View {
         }
     }
     
-    @State private var from: String = ""
-    @State private var to: String = ""
+    @Binding var navigationPath: NavigationPath
+    @Binding var from: String
+    @Binding var to: String
+    
     @State private var isShowingFromSearch = false
     @State private var isShowingToSearch = false
     
@@ -83,7 +85,9 @@ struct RouteInputSectionView: View {
             .padding(.horizontal, Constants.Padding.horizontal)
             
             if hasBothInputs {
-                NavigationLink(destination: CarrierListView(headerFrom: from, headerTo: to)) {
+                Button {
+                    navigationPath.append("CarrierList")
+                } label: {
                     Text(Constants.Titles.searchButton)
                         .font(.system(size: Constants.FontSize.labelButton, weight: .bold))
                         .foregroundColor(.ypWhiteUniversal)
@@ -168,7 +172,21 @@ struct RouteInputSectionView: View {
 }
 
 #Preview {
-    NavigationStack {
-        RouteInputSectionView()
+    struct PreviewWrapper: View {
+        @State private var navigationPath = NavigationPath()
+        @State private var from = ""
+        @State private var to = ""
+        
+        var body: some View {
+            NavigationStack {
+                RouteInputSectionView(
+                    navigationPath: $navigationPath,
+                    from: $from,
+                    to: $to
+                )
+            }
+        }
     }
+    
+    return PreviewWrapper()
 }

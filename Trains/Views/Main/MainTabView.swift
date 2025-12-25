@@ -1,6 +1,18 @@
+//
+//  MainTabView.swift
+//  Trains
+//
+//  Created by Рустам Ханахмедов on 24.12.2025.
+//
+
 import SwiftUI
 
 struct MainTabView: View {
+    
+    @Environment(AppState.self) private var appState
+    @State private var navigationPath = NavigationPath()
+    @State private var fromCity: String = ""
+    @State private var toCity: String = ""
     
     private enum Constants {
         static let tabIconSize: CGFloat = 30
@@ -10,8 +22,13 @@ struct MainTabView: View {
     
     var body: some View {
         TabView {
-            NavigationStack {
-                RouteInputSectionView()
+            NavigationStack(path: $navigationPath) {
+                RouteInputSectionView(navigationPath: $navigationPath, from: $fromCity, to: $toCity)
+                    .navigationDestination(for: String.self) { destination in
+                        if destination == "CarrierList" {
+                            CarrierListView(headerFrom: fromCity, headerTo: toCity)
+                        }
+                    }
             }
             .tabItem {
                 Image(systemName: Constants.firstTabSystemImage)
@@ -27,7 +44,6 @@ struct MainTabView: View {
             .tag(1)
         }
         .tint(.ypBlack)
-        .withGlobalErrors()
     }
 }
 

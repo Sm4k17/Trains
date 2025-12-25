@@ -82,7 +82,9 @@ struct CarrierListView: View {
             }
         }
         .toolbarBackground(.hidden, for: .navigationBar)
-        
+        .navigationDestination(isPresented: $showFilters) {
+            ScheduleFilterView()
+        }
         .safeAreaInset(edge: .bottom) {
             HStack {
                 Button("Уточнить время") {
@@ -97,9 +99,6 @@ struct CarrierListView: View {
             .padding(.horizontal, Constants.Spacing.horizontal)
             .padding(.bottom, Constants.Spacing.bottom)
             .background(Color(.systemBackground))
-        }
-        .sheet(isPresented: $showFilters) {
-            ScheduleFilterView()
         }
         .onAppear {
             // Имитация загрузки
