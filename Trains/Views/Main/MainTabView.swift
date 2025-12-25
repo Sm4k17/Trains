@@ -21,8 +21,10 @@ struct MainTabView: View {
     private enum Constants {
         static let tabIconSize: CGFloat = 30
         static let tabBarLineColor = Color.ypGray
-        static let routesTabIcon = "arrow.up.message.fill"
-        static let settingsTabIcon = "Vector"
+        static let routesTabActive = "routesTabActive"
+        static let routesTabInactive = "routesTabInactive"
+        static let settingsTabActive = "settingsTabActive"
+        static let settingsTabInactive = "settingsTabInactive"
     }
     
     // MARK: - Properties
@@ -59,8 +61,9 @@ struct MainTabView: View {
                     }
                 }
                 .tabItem {
-                    Image(systemName: Constants.routesTabIcon)
-                        .frame(width: Constants.tabIconSize, height: Constants.tabIconSize)
+                    Image(selectedTab == .routes
+                          ? Constants.routesTabActive
+                          : Constants.routesTabInactive)
                 }
                 .tag(Tab.routes)
                 
@@ -68,8 +71,9 @@ struct MainTabView: View {
                     SettingsView()
                 }
                 .tabItem {
-                    Image(Constants.settingsTabIcon)
-                        .frame(width: Constants.tabIconSize, height: Constants.tabIconSize)
+                    Image(selectedTab == .settings
+                          ? Constants.settingsTabActive
+                          : Constants.settingsTabInactive)
                 }
                 .tag(Tab.settings)
             }
