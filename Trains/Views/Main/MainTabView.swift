@@ -32,8 +32,14 @@ struct MainTabView: View {
     @State private var selectedTab: Tab = .routes
     
     // MARK: - Computed Properties
-    private var isTabBarHidden: Bool {
-        return !navigationPath.isEmpty
+    private var shouldShowTabBar: Bool {
+        // Таббар показываем только:
+        // 1. На главном экране (navigationPath пустой) в Routes
+        // 2. В Settings всегда
+        if selectedTab == .settings {
+            return true
+        }
+        return navigationPath.isEmpty
     }
     
     // MARK: - Body
@@ -51,6 +57,7 @@ struct MainTabView: View {
                             .toolbar(.hidden, for: .tabBar)
                     }
                 }
+                .toolbar(shouldShowTabBar ? .visible : .hidden, for: .tabBar)
             }
             .tabItem {
                 Image(selectedTab == .routes
@@ -71,7 +78,7 @@ struct MainTabView: View {
         }
         .tint(.ypBlack)
         .safeAreaInset(edge: .bottom) {
-            if colorScheme == .light && !isTabBarHidden {
+            if colorScheme == .light && shouldShowTabBar {
                 Divider()
                     .background(Color.ypGray)
                     .offset(y: -49)
