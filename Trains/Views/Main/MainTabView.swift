@@ -77,18 +77,9 @@ struct MainTabView: View {
             
             // MARK: - TabBar Top Line
             if colorScheme == .light && !isTabBarHidden {
-                GeometryReader { geometry in
-                    let tabBarHeight: CGFloat = 49
-                    let safeAreaBottom = geometry.safeAreaInsets.bottom
-                    
-                    Rectangle()
-                        .fill(Constants.tabBarLineColor)
-                        .frame(height: 1.0 / UIScreen.main.scale)
-                        .frame(width: geometry.size.width)
-                        .offset(y: -safeAreaBottom - tabBarHeight + 0.5)
-                }
-                .ignoresSafeArea(edges: .bottom)
-                .frame(height: 0)
+                Divider()
+                    .background(Constants.tabBarLineColor)
+                    .padding(.bottom, 49)
             }
         }
     }
