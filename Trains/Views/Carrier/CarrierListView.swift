@@ -39,10 +39,8 @@ struct CarrierListView: View {
     
     @Binding var headerFrom: String
     @Binding var headerTo: String
+    @Binding var navigationPath: NavigationPath
     
-    @Environment(\.dismiss) private var dismiss
-    
-    @State private var showFilters = false
     @State private var isLoading = true
     
     // MARK: - Сервис
@@ -51,9 +49,10 @@ struct CarrierListView: View {
     
     // MARK: - Init
     
-    init(headerFrom: Binding<String>, headerTo: Binding<String>) {
+    init(headerFrom: Binding<String>, headerTo: Binding<String>, navigationPath: Binding<NavigationPath>) {
         self._headerFrom = headerFrom
         self._headerTo = headerTo
+        self._navigationPath = navigationPath
         
         // Создаем реальный сервис
         let client = Client(
@@ -118,13 +117,13 @@ struct CarrierListView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                backButton
+                BackButton {
+                    // Возвращаемся к RouteInputSectionView
+                    navigationPath.removeLast(navigationPath.count)
+                }
             }
         }
         .toolbarBackground(.hidden, for: .navigationBar)
-        .navigationDestination(isPresented: $showFilters) {
-            ScheduleFilterView()
-        }
         .safeAreaInset(edge: .bottom) {
             bottomButtonView
         }
@@ -155,12 +154,13 @@ struct CarrierListView: View {
         List(0..<mockItems.count, id: \.self) { index in
             let item = mockItems[index]
             
-            NavigationLink {
-                // Используем реальный сервис
-                CarrierInfoView(
-                    code: item.carrierCode,
-                    service: carrierService,
-                    logoAssetName: item.logoSystemName
+            Button {
+                // Переход к информации о перевозчике
+                navigationPath.append(
+                    AppRoute.carrierInfo(
+                        carrierCode: item.carrierCode,
+                        logoAssetName: item.logoSystemName
+                    )
                 )
             } label: {
                 CarrierTableRow(
@@ -194,17 +194,10 @@ struct CarrierListView: View {
     
     // MARK: - UI Components
     
-    private var backButton: some View {
-        Button(action: { dismiss() }) {
-            Image(systemName: "chevron.left")
-                .foregroundColor(.ypBlack)
-        }
-    }
-    
     private var bottomButtonView: some View {
         HStack {
             Button("Уточнить время") {
-                showFilters = true
+                navigationPath.append(AppRoute.scheduleFilter)
             }
             .font(.system(size: Constants.FontSize.bottomButton, weight: .bold))
             .frame(maxWidth: .infinity, minHeight: Constants.Size.bottomButtonHeight)
@@ -231,12 +224,17 @@ struct CarrierListView: View {
 
 #Preview {
     struct PreviewWrapper: View {
+        @State private var navigationPath = NavigationPath()
         @State private var from = "Москва"
         @State private var to = "Санкт-Петербург"
         
         var body: some View {
             NavigationStack {
-                CarrierListView(headerFrom: $from, headerTo: $to)
+                CarrierListView(
+                    headerFrom: $from,
+                    headerTo: $to,
+                    navigationPath: $navigationPath
+                )
             }
         }
     }

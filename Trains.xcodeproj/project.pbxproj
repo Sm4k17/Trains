@@ -30,6 +30,8 @@
 		F1D715122F0CC3A800C825EF /* RouteInputSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D7150D2F0CC3A800C825EF /* RouteInputSectionView.swift */; };
 		F1D715132F0CC3A800C825EF /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D7150E2F0CC3A800C825EF /* SettingsView.swift */; };
 		F1D7151A2F0CC40F00C825EF /* AppStorageKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D715192F0CC40F00C825EF /* AppStorageKeys.swift */; };
+		F1D715302F0CD94800C825EF /* AppRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D7152F2F0CD94800C825EF /* AppRoute.swift */; };
+		F1D715422F0CE2B100C825EF /* BackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D715412F0CE2B100C825EF /* BackButton.swift */; };
 		F1E7C62C2EF96B4400814681 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F1E7C62B2EF96B4400814681 /* LaunchScreen.storyboard */; };
 		F1E7C6C52EFBFC0C00814681 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6C42EFBFC0C00814681 /* AppState.swift */; };
 		F1E7C6D02EFC2A6B00814681 /* ErrorState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6CF2EFC2A6B00814681 /* ErrorState.swift */; };
@@ -69,6 +71,8 @@
 		F1D7150D2F0CC3A800C825EF /* RouteInputSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteInputSectionView.swift; sourceTree = "<group>"; };
 		F1D7150E2F0CC3A800C825EF /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F1D715192F0CC40F00C825EF /* AppStorageKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStorageKeys.swift; sourceTree = "<group>"; };
+		F1D7152F2F0CD94800C825EF /* AppRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRoute.swift; sourceTree = "<group>"; };
+		F1D715412F0CE2B100C825EF /* BackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackButton.swift; sourceTree = "<group>"; };
 		F1E7C62B2EF96B4400814681 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F1E7C6C42EFBFC0C00814681 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		F1E7C6CF2EFC2A6B00814681 /* ErrorState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorState.swift; sourceTree = "<group>"; };
@@ -189,6 +193,8 @@
 				F1D7150D2F0CC3A800C825EF /* RouteInputSectionView.swift */,
 				F1D7150E2F0CC3A800C825EF /* SettingsView.swift */,
 				F1D715192F0CC40F00C825EF /* AppStorageKeys.swift */,
+				F1D7152F2F0CD94800C825EF /* AppRoute.swift */,
+				F1D715412F0CE2B100C825EF /* BackButton.swift */,
 			);
 			path = Main;
 			sourceTree = "<group>";
@@ -321,6 +327,7 @@
 			files = (
 				F19E1EAB2ECF384600183F02 /* CarrierService.swift in Sources */,
 				F1E7C7812EFCA4B100814681 /* StationSearchView.swift in Sources */,
+				F1D715422F0CE2B100C825EF /* BackButton.swift in Sources */,
 				F19E1EA12ECF37F100183F02 /* ScheduleService.swift in Sources */,
 				F19E1EA82ECF382E00183F02 /* NearestSettlementService.swift in Sources */,
 				F19E1E472ECB4C2F00183F02 /* ContentView.swift in Sources */,
@@ -344,6 +351,7 @@
 				F1E7C6C52EFBFC0C00814681 /* AppState.swift in Sources */,
 				F1E7C7632EFCA05B00814681 /* CarrierRowView.swift in Sources */,
 				F1D715102F0CC3A800C825EF /* UserAgreementView.swift in Sources */,
+				F1D715302F0CD94800C825EF /* AppRoute.swift in Sources */,
 				F1D715112F0CC3A800C825EF /* MainTabView.swift in Sources */,
 				F1D715122F0CC3A800C825EF /* RouteInputSectionView.swift in Sources */,
 				F1D715132F0CC3A800C825EF /* SettingsView.swift in Sources */,

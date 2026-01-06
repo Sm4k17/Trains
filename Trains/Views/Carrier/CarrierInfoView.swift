@@ -39,19 +39,27 @@ struct CarrierInfoView: View {
     
     // MARK: - Properties
     
-    @Environment(\.dismiss) private var dismiss
+    @Binding var navigationPath: NavigationPath
     @State private var viewModel: CarrierInfoViewModel
     
     private let code: String
-    private let service: CarrierServiceProtocol
     private let logoAssetName: String?
     
     // MARK: - Init
     
-    init(code: String, service: CarrierServiceProtocol, logoAssetName: String? = nil) {
+    init(code: String, logoAssetName: String? = nil, navigationPath: Binding<NavigationPath>) {
         self.code = code
-        self.service = service
         self.logoAssetName = logoAssetName
+        self._navigationPath = navigationPath
+        
+        // Создаем сервис внутри
+        let client = Client(
+            serverURL: try! Servers.Server1.url(),
+            transport: URLSessionTransport()
+        )
+        let apikey = "a63c3bd4-fd50-47a4-a56b-def74416d733"
+        let service = CarrierService(client: client, apikey: apikey)
+        
         self._viewModel = State(initialValue: CarrierInfoViewModel(code: code, service: service))
     }
     
@@ -67,9 +75,9 @@ struct CarrierInfoView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button(action: { dismiss() }) {
-                    Image(systemName: "chevron.left")
-                        .foregroundColor(.ypBlack)
+                BackButton {
+                    // Возвращаемся к CarrierListView
+                    navigationPath.removeLast()
                 }
             }
         }
@@ -208,7 +216,7 @@ struct CarrierInfoView: View {
         // Форматируем 8-800 номера
         if cleanedPhone.hasPrefix("8800") || cleanedPhone.hasPrefix("+7800") {
             let baseNumber = cleanedPhone.hasPrefix("+7800") ?
-                String(cleanedPhone.dropFirst(4)) : String(cleanedPhone.dropFirst(4))
+            String(cleanedPhone.dropFirst(4)) : String(cleanedPhone.dropFirst(4))
             
             if baseNumber.count == 7 {
                 let part1 = baseNumber.prefix(3)
@@ -286,14 +294,22 @@ struct CarrierInfoView: View {
 // MARK: - Preview
 
 #Preview {
-    NavigationStack {
-        let client = Client(
-            serverURL: try! Servers.Server1.url(),
-            transport: URLSessionTransport()
-        )
-        let apikey = "a63c3bd4-fd50-47a4-a56b-def74416d733"
-        let carrierService = CarrierService(client: client, apikey: apikey)
+    struct PreviewWrapper: View {
+        @State private var navigationPath = NavigationPath()
         
-        CarrierInfoView(code: "203", service: carrierService, logoAssetName: "rzd")
+        var body: some View {
+            NavigationStack {
+                let client = Client(
+                    serverURL: try! Servers.Server1.url(),
+                    transport: URLSessionTransport()
+                )
+                let apikey = "a63c3bd4-fd50-47a4-a56b-def74416d733"
+                let carrierService = CarrierService(client: client, apikey: apikey)
+                
+                CarrierInfoView(code: "203", logoAssetName: "rzd", navigationPath: $navigationPath)
+            }
+        }
     }
+    
+    return PreviewWrapper()
 }
