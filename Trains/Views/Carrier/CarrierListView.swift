@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OpenAPIURLSession
 
 struct CarrierListView: View {
     
@@ -44,18 +45,51 @@ struct CarrierListView: View {
     @State private var showFilters = false
     @State private var isLoading = true
     
+    // MARK: - Сервис
+    
+    private let carrierService: CarrierServiceProtocol
+    
+    // MARK: - Init
+    
+    init(headerFrom: Binding<String>, headerTo: Binding<String>) {
+        self._headerFrom = headerFrom
+        self._headerTo = headerTo
+        
+        // Создаем реальный сервис
+        let client = Client(
+            serverURL: try! Servers.Server1.url(),
+            transport: URLSessionTransport()
+        )
+        let apikey = "a63c3bd4-fd50-47a4-a56b-def74416d733"
+        self.carrierService = CarrierService(client: client, apikey: apikey)
+    }
+    
     // MARK: - Mock Data
     
     private let mockItems = [
-        (carrierName: "РЖД", logoSystemName: "rzd",
+        (carrierName: "РЖД", logoSystemName: "train.side.front.car", carrierCode: "680",
          dateText: "14 января", departTime: "22:30", arriveTime: "08:15",
          durationText: "20 часов", note: "С пересадкой в Костроме"),
-        (carrierName: "ФГК", logoSystemName: "fgk",
+        
+        (carrierName: "ФГК", logoSystemName: "box.truck.fill", carrierCode: "104",
          dateText: "15 января", departTime: "01:15", arriveTime: "09:00",
          durationText: "9 часов", note: nil),
-        (carrierName: "Урал логистика", logoSystemName: "ural",
+        
+        (carrierName: "S7 Airlines", logoSystemName: "airplane", carrierCode: "S7",
          dateText: "15 января", departTime: "12:30", arriveTime: "21:00",
-         durationText: "9 часов", note: nil)
+         durationText: "9 часов", note: "Прямой рейс"),
+        
+        (carrierName: "Аэрофлот", logoSystemName: "airplane", carrierCode: "SU",
+         dateText: "16 января", departTime: "08:45", arriveTime: "11:30",
+         durationText: "2 часа 45 минут", note: nil),
+        
+        (carrierName: "Уральские авиалинии", logoSystemName: "airplane", carrierCode: "U6",
+         dateText: "16 января", departTime: "19:20", arriveTime: "22:10",
+         durationText: "2 часа 50 минут", note: nil),
+        
+        (carrierName: "ТрансКонтейнер", logoSystemName: "shippingbox.fill", carrierCode: "113",
+         dateText: "17 января", departTime: "14:00", arriveTime: "06:00+1",
+         durationText: "16 часов", note: "Грузовой поезд")
     ]
     
     // MARK: - Body
@@ -120,17 +154,28 @@ struct CarrierListView: View {
     private var listView: some View {
         List(0..<mockItems.count, id: \.self) { index in
             let item = mockItems[index]
-            CarrierTableRow(
-                viewModel: CarrierRowViewModel(
-                    carrierName: item.carrierName,
-                    logoSystemName: item.logoSystemName,
-                    dateText: item.dateText,
-                    departTime: item.departTime,
-                    arriveTime: item.arriveTime,
-                    durationText: item.durationText,
-                    note: item.note
+            
+            NavigationLink {
+                // Используем реальный сервис
+                CarrierInfoView(
+                    code: item.carrierCode,
+                    service: carrierService,
+                    logoAssetName: item.logoSystemName
                 )
-            )
+            } label: {
+                CarrierTableRow(
+                    viewModel: CarrierRowViewModel(
+                        carrierName: item.carrierName,
+                        logoSystemName: item.logoSystemName,
+                        carrierCode: item.carrierCode,
+                        dateText: item.dateText,
+                        departTime: item.departTime,
+                        arriveTime: item.arriveTime,
+                        durationText: item.durationText,
+                        note: item.note
+                    )
+                )
+            }
             .listRowSeparator(.hidden)
             .listRowBackground(Color.clear)
             .listRowInsets(.init(top: Constants.Spacing.rowVerticalInset,

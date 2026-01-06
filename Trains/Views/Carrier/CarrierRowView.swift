@@ -167,6 +167,7 @@ struct CarrierTableRow: View {
         viewModel: CarrierRowViewModel(
             carrierName: "РЖД",
             logoSystemName: "train.side.front.car",
+            carrierCode: "203",
             dateText: "14 января",
             departTime: "22:30",
             arriveTime: "08:15",

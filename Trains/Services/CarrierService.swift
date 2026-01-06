@@ -25,10 +25,21 @@ final class CarrierService: CarrierServiceProtocol {
     }
     
     func getCarrier(code: String) async throws -> CarrierResponse {
+        // Определяем system
+        let system: Operations.getCarrier.Input.Query.systemPayload?
+        
+        if code.rangeOfCharacter(from: .letters) != nil {
+            system = .iata
+        } else {
+            system = nil
+        }
+        
         let response = try await client.getCarrier(query: .init(
             apikey: apikey,
             code: code,
-            format: "json"
+            format: "json",
+            lang: "ru_RU",
+            system: system
         ))
         return try response.ok.body.json
     }
