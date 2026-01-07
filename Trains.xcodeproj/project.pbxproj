@@ -32,6 +32,13 @@
 		F1D7151A2F0CC40F00C825EF /* AppStorageKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D715192F0CC40F00C825EF /* AppStorageKeys.swift */; };
 		F1D715302F0CD94800C825EF /* AppRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D7152F2F0CD94800C825EF /* AppRoute.swift */; };
 		F1D715422F0CE2B100C825EF /* BackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D715412F0CE2B100C825EF /* BackButton.swift */; };
+		F1D7155F2F0CFC4600C825EF /* CloseButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D7155E2F0CFC4600C825EF /* CloseButton.swift */; };
+		F1D715632F0CFCA800C825EF /* MaskFragmentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D715622F0CFCA800C825EF /* MaskFragmentView.swift */; };
+		F1D715692F0CFCEB00C825EF /* ProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D715682F0CFCEB00C825EF /* ProgressBar.swift */; };
+		F1D7156D2F0CFE2D00C825EF /* Story.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D7156C2F0CFE2D00C825EF /* Story.swift */; };
+		F1D715712F0CFEC100C825EF /* StoriesContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D715702F0CFEC100C825EF /* StoriesContentView.swift */; };
+		F1D715792F0CFF0C00C825EF /* StoryCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D715782F0CFF0C00C825EF /* StoryCardView.swift */; };
+		F1D7157D2F0CFF2700C825EF /* StoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D7157C2F0CFF2700C825EF /* StoryView.swift */; };
 		F1E7C62C2EF96B4400814681 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F1E7C62B2EF96B4400814681 /* LaunchScreen.storyboard */; };
 		F1E7C6C52EFBFC0C00814681 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6C42EFBFC0C00814681 /* AppState.swift */; };
 		F1E7C6D02EFC2A6B00814681 /* ErrorState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6CF2EFC2A6B00814681 /* ErrorState.swift */; };
@@ -73,6 +80,13 @@
 		F1D715192F0CC40F00C825EF /* AppStorageKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStorageKeys.swift; sourceTree = "<group>"; };
 		F1D7152F2F0CD94800C825EF /* AppRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRoute.swift; sourceTree = "<group>"; };
 		F1D715412F0CE2B100C825EF /* BackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackButton.swift; sourceTree = "<group>"; };
+		F1D7155E2F0CFC4600C825EF /* CloseButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloseButton.swift; sourceTree = "<group>"; };
+		F1D715622F0CFCA800C825EF /* MaskFragmentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskFragmentView.swift; sourceTree = "<group>"; };
+		F1D715682F0CFCEB00C825EF /* ProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressBar.swift; sourceTree = "<group>"; };
+		F1D7156C2F0CFE2D00C825EF /* Story.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Story.swift; sourceTree = "<group>"; };
+		F1D715702F0CFEC100C825EF /* StoriesContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesContentView.swift; sourceTree = "<group>"; };
+		F1D715782F0CFF0C00C825EF /* StoryCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryCardView.swift; sourceTree = "<group>"; };
+		F1D7157C2F0CFF2700C825EF /* StoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryView.swift; sourceTree = "<group>"; };
 		F1E7C62B2EF96B4400814681 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F1E7C6C42EFBFC0C00814681 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		F1E7C6CF2EFC2A6B00814681 /* ErrorState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorState.swift; sourceTree = "<group>"; };
@@ -167,6 +181,7 @@
 		F19E1E562ECDA4EE00183F02 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				F1D715592F0CFC0800C825EF /* StoryScreen */,
 				F1E7C75C2EFCA04700814681 /* Carrier */,
 				F1E7C7522EFC9FC100814681 /* ScheduleFilter */,
 				F1E7C6FB2EFC528900814681 /* Search */,
@@ -197,6 +212,20 @@
 				F1D715412F0CE2B100C825EF /* BackButton.swift */,
 			);
 			path = Main;
+			sourceTree = "<group>";
+		};
+		F1D715592F0CFC0800C825EF /* StoryScreen */ = {
+			isa = PBXGroup;
+			children = (
+				F1D7155E2F0CFC4600C825EF /* CloseButton.swift */,
+				F1D715622F0CFCA800C825EF /* MaskFragmentView.swift */,
+				F1D715682F0CFCEB00C825EF /* ProgressBar.swift */,
+				F1D7156C2F0CFE2D00C825EF /* Story.swift */,
+				F1D715702F0CFEC100C825EF /* StoriesContentView.swift */,
+				F1D715782F0CFF0C00C825EF /* StoryCardView.swift */,
+				F1D7157C2F0CFF2700C825EF /* StoryView.swift */,
+			);
+			path = StoryScreen;
 			sourceTree = "<group>";
 		};
 		F1E7C6C02EFBFBF300814681 /* Error */ = {
@@ -331,18 +360,25 @@
 				F19E1EA12ECF37F100183F02 /* ScheduleService.swift in Sources */,
 				F19E1EA82ECF382E00183F02 /* NearestSettlementService.swift in Sources */,
 				F19E1E472ECB4C2F00183F02 /* ContentView.swift in Sources */,
+				F1D7155F2F0CFC4600C825EF /* CloseButton.swift in Sources */,
 				F19E1EAE2ECF385D00183F02 /* StationsListService.swift in Sources */,
+				F1D715692F0CFCEB00C825EF /* ProgressBar.swift in Sources */,
 				F1E7C7582EFC9FDC00814681 /* ScheduleFilterView.swift in Sources */,
 				F1E7C6D02EFC2A6B00814681 /* ErrorState.swift in Sources */,
+				F1D715712F0CFEC100C825EF /* StoriesContentView.swift in Sources */,
 				F1D714DA2F0CB4A500C825EF /* ContactParser.swift in Sources */,
 				F1E7C78F2EFCA53400814681 /* CitySearchView.swift in Sources */,
 				F19E1EA42ECF380D00183F02 /* ThreadService.swift in Sources */,
 				F1E7C7982EFCA8FD00814681 /* DayPartSectionView.swift in Sources */,
 				F1D7151A2F0CC40F00C825EF /* AppStorageKeys.swift in Sources */,
 				F1E7C6D82EFC2CC400814681 /* GlobalErrorPresenter.swift in Sources */,
+				F1D715632F0CFCA800C825EF /* MaskFragmentView.swift in Sources */,
+				F1D715792F0CFF0C00C825EF /* StoryCardView.swift in Sources */,
 				F1D714942F0C973700C825EF /* CarrierInfoViewModel.swift in Sources */,
 				F19E1E5D2ECDA50F00183F02 /* NearestStationsService.swift in Sources */,
 				F1E7C6D42EFC2CAA00814681 /* ErrorStateView.swift in Sources */,
+				F1D7156D2F0CFE2D00C825EF /* Story.swift in Sources */,
+				F1D7157D2F0CFF2700C825EF /* StoryView.swift in Sources */,
 				F19E1E9E2ECF37D300183F02 /* SearchService.swift in Sources */,
 				F1D7148B2F0C96E200C825EF /* CarrierInfoView.swift in Sources */,
 				F1E7C76E2EFCA12A00814681 /* SearchTextField.swift in Sources */,

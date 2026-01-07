@@ -118,7 +118,6 @@ struct RouteInputSectionView: View {
             )
         }
         .navigationBarBackButtonHidden(true)
-        .toolbarBackground(.visible, for: .navigationBar)
     }
     
     // MARK: - UI Components

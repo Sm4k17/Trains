@@ -1,18 +1,15 @@
-//
-//  MainTabView.swift
-//  Trains
-//
-//  Created by Рустам Ханахмедов on 24.12.2025.
-//
-
 import SwiftUI
 
 struct MainTabView: View {
     
-    // MARK: - Tab Enum
     enum Tab {
         case routes
         case settings
+    }
+    
+    struct StoryPair: Identifiable {
+        let id = UUID()
+        let stories: [Story]
     }
     
     // MARK: - Constants
@@ -21,46 +18,61 @@ struct MainTabView: View {
         static let routesTabInactive = "routesTabInactive"
         static let settingsTabActive = "settingsTabActive"
         static let settingsTabInactive = "settingsTabInactive"
+        
+        // Отступы
+        static let storiesTopPadding: CGFloat = 24
+        static let gapToSearchBlock: CGFloat = 44
     }
     
     // MARK: - Properties
     @Environment(AppState.self) private var appState
+    @Environment(\.colorScheme) private var colorScheme
     
-    // Два независимых стека навигации
     @State private var routesNavigationPath = NavigationPath()
     @State private var settingsNavigationPath = NavigationPath()
     
     @State private var fromCity: String = ""
     @State private var toCity: String = ""
-    @Environment(\.colorScheme) private var colorScheme
     @State private var selectedTab: Tab = .routes
     
-    // MARK: - Computed Properties
-    private var shouldShowTabBar: Bool {
-        // Таббар показываем только:
-        // 1. На главном экране (navigationPath пустой) в Routes
-        // 2. В Settings всегда
-        if selectedTab == .settings {
-            return true
-        }
-        return routesNavigationPath.isEmpty
-    }
+    // Stories
+    @State private var activeStoryPair: StoryPair?
+    @State private var startIndex = 0
+    @State private var seenStoryIndices: Set<Int> = []
     
     // MARK: - Body
     var body: some View {
         TabView(selection: $selectedTab) {
-            // Tab 1: Routes
+            
+            // ВКЛАДКА 1: МАРШРУТЫ
             NavigationStack(path: $routesNavigationPath) {
                 RouteInputSectionView(
                     navigationPath: $routesNavigationPath,
                     from: $fromCity,
                     to: $toCity
                 )
+                .toolbar(.hidden, for: .navigationBar)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .safeAreaInset(edge: .top, spacing: 0) {
+                    if routesNavigationPath.isEmpty {
+                        StoriesStripView(
+                            stories: Story.odd,
+                            seenIndices: seenStoryIndices
+                        ) { index in
+                            guard index < Story.pairs.count else { return }
+                            seenStoryIndices.insert(index)
+                            activeStoryPair = StoryPair(stories: Story.pairs[index])
+                            startIndex = 0
+                        }
+                        .padding(.top, Constants.storiesTopPadding)
+                        .padding(.bottom, Constants.gapToSearchBlock)
+                    }
+                }
                 .navigationDestination(for: AppRoute.self) { route in
                     routeView(for: route, navigationPath: $routesNavigationPath)
                         .toolbar(.hidden, for: .tabBar)
                 }
-                .toolbar(shouldShowTabBar ? .visible : .hidden, for: .tabBar)
+                .toolbar(routesNavigationPath.isEmpty ? .visible : .hidden, for: .tabBar)
             }
             .tabItem {
                 Image(selectedTab == .routes
@@ -69,18 +81,10 @@ struct MainTabView: View {
             }
             .tag(Tab.routes)
             
-            // Tab 2: Settings
+            // ВКЛАДКА 2: НАСТРОЙКИ
             NavigationStack(path: $settingsNavigationPath) {
-                SettingsView(
-                    navigationPath: $settingsNavigationPath
-                )
-                .navigationDestination(for: AppRoute.self) { route in
-                    if case .userAgreement = route {
-                        UserAgreementWebScreen()
-                            .toolbar(.hidden, for: .tabBar)
-                    }
-                }
-                .toolbar(.visible, for: .tabBar)
+                SettingsView(navigationPath: $settingsNavigationPath)
+                    .toolbar(.visible, for: .tabBar)
             }
             .tabItem {
                 Image(selectedTab == .settings
@@ -89,31 +93,33 @@ struct MainTabView: View {
             }
             .tag(Tab.settings)
         }
-        .tint(.ypBlack)
-        .safeAreaInset(edge: .bottom) {
-            if colorScheme == .light && shouldShowTabBar {
-                Divider()
-                    .background(Color.ypGray)
+        // Разделитель таб-бара
+        .overlay(alignment: .bottom) {
+            if colorScheme == .light && (selectedTab == .settings || routesNavigationPath.isEmpty) {
+                Rectangle()
+                    .fill(Color.ypGray)
+                    .frame(height: 1.0 / UIScreen.main.scale)
                     .offset(y: -49)
             }
         }
+        .fullScreenCover(item: $activeStoryPair) { pair in
+            StoryView(stories: pair.stories, initialIndex: startIndex)
+        }
     }
     
-    // MARK: - View Builders
+    // MARK: - Route Builder
     
     @ViewBuilder
-    private func routeView(for route: AppRoute, navigationPath: Binding<NavigationPath>) -> some View {
+    private func routeView(
+        for route: AppRoute,
+        navigationPath: Binding<NavigationPath>
+    ) -> some View {
         switch route {
+            
         case .carrierList(let from, let to):
             CarrierListView(
-                headerFrom: Binding(
-                    get: { from },
-                    set: { _ in }
-                ),
-                headerTo: Binding(
-                    get: { to },
-                    set: { _ in }
-                ),
+                headerFrom: .constant(from),
+                headerTo: .constant(to),
                 navigationPath: navigationPath
             )
             
@@ -152,10 +158,4 @@ struct MainTabView: View {
             EmptyView()
         }
     }
-}
-
-// MARK: - Preview
-#Preview {
-    MainTabView()
-        .environment(AppState.shared)
 }
