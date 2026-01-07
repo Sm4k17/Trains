@@ -78,10 +78,6 @@ struct UserAgreementWebScreen: View {
             }
         }
         .background(Color(.systemBackground))
-        .navigationTitle("Пользовательское соглашение")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar(.visible, for: .navigationBar)
-        .tint(.ypBlack)
         .toolbar(.hidden, for: .tabBar)
         .toolbarBackground(.hidden, for: .tabBar)
     }

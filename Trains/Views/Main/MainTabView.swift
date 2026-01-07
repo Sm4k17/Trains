@@ -85,6 +85,9 @@ struct MainTabView: View {
             NavigationStack(path: $settingsNavigationPath) {
                 SettingsView(navigationPath: $settingsNavigationPath)
                     .toolbar(.visible, for: .tabBar)
+                    .navigationDestination(for: AppRoute.self) { route in
+                        settingsRouteView(for: route, navigationPath: $settingsNavigationPath)
+                    }
             }
             .tabItem {
                 Image(selectedTab == .settings
@@ -107,7 +110,7 @@ struct MainTabView: View {
         }
     }
     
-    // MARK: - Route Builder
+    // MARK: - Routes Tab Route Builder
     
     @ViewBuilder
     private func routeView(
@@ -155,6 +158,33 @@ struct MainTabView: View {
             )
             
         case .userAgreement:
+            UserAgreementWebScreen()
+                .navigationTitle("Пользовательское соглашение")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar(.visible, for: .navigationBar)
+                .tint(.ypBlack)
+                .navigationBarBackButtonHidden(false)
+        }
+    }
+    
+    // MARK: - Settings Tab Route Builder
+    
+    @ViewBuilder
+    private func settingsRouteView(
+        for route: AppRoute,
+        navigationPath: Binding<NavigationPath>
+    ) -> some View {
+        switch route {
+        case .userAgreement:
+            UserAgreementWebScreen()
+                .navigationTitle("Пользовательское соглашение")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar(.visible, for: .navigationBar)
+                .tint(.ypBlack)
+                .navigationBarBackButtonHidden(false)
+            
+        default:
+            // Для других роутов (если они понадобятся в Settings)
             EmptyView()
         }
     }
