@@ -7,13 +7,7 @@
 
 import Foundation
 
-struct ContactInfo {
-    let phoneNumbers: [String]
-    let emails: [String]
-    let cleanText: String
-}
-
-class ContactParser {
+final class ContactParser {
     
     // MARK: - Main Parse Function
     

@@ -12,7 +12,9 @@ struct UserAgreementView: UIViewRepresentable {
     let url: URL
     @Environment(\.colorScheme) private var scheme
     
-    func makeCoordinator() -> AgreementWebCoordinator { AgreementWebCoordinator() }
+    func makeCoordinator() -> AgreementWebCoordinator {
+        AgreementWebCoordinator()
+    }
     
     func makeUIView(context: Context) -> WKWebView {
         let cfg = WKWebViewConfiguration()
@@ -67,18 +69,30 @@ struct UserAgreementView: UIViewRepresentable {
 }
 
 struct UserAgreementWebScreen: View {
+    @Environment(\.dismiss) private var dismiss
     private let urlString = "https://yandex.ru/legal/timetable_termsofuse/ru/"
     
     var body: some View {
         Group {
             if let url = URL(string: urlString) {
                 UserAgreementView(url: url)
+                    .ignoresSafeArea(edges: .bottom)
             } else {
-                EmptyView()
+                Text("Не удалось загрузить соглашение")
+                    .foregroundColor(.ypBlack)
             }
         }
-        .background(Color(.systemBackground))
-        .toolbar(.hidden, for: .tabBar)
-        .toolbarBackground(.hidden, for: .tabBar)
+        .navigationBarBackButtonHidden(true)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                BackButton { dismiss() }
+            }
+            ToolbarItem(placement: .principal) {
+                Text("Пользовательское соглашение")
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundColor(.ypBlack)
+            }
+        }
     }
 }

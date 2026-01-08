@@ -1,5 +1,5 @@
 //
-//  ProgressBar.swift
+//  ProgressBarView.swift
 //  Trains
 //
 //  Created by Рустам Ханахмедов on 06.01.2026.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ProgressBar: View {
+struct ProgressBarView: View {
     let numberOfSections: Int
     let progress: CGFloat
     

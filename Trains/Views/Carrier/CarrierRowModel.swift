@@ -1,5 +1,5 @@
 //
-//  CarrierRowViewModel.swift
+//  CarrierRowModel.swift
 //  Trains
 //
 //  Created by Рустам Ханахмедов on 25.12.2025.
@@ -9,7 +9,7 @@ import SwiftUI
 
 // MARK: - ViewModel
 
-struct CarrierRowViewModel: Identifiable {
+struct CarrierRowModel: Identifiable {
     
     // MARK: - Properties
     
@@ -26,11 +26,11 @@ struct CarrierRowViewModel: Identifiable {
 
 // MARK: - Mock Data
 
-extension CarrierRowViewModel {
+extension CarrierRowModel {
     
     // MARK: - Mock Instances
     
-    static let mock: [CarrierRowViewModel] = [
+    static let mock: [CarrierRowModel] = [
         .init(
             carrierName: "РЖД",
             logoSystemName: "train.side.front.car",

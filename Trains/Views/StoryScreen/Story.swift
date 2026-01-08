@@ -172,6 +172,9 @@ extension Story {
     }
     
     static var pairs: [[Story]] {
-        stride(from: 0, to: all.count - 1, by: 2).map { [all[$0], all[$0 + 1]] }
+            stride(from: 0, to: all.count, by: 3).map { startIndex in
+                let endIndex = min(startIndex + 3, all.count)
+                return Array(all[startIndex..<endIndex])
+            }
+        }
     }
-}

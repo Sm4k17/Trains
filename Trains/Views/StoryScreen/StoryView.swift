@@ -14,10 +14,10 @@ struct StoryView: View {
         let timerTickInterval: TimeInterval
         let progressPerTick: CGFloat
         
-        init(storiesCount: Int, secondsPerStory: TimeInterval = 5,
+        init(storiesCount: Int, secondsPerStory: TimeInterval = 10,
              timerTickInterval: TimeInterval = 0.05) {
             self.timerTickInterval = timerTickInterval
-            self.progressPerTick = 1.0 / CGFloat(storiesCount) / secondsPerStory * (CGFloat(timerTickInterval) / CGFloat(secondsPerStory)) / CGFloat(max(storiesCount, 1))
+            self.progressPerTick = CGFloat(timerTickInterval) / CGFloat(secondsPerStory * Double(max(storiesCount, 1)))
         }
     }
     
@@ -59,56 +59,138 @@ struct StoryView: View {
         ZStack(alignment: .topTrailing) {
             Color(.systemBackground).ignoresSafeArea()
             
+            // Контент истории
             if let story = currentStory {
                 StoriesContentView(story: story)
             }
             
-            ProgressBar(numberOfSections: stories.count, progress: progress)
-                .padding(.init(top: progressBarTopPadding, leading: 12, bottom: 12, trailing: 12))
+            // ЕДИНЫЙ ОБРАБОТЧИК ДЛЯ ТАПОВ И СВАЙПОВ
+            Color.clear
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onEnded { value in
+                            let horizontalAmount = value.translation.width
+                            let verticalAmount = value.translation.height
+                            
+                            // Свайп вниз для закрытия (порог 100 пикселей)
+                            if verticalAmount > 100 {
+                                dismiss()
+                                return
+                            }
+                            
+                            // Если это горизонтальный свайп (перемещение > 50 пикселей)
+                            if abs(horizontalAmount) > 50 {
+                                if horizontalAmount < 0 {
+                                    // Свайп влево - следующая история
+                                    goToNextStory()
+                                } else {
+                                    // Свайп вправо - предыдущая история
+                                    goToPreviousStory()
+                                }
+                            } else {
+                                // Если это тап (малое перемещение)
+                                handleTap(at: value.location)
+                            }
+                        }
+                )
             
-            CloseButton(action: { dismiss() })
+            // Прогресс-бар - ВЕРХНИЙ СЛОЙ
+            VStack {
+                ProgressBarView(numberOfSections: stories.count, progress: progress)
+                    .frame(height: 4)
+                    .padding(.horizontal, 12)
+                    .padding(.top, progressBarTopPadding)
+                
+                Spacer()
+            }
+            
+            // Кнопка закрытия - САМЫЙ ВЕРХНИЙ СЛОЙ
+            CloseButtonView(action: { dismiss() })
                 .padding(.top, closeButtonTopPadding)
                 .padding(.trailing, 12)
         }
         .onAppear {
             guard stories.count > 1 else { return }
-            timer = Timer.publish(every: configuration.timerTickInterval, on: .main, in: .common)
-            cancellable = timer.connect()
+            startTimer()
         }
         .onDisappear {
-            cancellable?.cancel()
+            stopTimer()
         }
         .onReceive(timer) { _ in
             timerTick()
         }
-        .onTapGesture {
-            nextStory()
-            resetTimer()
-        }
+    }
+    
+    private func startTimer() {
+        timer = Timer.publish(every: configuration.timerTickInterval, on: .main, in: .common)
+        cancellable = timer.connect()
+    }
+    
+    private func stopTimer() {
+        cancellable?.cancel()
+    }
+    
+    private func restartTimer() {
+        stopTimer()
+        startTimer()
     }
     
     private func timerTick() {
         var nextProgress = progress + configuration.progressPerTick
-        if nextProgress >= 1 {
-            nextProgress = 0
+        
+        if nextProgress >= 1.0 {
+            // Достигли конца всех историй
+            nextProgress = 1.0
+            stopTimer()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                dismiss()
+            }
+        } else if nextProgress >= CGFloat(currentStoryIndex + 1) / CGFloat(stories.count) {
+            // Переход к следующей истории
+            nextProgress = CGFloat(currentStoryIndex + 1) / CGFloat(stories.count)
         }
-        withAnimation {
+        
+        withAnimation(.linear(duration: configuration.timerTickInterval)) {
             progress = nextProgress
         }
     }
     
-    private func nextStory() {
-        let storiesCount = stories.count
-        let currentStoryIndex = Int(progress * CGFloat(storiesCount))
-        let nextStoryIndex = currentStoryIndex + 1 < storiesCount ? currentStoryIndex + 1 : 0
-        withAnimation {
-            progress = CGFloat(nextStoryIndex) / CGFloat(storiesCount)
+    private func handleTap(at location: CGPoint) {
+        // Определяем, в какую часть экрана тапнули
+        let screenWidth = UIScreen.main.bounds.width
+        
+        if location.x > screenWidth * 0.5 {
+            // Тап в правую часть - следующая история
+            goToNextStory()
+        } else {
+            // Тап в левую часть - предыдущая история
+            goToPreviousStory()
         }
     }
     
-    private func resetTimer() {
-        cancellable?.cancel()
-        timer = Timer.publish(every: configuration.timerTickInterval, on: .main, in: .common)
-        cancellable = timer.connect()
+    private func goToNextStory() {
+        let nextIndex = currentStoryIndex + 1
+        
+        if nextIndex < stories.count {
+            withAnimation(.easeInOut(duration: 0.3)) {
+                progress = CGFloat(nextIndex) / CGFloat(stories.count)
+            }
+            restartTimer()
+        } else {
+            // Последняя история - закрываем
+            dismiss()
+        }
+    }
+    
+    private func goToPreviousStory() {
+        let prevIndex = currentStoryIndex - 1
+        
+        if prevIndex >= 0 {
+            withAnimation(.easeInOut(duration: 0.3)) {
+                progress = CGFloat(prevIndex) / CGFloat(stories.count)
+            }
+            restartTimer()
+        }
     }
 }

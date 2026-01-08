@@ -1,5 +1,5 @@
 //
-//  CloseButton.swift
+//  CloseButtonView.swift
 //  Trains
 //
 //  Created by Рустам Ханахмедов on 06.01.2026.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct CloseButton: View {
+struct CloseButtonView: View {
     let action: () -> Void
     
     var body: some View {

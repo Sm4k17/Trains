@@ -56,12 +56,16 @@ struct MainTabView: View {
                 .safeAreaInset(edge: .top, spacing: 0) {
                     if routesNavigationPath.isEmpty {
                         StoriesStripView(
-                            stories: Story.odd,
+                            stories: Story.pairs.compactMap { $0.first },
                             seenIndices: seenStoryIndices
-                        ) { index in
-                            guard index < Story.pairs.count else { return }
-                            seenStoryIndices.insert(index)
-                            activeStoryPair = StoryPair(stories: Story.pairs[index])
+                        ) { groupIndex in
+                            
+                            seenStoryIndices.insert(groupIndex)
+                            
+                            guard groupIndex < Story.pairs.count else { return }
+                            let group = Story.pairs[groupIndex]
+                            
+                            activeStoryPair = StoryPair(stories: group)
                             startIndex = 0
                         }
                         .padding(.top, Constants.storiesTopPadding)
@@ -70,7 +74,6 @@ struct MainTabView: View {
                 }
                 .navigationDestination(for: AppRoute.self) { route in
                     routeView(for: route, navigationPath: $routesNavigationPath)
-                        .toolbar(.hidden, for: .tabBar)
                 }
                 .toolbar(routesNavigationPath.isEmpty ? .visible : .hidden, for: .tabBar)
             }
@@ -84,7 +87,7 @@ struct MainTabView: View {
             // ВКЛАДКА 2: НАСТРОЙКИ
             NavigationStack(path: $settingsNavigationPath) {
                 SettingsView(navigationPath: $settingsNavigationPath)
-                    .toolbar(.visible, for: .tabBar)
+                    .toolbar(settingsNavigationPath.isEmpty ? .visible : .hidden, for: .tabBar)
                     .navigationDestination(for: AppRoute.self) { route in
                         settingsRouteView(for: route, navigationPath: $settingsNavigationPath)
                     }
@@ -98,7 +101,14 @@ struct MainTabView: View {
         }
         // Разделитель таб-бара
         .overlay(alignment: .bottom) {
-            if colorScheme == .light && (selectedTab == .settings || routesNavigationPath.isEmpty) {
+            let isRoutesEmpty = routesNavigationPath.isEmpty
+            let isSettingsEmpty = settingsNavigationPath.isEmpty
+            
+            // Проверяем, что мы на главных экранах вкладок, а не внутри UserAgreement
+            if colorScheme == .light && (
+                (selectedTab == .settings && isSettingsEmpty) ||
+                (selectedTab == .routes && isRoutesEmpty)
+            ) {
                 Rectangle()
                     .fill(Color.ypGray)
                     .frame(height: 1.0 / UIScreen.main.scale)
@@ -159,11 +169,7 @@ struct MainTabView: View {
             
         case .userAgreement:
             UserAgreementWebScreen()
-                .navigationTitle("Пользовательское соглашение")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar(.visible, for: .navigationBar)
-                .tint(.ypBlack)
-                .navigationBarBackButtonHidden(false)
+                .toolbar(.hidden, for: .tabBar)
         }
     }
     
@@ -177,11 +183,7 @@ struct MainTabView: View {
         switch route {
         case .userAgreement:
             UserAgreementWebScreen()
-                .navigationTitle("Пользовательское соглашение")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar(.visible, for: .navigationBar)
-                .tint(.ypBlack)
-                .navigationBarBackButtonHidden(false)
+                .toolbar(.hidden, for: .tabBar)
             
         default:
             // Для других роутов (если они понадобятся в Settings)

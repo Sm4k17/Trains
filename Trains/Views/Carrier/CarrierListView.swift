@@ -82,10 +82,6 @@ struct CarrierListView: View {
          dateText: "16 января", departTime: "08:45", arriveTime: "11:30",
          durationText: "2 часа 45 минут", note: nil),
         
-        (carrierName: "Уральские авиалинии", logoSystemName: "airplane", carrierCode: "U6",
-         dateText: "16 января", departTime: "19:20", arriveTime: "22:10",
-         durationText: "2 часа 50 минут", note: nil),
-        
         (carrierName: "ТрансКонтейнер", logoSystemName: "shippingbox.fill", carrierCode: "113",
          dateText: "17 января", departTime: "14:00", arriveTime: "06:00+1",
          durationText: "16 часов", note: "Грузовой поезд")
@@ -164,7 +160,7 @@ struct CarrierListView: View {
                 )
             } label: {
                 CarrierTableRow(
-                    viewModel: CarrierRowViewModel(
+                    viewModel: CarrierRowModel(
                         carrierName: item.carrierName,
                         logoSystemName: item.logoSystemName,
                         carrierCode: item.carrierCode,

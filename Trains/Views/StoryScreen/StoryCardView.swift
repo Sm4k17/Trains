@@ -63,5 +63,6 @@ struct StoriesStripView: View {
             }
             .padding(.horizontal, horizontalPadding)
         }
+        .scrollBounceBehavior(.basedOnSize, axes: .horizontal)
     }
 }
