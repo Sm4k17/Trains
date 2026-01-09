@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OpenAPIURLSession
 
 struct CarrierListView: View {
     
@@ -38,24 +39,52 @@ struct CarrierListView: View {
     
     @Binding var headerFrom: String
     @Binding var headerTo: String
+    @Binding var navigationPath: NavigationPath
     
-    @Environment(\.dismiss) private var dismiss
-    
-    @State private var showFilters = false
     @State private var isLoading = true
+    
+    // MARK: - Сервис
+    
+    private let carrierService: CarrierServiceProtocol
+    
+    // MARK: - Init
+    
+    init(headerFrom: Binding<String>, headerTo: Binding<String>, navigationPath: Binding<NavigationPath>) {
+        self._headerFrom = headerFrom
+        self._headerTo = headerTo
+        self._navigationPath = navigationPath
+        
+        // Создаем реальный сервис
+        let client = Client(
+            serverURL: try! Servers.Server1.url(),
+            transport: URLSessionTransport()
+        )
+        let apikey = "a63c3bd4-fd50-47a4-a56b-def74416d733"
+        self.carrierService = CarrierService(client: client, apikey: apikey)
+    }
     
     // MARK: - Mock Data
     
     private let mockItems = [
-        (carrierName: "РЖД", logoSystemName: "rzd",
+        (carrierName: "РЖД", logoSystemName: "train.side.front.car", carrierCode: "680",
          dateText: "14 января", departTime: "22:30", arriveTime: "08:15",
          durationText: "20 часов", note: "С пересадкой в Костроме"),
-        (carrierName: "ФГК", logoSystemName: "fgk",
+        
+        (carrierName: "ФГК", logoSystemName: "box.truck.fill", carrierCode: "104",
          dateText: "15 января", departTime: "01:15", arriveTime: "09:00",
          durationText: "9 часов", note: nil),
-        (carrierName: "Урал логистика", logoSystemName: "ural",
+        
+        (carrierName: "S7 Airlines", logoSystemName: "airplane", carrierCode: "S7",
          dateText: "15 января", departTime: "12:30", arriveTime: "21:00",
-         durationText: "9 часов", note: nil)
+         durationText: "9 часов", note: "Прямой рейс"),
+        
+        (carrierName: "Аэрофлот", logoSystemName: "airplane", carrierCode: "SU",
+         dateText: "16 января", departTime: "08:45", arriveTime: "11:30",
+         durationText: "2 часа 45 минут", note: nil),
+        
+        (carrierName: "ТрансКонтейнер", logoSystemName: "shippingbox.fill", carrierCode: "113",
+         dateText: "17 января", departTime: "14:00", arriveTime: "06:00+1",
+         durationText: "16 часов", note: "Грузовой поезд")
     ]
     
     // MARK: - Body
@@ -84,13 +113,13 @@ struct CarrierListView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                backButton
+                BackButton {
+                    // Возвращаемся к RouteInputSectionView
+                    navigationPath.removeLast(navigationPath.count)
+                }
             }
         }
         .toolbarBackground(.hidden, for: .navigationBar)
-        .navigationDestination(isPresented: $showFilters) {
-            ScheduleFilterView()
-        }
         .safeAreaInset(edge: .bottom) {
             bottomButtonView
         }
@@ -120,17 +149,29 @@ struct CarrierListView: View {
     private var listView: some View {
         List(0..<mockItems.count, id: \.self) { index in
             let item = mockItems[index]
-            CarrierTableRow(
-                viewModel: CarrierRowViewModel(
-                    carrierName: item.carrierName,
-                    logoSystemName: item.logoSystemName,
-                    dateText: item.dateText,
-                    departTime: item.departTime,
-                    arriveTime: item.arriveTime,
-                    durationText: item.durationText,
-                    note: item.note
+            
+            Button {
+                // Переход к информации о перевозчике
+                navigationPath.append(
+                    AppRoute.carrierInfo(
+                        carrierCode: item.carrierCode,
+                        logoAssetName: item.logoSystemName
+                    )
                 )
-            )
+            } label: {
+                CarrierTableRow(
+                    viewModel: CarrierRowModel(
+                        carrierName: item.carrierName,
+                        logoSystemName: item.logoSystemName,
+                        carrierCode: item.carrierCode,
+                        dateText: item.dateText,
+                        departTime: item.departTime,
+                        arriveTime: item.arriveTime,
+                        durationText: item.durationText,
+                        note: item.note
+                    )
+                )
+            }
             .listRowSeparator(.hidden)
             .listRowBackground(Color.clear)
             .listRowInsets(.init(top: Constants.Spacing.rowVerticalInset,
@@ -149,17 +190,10 @@ struct CarrierListView: View {
     
     // MARK: - UI Components
     
-    private var backButton: some View {
-        Button(action: { dismiss() }) {
-            Image(systemName: "chevron.left")
-                .foregroundColor(.ypBlack)
-        }
-    }
-    
     private var bottomButtonView: some View {
         HStack {
             Button("Уточнить время") {
-                showFilters = true
+                navigationPath.append(AppRoute.scheduleFilter)
             }
             .font(.system(size: Constants.FontSize.bottomButton, weight: .bold))
             .frame(maxWidth: .infinity, minHeight: Constants.Size.bottomButtonHeight)
@@ -186,12 +220,17 @@ struct CarrierListView: View {
 
 #Preview {
     struct PreviewWrapper: View {
+        @State private var navigationPath = NavigationPath()
         @State private var from = "Москва"
         @State private var to = "Санкт-Петербург"
         
         var body: some View {
             NavigationStack {
-                CarrierListView(headerFrom: $from, headerTo: $to)
+                CarrierListView(
+                    headerFrom: $from,
+                    headerTo: $to,
+                    navigationPath: $navigationPath
+                )
             }
         }
     }

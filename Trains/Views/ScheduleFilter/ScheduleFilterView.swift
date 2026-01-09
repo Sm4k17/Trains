@@ -11,10 +11,10 @@ struct ScheduleFilterView: View {
     
     // MARK: - Properties
     
+    @Binding var navigationPath: NavigationPath
+    
     @State private var selectedParts: Set<DayPart> = []
     @State private var transfers: TransfersOption? = nil
-    
-    @Environment(\.dismiss) private var dismiss
     
     // MARK: - Computed Properties
     
@@ -33,7 +33,10 @@ struct ScheduleFilterView: View {
         .toolbarBackground(.hidden, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                backButton
+                BackButton {
+                    // Возвращаемся к CarrierListView
+                    navigationPath.removeLast()
+                }
             }
         }
         .safeAreaInset(edge: .bottom) {
@@ -57,16 +60,11 @@ struct ScheduleFilterView: View {
     
     // MARK: - UI Components
     
-    private var backButton: some View {
-        Button { dismiss() } label: {
-            Image(systemName: "chevron.left")
-        }
-    }
-    
     private var applyButtonView: some View {
         HStack {
             Button("Применить") {
-                dismiss()
+                // Возвращаемся к CarrierListView
+                navigationPath.removeLast()
             }
             .font(.system(size: 17, weight: .bold))
             .frame(maxWidth: .infinity, minHeight: 56)
@@ -82,7 +80,15 @@ struct ScheduleFilterView: View {
 // MARK: - Preview
 
 #Preview {
-    NavigationStack {
-        ScheduleFilterView()
+    struct PreviewWrapper: View {
+        @State private var navigationPath = NavigationPath()
+        
+        var body: some View {
+            NavigationStack {
+                ScheduleFilterView(navigationPath: $navigationPath)
+            }
+        }
     }
+    
+    return PreviewWrapper()
 }

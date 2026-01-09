@@ -11,14 +11,16 @@ struct CitySearchView: View {
     
     // MARK: - Properties
     
-    let onSelect: (String) -> Void
+    let context: AppRoute.CitySearchContext
+    let initialCity: String
+    @Binding var navigationPath: NavigationPath
+    @Binding var fromCity: String
+    @Binding var toCity: String
     
     // MARK: - State
     
     @State private var searchText: String = ""
     @State private var selectedCity: String? = nil
-    @State private var showStations = false
-    @Environment(\.dismiss) private var dismiss
     
     // MARK: - Constants
     
@@ -84,24 +86,29 @@ struct CitySearchView: View {
     // MARK: - Body
     
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                searchField
-                
-                if filteredCities.isEmpty {
-                    notFoundView
-                } else {
-                    cityList
-                }
-            }
-            .navigationTitle("Выбор города")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarRole(.editor)
-            .navigationDestination(isPresented: $showStations) {
-                stationSearchView
+        VStack(spacing: 0) {
+            searchField
+            
+            if filteredCities.isEmpty {
+                notFoundView
+            } else {
+                cityList
             }
         }
-        .tint(.ypBlack)
+        .navigationTitle(context.title)
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                BackButton {
+                    // Возвращаемся назад
+                    navigationPath.removeLast()
+                }
+            }
+        }
+        .onAppear {
+            searchText = initialCity
+        }
     }
     
     // MARK: - UI Components
@@ -138,8 +145,10 @@ struct CitySearchView: View {
         .frame(height: Constants.Size.rowHeight)
         .contentShape(Rectangle())
         .onTapGesture {
-            selectedCity = city
-            showStations = true
+            // Переходим к выбору станции
+            navigationPath.append(
+                AppRoute.stationSearch(context: context, city: city, station: "")
+            )
         }
         .listRowSeparator(.hidden)
         .listRowInsets(EdgeInsets(
@@ -162,25 +171,28 @@ struct CitySearchView: View {
             Spacer()
         }
     }
-    
-    // MARK: - Navigation Views
-    
-    @ViewBuilder
-    private var stationSearchView: some View {
-        if let selectedCity = selectedCity {
-            StationSearchView(city: selectedCity) { station in
-                let fullSelection = "\(selectedCity) (\(station))"
-                onSelect(fullSelection)
-                dismiss()
-            }
-        }
-    }
 }
 
 // MARK: - Preview
 
 #Preview {
-    CitySearchView { city in
-        print("Выбран город: \(city)")
+    struct PreviewWrapper: View {
+        @State private var navigationPath = NavigationPath()
+        @State private var fromCity = ""
+        @State private var toCity = ""
+        
+        var body: some View {
+            NavigationStack {
+                CitySearchView(
+                    context: .from,
+                    initialCity: "",
+                    navigationPath: $navigationPath,
+                    fromCity: $fromCity,
+                    toCity: $toCity
+                )
+            }
+        }
     }
+    
+    return PreviewWrapper()
 }

@@ -12,12 +12,15 @@ struct StationSearchView: View {
     // MARK: - Properties
     
     let city: String
-    let onSelect: (String) -> Void
+    let initialStation: String
+    let context: AppRoute.CitySearchContext
+    @Binding var navigationPath: NavigationPath
+    @Binding var fromCity: String
+    @Binding var toCity: String
     
     // MARK: - State
     
     @State private var searchText: String = ""
-    @Environment(\.dismiss) private var dismiss
     
     // MARK: - Constants
     
@@ -82,22 +85,29 @@ struct StationSearchView: View {
     // MARK: - Body
     
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                searchField
-                
-                if filteredStations.isEmpty {
-                    notFoundView
-                } else {
-                    stationList
+        VStack(spacing: 0) {
+            searchField
+            
+            if filteredStations.isEmpty {
+                notFoundView
+            } else {
+                stationList
+            }
+        }
+        .navigationTitle("Станции в \(city)")
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                BackButton {
+                    // Возвращаемся к CitySearchView
+                    navigationPath.removeLast()
                 }
             }
-            .navigationTitle("Выбор станции")
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarBackButtonHidden(false)
-            .toolbarRole(.editor)
         }
-        .tint(.ypBlack)
+        .onAppear {
+            searchText = initialStation
+        }
     }
     
     // MARK: - UI Components
@@ -134,8 +144,16 @@ struct StationSearchView: View {
         .frame(height: Constants.Size.rowHeight)
         .contentShape(Rectangle())
         .onTapGesture {
-            onSelect(station)
-            dismiss()
+            // Сохраняем выбранную станцию
+            let fullText = "\(city) (\(station))"
+            
+            if context == .from {
+                fromCity = fullText
+            } else {
+                toCity = fullText
+            }
+            
+            navigationPath.removeLast(navigationPath.count)
         }
         .listRowSeparator(.hidden)
         .listRowInsets(EdgeInsets(
@@ -163,9 +181,24 @@ struct StationSearchView: View {
 // MARK: - Preview
 
 #Preview {
-    NavigationStack {
-        StationSearchView(city: "Москва") { station in
-            print("Выбрана станция: \(station)")
+    struct PreviewWrapper: View {
+        @State private var navigationPath = NavigationPath()
+        @State private var fromCity = ""
+        @State private var toCity = ""
+        
+        var body: some View {
+            NavigationStack {
+                StationSearchView(
+                    city: "Москва",
+                    initialStation: "",
+                    context: .from,
+                    navigationPath: $navigationPath,
+                    fromCity: $fromCity,
+                    toCity: $toCity
+                )
+            }
         }
     }
+    
+    return PreviewWrapper()
 }

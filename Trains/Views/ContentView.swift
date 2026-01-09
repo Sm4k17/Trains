@@ -98,7 +98,7 @@ func testAllServices() async throws {
     
     // 7. Тест Carrier
     let carrierService = CarrierService(client: client, apikey: apikey)
-    let carrierResponse = try await carrierService.getCarrier(code: "680")
+    let carrierResponse = try await carrierService.getCarrier(code: "203")
     if let carrier = carrierResponse.carrier ?? carrierResponse.carriers?.first {
         print("✈️ Перевозчик: \(carrier.title ?? "неизвестен")")
     }

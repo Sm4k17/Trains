@@ -15,9 +15,6 @@ struct RouteInputSectionView: View {
     @Binding var from: String
     @Binding var to: String
     
-    @State private var isShowingFromSearch = false
-    @State private var isShowingToSearch = false
-    
     // MARK: - Constants
     
     private struct Constants {
@@ -87,8 +84,6 @@ struct RouteInputSectionView: View {
         !to.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
     
-    // MARK: - Body
-    
     var body: some View {
         VStack(spacing: Constants.Spacing.view) {
             ZStack {
@@ -103,17 +98,26 @@ struct RouteInputSectionView: View {
             .frame(height: Constants.Size.viewHeight)
             .padding(.horizontal, Constants.Padding.horizontal)
             
-            if hasBothInputs {
-                searchButton
+            // Резервируем место под кнопку — безопасно для жестов
+            let buttonHeight = Constants.Size.searchButtonHeight
+            ZStack {
+                Rectangle()
+                    .fill(.clear)
+                    .frame(height: buttonHeight)
+                    .allowsHitTesting(false)
+                
+                if hasBothInputs {
+                    searchButton
+                        .transition(.opacity.combined(with: .scale(scale: 0.8)))
+                }
             }
+            .animation(
+                .easeOut(duration: 0.6)
+                .delay(0.05),
+                value: hasBothInputs
+            )
         }
-        .animation(.easeInOut(duration: Constants.Animation.duration), value: hasBothInputs)
-        .fullScreenCover(isPresented: $isShowingFromSearch) {
-            fromSearchView
-        }
-        .fullScreenCover(isPresented: $isShowingToSearch) {
-            toSearchView
-        }
+        .navigationBarBackButtonHidden(true)
     }
     
     // MARK: - UI Components
@@ -139,7 +143,12 @@ struct RouteInputSectionView: View {
     }
     
     private var fromFieldButton: some View {
-        Button { isShowingFromSearch = true } label: {
+        Button {
+            // Переход к поиску города "Откуда"
+            navigationPath.append(
+                AppRoute.citySearch(context: .from, city: extractCity(from: from))
+            )
+        } label: {
             HStack {
                 Text(from.isEmpty ? Constants.Placeholder.from : from)
                     .foregroundColor(from.isEmpty ? Constants.Colors.textField : .ypBlackUniversal)
@@ -153,7 +162,12 @@ struct RouteInputSectionView: View {
     }
     
     private var toFieldButton: some View {
-        Button { isShowingToSearch = true } label: {
+        Button {
+            // Переход к поиску города "Куда"
+            navigationPath.append(
+                AppRoute.citySearch(context: .to, city: extractCity(from: to))
+            )
+        } label: {
             HStack {
                 Text(to.isEmpty ? Constants.Placeholder.to : to)
                     .foregroundColor(to.isEmpty ? Constants.Colors.textField : .ypBlackUniversal)
@@ -186,7 +200,8 @@ struct RouteInputSectionView: View {
     
     private var searchButton: some View {
         Button {
-            navigationPath.append("CarrierList")
+            // Переход к списку перевозчиков
+            navigationPath.append(AppRoute.carrierList(from: from, to: to))
         } label: {
             Text(Constants.Titles.searchButton)
                 .font(.system(size: Constants.FontSize.labelButton, weight: .bold))
@@ -200,27 +215,16 @@ struct RouteInputSectionView: View {
         }
         .buttonStyle(.plain)
         .disabled(!hasBothInputs)
-        .transition(.opacity.combined(with: .scale))
     }
     
-    // MARK: - Search Views
+    // MARK: - Helper Methods
     
-    private var fromSearchView: some View {
-        CitySearchView { city in
-            withAnimation(.easeInOut(duration: 0.2)) {
-                from = city
-            }
-            isShowingFromSearch = false
+    private func extractCity(from text: String) -> String {
+        // Извлекаем название города из строки "Город (Станция)"
+        if let range = text.range(of: " (") {
+            return String(text[..<range.lowerBound])
         }
-    }
-    
-    private var toSearchView: some View {
-        CitySearchView { city in
-            withAnimation(.easeInOut(duration: 0.2)) {
-                to = city
-            }
-            isShowingToSearch = false
-        }
+        return text
     }
 }
 
