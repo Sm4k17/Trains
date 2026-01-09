@@ -38,6 +38,9 @@ struct StoryView: View {
     private let stories: [Story]
     private let configuration: Configuration
     
+    // ДОБАВЛЕНО: Колбэк для уведомления контейнера о завершении группы
+    var onGroupFinished: () -> Void
+    
     @State private var progress: CGFloat = 0
     @State private var timer: Timer.TimerPublisher
     @State private var cancellable: Cancellable?
@@ -45,8 +48,9 @@ struct StoryView: View {
     private let progressBarTopPadding: CGFloat = 28
     private let closeButtonTopPadding: CGFloat = 57
     
-    init(stories: [Story] = Story.all, initialIndex: Int = 0) {
+    init(stories: [Story] = Story.all, initialIndex: Int = 0, onGroupFinished: @escaping () -> Void = {}) {
         self.stories = stories
+        self.onGroupFinished = onGroupFinished
         configuration = Configuration(storiesCount: stories.count)
         timer = Timer.publish(every: configuration.timerTickInterval, on: .main, in: .common)
         
@@ -56,15 +60,14 @@ struct StoryView: View {
     }
     
     var body: some View {
+        // ... (весь UI код ZStack остается без изменений)
         ZStack(alignment: .topTrailing) {
             Color(.systemBackground).ignoresSafeArea()
             
-            // Контент истории
             if let story = currentStory {
                 StoriesContentView(story: story)
             }
             
-            // ЕДИНЫЙ ОБРАБОТЧИК ДЛЯ ТАПОВ И СВАЙПОВ
             Color.clear
                 .contentShape(Rectangle())
                 .gesture(
@@ -73,29 +76,23 @@ struct StoryView: View {
                             let horizontalAmount = value.translation.width
                             let verticalAmount = value.translation.height
                             
-                            // Свайп вниз для закрытия (порог 100 пикселей)
                             if verticalAmount > 100 {
                                 dismiss()
                                 return
                             }
                             
-                            // Если это горизонтальный свайп (перемещение > 50 пикселей)
                             if abs(horizontalAmount) > 50 {
                                 if horizontalAmount < 0 {
-                                    // Свайп влево - следующая история
                                     goToNextStory()
                                 } else {
-                                    // Свайп вправо - предыдущая история
                                     goToPreviousStory()
                                 }
                             } else {
-                                // Если это тап (малое перемещение)
                                 handleTap(at: value.location)
                             }
                         }
                 )
             
-            // Прогресс-бар - ВЕРХНИЙ СЛОЙ
             VStack {
                 ProgressBarView(numberOfSections: stories.count, progress: progress)
                     .frame(height: 4)
@@ -105,13 +102,12 @@ struct StoryView: View {
                 Spacer()
             }
             
-            // Кнопка закрытия - САМЫЙ ВЕРХНИЙ СЛОЙ
             CloseButtonView(action: { dismiss() })
                 .padding(.top, closeButtonTopPadding)
                 .padding(.trailing, 12)
         }
         .onAppear {
-            guard stories.count > 1 else { return }
+            guard stories.count > 0 else { return } // Исправлено: работаем даже если 1 история
             startTimer()
         }
         .onDisappear {
@@ -140,14 +136,11 @@ struct StoryView: View {
         var nextProgress = progress + configuration.progressPerTick
         
         if nextProgress >= 1.0 {
-            // Достигли конца всех историй
+            // Группа закончилась по таймеру
             nextProgress = 1.0
             stopTimer()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                dismiss()
-            }
+            onGroupFinished()
         } else if nextProgress >= CGFloat(currentStoryIndex + 1) / CGFloat(stories.count) {
-            // Переход к следующей истории
             nextProgress = CGFloat(currentStoryIndex + 1) / CGFloat(stories.count)
         }
         
@@ -157,14 +150,10 @@ struct StoryView: View {
     }
     
     private func handleTap(at location: CGPoint) {
-        // Определяем, в какую часть экрана тапнули
         let screenWidth = UIScreen.main.bounds.width
-        
         if location.x > screenWidth * 0.5 {
-            // Тап в правую часть - следующая история
             goToNextStory()
         } else {
-            // Тап в левую часть - предыдущая история
             goToPreviousStory()
         }
     }
@@ -178,8 +167,8 @@ struct StoryView: View {
             }
             restartTimer()
         } else {
-            // Последняя история - закрываем
-            dismiss()
+            // Тап на последней истории группы — идем к следующей группе
+            onGroupFinished()
         }
     }
     

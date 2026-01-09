@@ -7,11 +7,6 @@ struct MainTabView: View {
         case settings
     }
     
-    struct StoryPair: Identifiable {
-        let id = UUID()
-        let stories: [Story]
-    }
-    
     // MARK: - Constants
     private enum Constants {
         static let routesTabActive = "routesTabActive"
@@ -36,9 +31,9 @@ struct MainTabView: View {
     @State private var selectedTab: Tab = .routes
     
     // Stories
-    @State private var activeStoryPair: StoryPair?
     @State private var startIndex = 0
     @State private var seenStoryIndices: Set<Int> = []
+    @State private var isShowingStories = false
     
     // MARK: - Body
     var body: some View {
@@ -59,14 +54,12 @@ struct MainTabView: View {
                             stories: Story.pairs.compactMap { $0.first },
                             seenIndices: seenStoryIndices
                         ) { groupIndex in
-                            
-                            seenStoryIndices.insert(groupIndex)
-                            
-                            guard groupIndex < Story.pairs.count else { return }
-                            let group = Story.pairs[groupIndex]
-                            
-                            activeStoryPair = StoryPair(stories: group)
-                            startIndex = 0
+                            print("🔵 StoriesStripView tapped: groupIndex = \(groupIndex)")
+                            print("🔵 Setting startIndex from \(self.startIndex) to \(groupIndex)")
+                            self.startIndex = groupIndex
+                            print("🔵 Setting isShowingStories to true")
+                            self.isShowingStories = true
+                            print("🔵 After setting: startIndex = \(self.startIndex), isShowingStories = \(self.isShowingStories)")
                         }
                         .padding(.top, Constants.storiesTopPadding)
                         .padding(.bottom, Constants.gapToSearchBlock)
@@ -115,8 +108,27 @@ struct MainTabView: View {
                     .offset(y: -49)
             }
         }
-        .fullScreenCover(item: $activeStoryPair) { pair in
-            StoryView(stories: pair.stories, initialIndex: startIndex)
+        .fullScreenCover(isPresented: $isShowingStories) {
+            StoriesContainerView(
+                groups: Story.pairs,
+                startIndex: startIndex,
+                onClose: {
+                    print("🔴 Closing stories")
+                    isShowingStories = false
+                },
+                onStorySeen: { index in
+                    print("✅ Story seen: \(index)")
+                    seenStoryIndices.insert(index)
+                }
+            )
+            .id(startIndex)
+        }
+        .onChange(of: isShowingStories) { oldValue, newValue in
+            if newValue {
+                print("🟢 isShowingStories changed to true, startIndex = \(startIndex)")
+            } else {
+                print("🟡 isShowingStories changed to false")
+            }
         }
     }
     
