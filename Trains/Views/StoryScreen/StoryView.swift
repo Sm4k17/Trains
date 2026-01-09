@@ -38,8 +38,9 @@ struct StoryView: View {
     private let stories: [Story]
     private let configuration: Configuration
     
-    // ДОБАВЛЕНО: Колбэк для уведомления контейнера о завершении группы
-    var onGroupFinished: () -> Void
+    // Изменено: два колбэка вместо одного
+    var onGroupFinished: () -> Void  // Для перехода вперед
+    var onPreviousGroupRequested: (() -> Void)? = nil  // Для перехода назад
     
     @State private var progress: CGFloat = 0
     @State private var timer: Timer.TimerPublisher
@@ -48,9 +49,13 @@ struct StoryView: View {
     private let progressBarTopPadding: CGFloat = 28
     private let closeButtonTopPadding: CGFloat = 57
     
-    init(stories: [Story] = Story.all, initialIndex: Int = 0, onGroupFinished: @escaping () -> Void = {}) {
+    init(stories: [Story] = Story.all,
+         initialIndex: Int = 0,
+         onGroupFinished: @escaping () -> Void = {},
+         onPreviousGroupRequested: (() -> Void)? = nil) {
         self.stories = stories
         self.onGroupFinished = onGroupFinished
+        self.onPreviousGroupRequested = onPreviousGroupRequested
         configuration = Configuration(storiesCount: stories.count)
         timer = Timer.publish(every: configuration.timerTickInterval, on: .main, in: .common)
         
@@ -180,6 +185,9 @@ struct StoryView: View {
                 progress = CGFloat(prevIndex) / CGFloat(stories.count)
             }
             restartTimer()
+        } else {
+            // Тап/свайп на первой истории группы — запрашиваем предыдущую группу
+            onPreviousGroupRequested?()
         }
     }
 }

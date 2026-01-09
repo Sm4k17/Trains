@@ -25,23 +25,20 @@ struct StoriesContainerView: View {
         self.startIndex = startIndex
         self.onClose = onClose
         self.onStorySeen = onStorySeen
-        // Исправленная инициализация State через начальное значение
         _currentIndex = State(initialValue: startIndex)
     }
     
     var body: some View {
-        // StoryView теперь принимает onGroupFinished, который вызывает наш переход
         StoryView(
             stories: groups[currentIndex],
-            onGroupFinished: goToNextGroup
+            onGroupFinished: goToNextGroup,
+            onPreviousGroupRequested: goToPreviousGroup
         )
-        .id(currentIndex) // Это заставляет SwiftUI пересоздавать StoryView при смене группы
+        .id(currentIndex)
         .onAppear {
-            // Отмечаем начальную группу как просмотренную
             onStorySeen(currentIndex)
         }
         .onDisappear {
-            // Если экран закрыт смахиванием вниз или кнопкой Close в StoryView
             onClose()
         }
     }
@@ -54,8 +51,22 @@ struct StoriesContainerView: View {
             currentIndex = nextIndex
             onStorySeen(nextIndex)
         } else {
-            // Если это была последняя группа из всех 6 — закрываем контейнер
+            // Если это была последняя группа — закрываем контейнер
             onClose()
+        }
+    }
+    
+    private func goToPreviousGroup() {
+        let prevIndex = currentIndex - 1
+        
+        if prevIndex >= 0 {
+            // Если есть предыдущая группа, переходим к ней
+            currentIndex = prevIndex
+            onStorySeen(prevIndex)
+        } else {
+            // Если это первая группа — остаемся на ней
+            // Или можно закрыть контейнер, если хотим
+            // onClose()
         }
     }
 }
