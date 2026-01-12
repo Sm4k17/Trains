@@ -42,6 +42,7 @@
 		F1D715C12F0FD1B000C825EF /* ContactInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D715C02F0FD1B000C825EF /* ContactInfo.swift */; };
 		F1D7169F2F106E7800C825EF /* StoriesContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D7169E2F106E7800C825EF /* StoriesContainerView.swift */; };
 		F1D716CC2F15574800C825EF /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D716CB2F15574800C825EF /* SettingsViewModel.swift */; };
+		F1D716D82F155E9A00C825EF /* MainTabViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D716D72F155E9A00C825EF /* MainTabViewModel.swift */; };
 		F1E7C62C2EF96B4400814681 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F1E7C62B2EF96B4400814681 /* LaunchScreen.storyboard */; };
 		F1E7C6C52EFBFC0C00814681 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6C42EFBFC0C00814681 /* AppState.swift */; };
 		F1E7C6D02EFC2A6B00814681 /* ErrorState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6CF2EFC2A6B00814681 /* ErrorState.swift */; };
@@ -94,6 +95,7 @@
 		F1D7160D2F10288A00C825EF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		F1D7169E2F106E7800C825EF /* StoriesContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesContainerView.swift; sourceTree = "<group>"; };
 		F1D716CB2F15574800C825EF /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
+		F1D716D72F155E9A00C825EF /* MainTabViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabViewModel.swift; sourceTree = "<group>"; };
 		F1E7C62B2EF96B4400814681 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F1E7C6C42EFBFC0C00814681 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		F1E7C6CF2EFC2A6B00814681 /* ErrorState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorState.swift; sourceTree = "<group>"; };
@@ -220,6 +222,7 @@
 				F1D7152F2F0CD94800C825EF /* AppRoute.swift */,
 				F1D715412F0CE2B100C825EF /* BackButton.swift */,
 				F1D716CB2F15574800C825EF /* SettingsViewModel.swift */,
+				F1D716D72F155E9A00C825EF /* MainTabViewModel.swift */,
 			);
 			path = Main;
 			sourceTree = "<group>";
@@ -386,6 +389,7 @@
 				F1D7151A2F0CC40F00C825EF /* AppStorageKeys.swift in Sources */,
 				F1E7C6D82EFC2CC400814681 /* GlobalErrorPresenter.swift in Sources */,
 				F1D715632F0CFCA800C825EF /* MaskFragmentView.swift in Sources */,
+				F1D716D82F155E9A00C825EF /* MainTabViewModel.swift in Sources */,
 				F1D715792F0CFF0C00C825EF /* StoryCardView.swift in Sources */,
 				F1D714942F0C973700C825EF /* CarrierInfoViewModel.swift in Sources */,
 				F19E1E5D2ECDA50F00183F02 /* NearestStationsService.swift in Sources */,
