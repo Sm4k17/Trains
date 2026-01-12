@@ -133,7 +133,7 @@ struct StationSearchView: View {
                 toCity = fullText
             }
             
-            navigationPath.removeLast(navigationPath.count)
+            navigationPath = NavigationPath()
         }
         .listRowSeparator(.hidden)
         .listRowInsets(EdgeInsets(
