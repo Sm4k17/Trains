@@ -9,9 +9,8 @@ import SwiftUI
 
 struct SettingsView: View {
     
-    @AppStorage(AppStorageKeys.isDarkThemeEnabled) private var isDarkThemeEnabled = false
-    @AppStorage(AppStorageKeys.didBootstrapTheme) private var didBootstrapTheme = false
-    
+    // MARK: - Properties
+    @State private var viewModel = SettingsViewModel()
     @Binding var navigationPath: NavigationPath
     
     private enum Theme {
@@ -20,43 +19,13 @@ struct SettingsView: View {
         static let thumbColor: Color = .white
     }
     
+    // MARK: - Body
     var body: some View {
         ZStack {
             Color(.systemBackground).ignoresSafeArea()
             List {
-                HStack {
-                    Text("Темная тема")
-                        .font(.system(size: 17, weight: .regular))
-                        .foregroundColor(.ypBlack)
-                    Spacer()
-                    Toggle("", isOn: $isDarkThemeEnabled)
-                        .labelsHidden()
-                        .tint(Theme.onColor)
-                        .onChange(of: isDarkThemeEnabled) { _, _ in
-                            didBootstrapTheme = true
-                        }
-                }
-                .listRowInsets(.init(top: 19, leading: 16, bottom: 19, trailing: 16))
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
-                .padding(.top, 24)
-                
-                Button {
-                    navigationPath.append(AppRoute.userAgreement)
-                } label: {
-                    HStack {
-                        Text("Пользовательское соглашение")
-                            .font(.system(size: 17, weight: .regular))
-                            .foregroundColor(.ypBlack)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .frame(width: 24.0, height: 24.0)
-                            .foregroundColor(.ypBlack)
-                    }
-                }
-                .listRowInsets(.init(top: 12, leading: 16, bottom: 12, trailing: 16))
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
+                themeSection
+                userAgreementSection
             }
             .listStyle(.plain)
             .scrollIndicators(.hidden)
@@ -70,50 +39,60 @@ struct SettingsView: View {
         }
         
         .safeAreaInset(edge: .bottom) {
-            VStack(spacing: 6) {
-                Text("Приложение использует API «Яндекс.Расписания»")
-                    .font(.system(size: 12, weight: .regular))
-                    .foregroundColor(.ypBlack)
-                    .multilineTextAlignment(.center)
-                Text("Версия 1.0 (beta)")
-                    .font(.system(size: 12, weight: .regular))
-                    .foregroundColor(.ypBlack)
-                    .multilineTextAlignment(.center)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal, 16)
-            .padding(.bottom, 8)
-            .background(Color(.systemBackground))
-        }
-    }
-}
-
-#Preview {
-    struct PreviewWrapper: View {
-        @State private var navigationPath = NavigationPath()
-        
-        var body: some View {
-            NavigationStack {
-                SettingsView(navigationPath: $navigationPath)
-            }
-            .preferredColorScheme(.light)
+            footerSection
         }
     }
     
-    return PreviewWrapper()
-}
-
-#Preview("Dark") {
-    struct PreviewWrapper: View {
-        @State private var navigationPath = NavigationPath()
-        
-        var body: some View {
-            NavigationStack {
-                SettingsView(navigationPath: $navigationPath)
-            }
-            .preferredColorScheme(.dark)
+    // MARK: - Subviews
+    private var themeSection: some View {
+        HStack {
+            Text("Темная тема")
+                .font(.system(size: 17, weight: .regular))
+                .foregroundColor(.ypBlack)
+            Spacer()
+            Toggle("", isOn: $viewModel.isDarkThemeEnabled)
+                .labelsHidden()
+                .tint(Theme.onColor)
         }
+        .listRowInsets(.init(top: 19, leading: 16, bottom: 19, trailing: 16))
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
+        .padding(.top, 24)
     }
     
-    return PreviewWrapper()
+    private var userAgreementSection: some View {
+        Button {
+            navigationPath.append(AppRoute.userAgreement)
+        } label: {
+            HStack {
+                Text("Пользовательское соглашение")
+                    .font(.system(size: 17, weight: .regular))
+                    .foregroundColor(.ypBlack)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .frame(width: 24.0, height: 24.0)
+                    .foregroundColor(.ypBlack)
+            }
+        }
+        .listRowInsets(.init(top: 12, leading: 16, bottom: 12, trailing: 16))
+        .listRowBackground(Color.clear)
+        .listRowSeparator(.hidden)
+    }
+    
+    private var footerSection: some View {
+        VStack(spacing: 6) {
+            Text(viewModel.apiInfoText)
+                .font(.system(size: 12, weight: .regular))
+                .foregroundColor(.ypBlack)
+                .multilineTextAlignment(.center)
+            Text(viewModel.fullVersionString)
+                .font(.system(size: 12, weight: .regular))
+                .foregroundColor(.ypBlack)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 8)
+        .background(Color(.systemBackground))
+    }
 }
