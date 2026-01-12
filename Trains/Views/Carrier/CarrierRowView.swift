@@ -46,7 +46,7 @@ struct CarrierTableRow: View {
     
     // MARK: - Properties
     
-    let viewModel: CarrierRowModel
+    let viewModel: CarrierRowViewModel
     
     // MARK: - Body
     
@@ -164,7 +164,7 @@ struct CarrierTableRow: View {
 
 #Preview {
     CarrierTableRow(
-        viewModel: CarrierRowModel(
+        viewModel: CarrierRowViewModel(
             carrierName: "РЖД",
             logoSystemName: "train.side.front.car",
             carrierCode: "203",

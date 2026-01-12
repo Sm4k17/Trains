@@ -26,6 +26,7 @@ struct CarrierListView: View {
             static let title: CGFloat = 24
             static let bottomButton: CGFloat = 17
             static let emptyState: CGFloat = 24
+            static let error: CGFloat = 16
         }
         enum Size {
             static let bottomButtonHeight: CGFloat = 60
@@ -37,19 +38,18 @@ struct CarrierListView: View {
     
     // MARK: - Properties
     
+    @State private var viewModel: CarrierListViewModel
     @Binding var headerFrom: String
     @Binding var headerTo: String
     @Binding var navigationPath: NavigationPath
     
-    @State private var isLoading = true
+    // MARK: - Initialization
     
-    // MARK: - Сервис
-    
-    private let carrierService: CarrierServiceProtocol
-    
-    // MARK: - Init
-    
-    init(headerFrom: Binding<String>, headerTo: Binding<String>, navigationPath: Binding<NavigationPath>) {
+    init(
+        headerFrom: Binding<String>,
+        headerTo: Binding<String>,
+        navigationPath: Binding<NavigationPath>
+    ) {
         self._headerFrom = headerFrom
         self._headerTo = headerTo
         self._navigationPath = navigationPath
@@ -60,32 +60,14 @@ struct CarrierListView: View {
             transport: URLSessionTransport()
         )
         let apikey = "a63c3bd4-fd50-47a4-a56b-def74416d733"
-        self.carrierService = CarrierService(client: client, apikey: apikey)
+        let carrierService = CarrierService(client: client, apikey: apikey)
+        
+        self._viewModel = State(initialValue: CarrierListViewModel(
+            fromCity: headerFrom.wrappedValue,
+            toCity: headerTo.wrappedValue,
+            carrierService: carrierService
+        ))
     }
-    
-    // MARK: - Mock Data
-    
-    private let mockItems = [
-        (carrierName: "РЖД", logoSystemName: "train.side.front.car", carrierCode: "680",
-         dateText: "14 января", departTime: "22:30", arriveTime: "08:15",
-         durationText: "20 часов", note: "С пересадкой в Костроме"),
-        
-        (carrierName: "ФГК", logoSystemName: "box.truck.fill", carrierCode: "104",
-         dateText: "15 января", departTime: "01:15", arriveTime: "09:00",
-         durationText: "9 часов", note: nil),
-        
-        (carrierName: "S7 Airlines", logoSystemName: "airplane", carrierCode: "S7",
-         dateText: "15 января", departTime: "12:30", arriveTime: "21:00",
-         durationText: "9 часов", note: "Прямой рейс"),
-        
-        (carrierName: "Аэрофлот", logoSystemName: "airplane", carrierCode: "SU",
-         dateText: "16 января", departTime: "08:45", arriveTime: "11:30",
-         durationText: "2 часа 45 минут", note: nil),
-        
-        (carrierName: "ТрансКонтейнер", logoSystemName: "shippingbox.fill", carrierCode: "113",
-         dateText: "17 января", departTime: "14:00", arriveTime: "06:00+1",
-         durationText: "16 часов", note: "Грузовой поезд")
-    ]
     
     // MARK: - Body
     
@@ -94,15 +76,17 @@ struct CarrierListView: View {
             Color(.systemBackground).ignoresSafeArea()
             
             VStack(alignment: .leading, spacing: Constants.Spacing.view) {
-                Text("\(headerFrom) → \(headerTo)")
+                Text(viewModel.headerTitle)
                     .font(.system(size: Constants.FontSize.title, weight: .bold))
                     .foregroundColor(.ypBlack)
                     .padding(.horizontal, Constants.Spacing.horizontal)
                     .padding(.top, Constants.Spacing.titleTop)
                 
-                if isLoading {
+                if viewModel.isLoading {
                     loadingView
-                } else if mockItems.isEmpty {
+                } else if let error = viewModel.errorMessage {
+                    errorView(error)
+                } else if viewModel.showEmptyState {
                     emptyStateView
                 } else {
                     listView
@@ -114,8 +98,7 @@ struct CarrierListView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 BackButton {
-                    // Возвращаемся к RouteInputSectionView
-                    navigationPath.removeLast(navigationPath.count)
+                    navigationPath.removeLast()
                 }
             }
         }
@@ -124,7 +107,7 @@ struct CarrierListView: View {
             bottomButtonView
         }
         .task {
-            await loadData()
+            await viewModel.loadCarriers()
         }
     }
     
@@ -133,6 +116,25 @@ struct CarrierListView: View {
     private var loadingView: some View {
         ProgressView()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+    
+    private func errorView(_ message: String) -> some View {
+        VStack(spacing: 12) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 48))
+                .foregroundColor(.ypRed)
+            
+            Text("Ошибка")
+                .font(.system(size: Constants.FontSize.error, weight: .semibold))
+                .foregroundColor(.ypBlack)
+            
+            Text(message)
+                .font(.system(size: Constants.FontSize.error, weight: .regular))
+                .foregroundColor(.ypGray)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     private var emptyStateView: some View {
@@ -147,45 +149,36 @@ struct CarrierListView: View {
     }
     
     private var listView: some View {
-        List(0..<mockItems.count, id: \.self) { index in
-            let item = mockItems[index]
+        List(viewModel.carriers.indices, id: \.self) { index in
+            let carrier = viewModel.carriers[index]
             
             Button {
-                // Переход к информации о перевозчике
-                navigationPath.append(
-                    AppRoute.carrierInfo(
-                        carrierCode: item.carrierCode,
-                        logoAssetName: item.logoSystemName
+                if let info = viewModel.getCarrierInfo(for: index) {
+                    navigationPath.append(
+                        AppRoute.carrierInfo(
+                            carrierCode: info.code,
+                            logoAssetName: info.logoName
+                        )
                     )
-                )
+                }
             } label: {
-                CarrierTableRow(
-                    viewModel: CarrierRowModel(
-                        carrierName: item.carrierName,
-                        logoSystemName: item.logoSystemName,
-                        carrierCode: item.carrierCode,
-                        dateText: item.dateText,
-                        departTime: item.departTime,
-                        arriveTime: item.arriveTime,
-                        durationText: item.durationText,
-                        note: item.note
-                    )
-                )
+                CarrierTableRow(viewModel: carrier)
             }
             .listRowSeparator(.hidden)
             .listRowBackground(Color.clear)
-            .listRowInsets(.init(top: Constants.Spacing.rowVerticalInset,
-                                 leading: Constants.Spacing.rowHorizontalInset,
-                                 bottom: Constants.Spacing.rowVerticalInset,
-                                 trailing: Constants.Spacing.rowHorizontalInset))
+            .listRowInsets(.init(
+                top: Constants.Spacing.rowVerticalInset,
+                leading: Constants.Spacing.rowHorizontalInset,
+                bottom: Constants.Spacing.rowVerticalInset,
+                trailing: Constants.Spacing.rowHorizontalInset
+            ))
         }
         .listStyle(.plain)
         .scrollIndicators(.hidden)
         .scrollContentBackground(.hidden)
         .listSectionSeparator(.hidden, edges: .all)
         .listRowSeparator(.hidden, edges: .all)
-        .contentMargins(.bottom, Constants.Spacing.listBottom,
-                        for: .scrollContent)
+        .contentMargins(.bottom, Constants.Spacing.listBottom, for: .scrollContent)
     }
     
     // MARK: - UI Components
@@ -204,15 +197,6 @@ struct CarrierListView: View {
         .padding(.horizontal, Constants.Spacing.horizontal)
         .padding(.bottom, Constants.Spacing.bottom)
         .background(Color(.systemBackground))
-    }
-    
-    // MARK: - Private Methods
-    
-    private func loadData() async {
-        // Имитация загрузки данных
-        isLoading = true
-        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 секунды
-        isLoading = false
     }
 }
 

@@ -8,7 +8,39 @@
 import Foundation
 
 struct ContactInfo {
-    let phoneNumbers: [String]
-    let emails: [String]
+    let phoneNumbers: [PhoneNumber]
+    let emails: [Email]
     let cleanText: String
+    
+    // MARK: - Nested Types
+    
+    struct PhoneNumber: Hashable {
+        let rawValue: String
+        let formattedValue: String
+        
+        init(rawValue: String) {
+            self.rawValue = rawValue
+            self.formattedValue = ContactFormatter.formatPhoneNumber(rawValue)
+        }
+    }
+    
+    struct Email: Hashable {
+        let rawValue: String
+        let url: URL?
+        
+        init(rawValue: String) {
+            self.rawValue = rawValue
+            self.url = URL(string: "mailto:\(rawValue)")
+        }
+    }
+    
+    // MARK: - Computed Properties
+    
+    var firstPhoneNumber: PhoneNumber? {
+        phoneNumbers.first
+    }
+    
+    var firstEmail: Email? {
+        emails.first
+    }
 }

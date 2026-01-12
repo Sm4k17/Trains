@@ -22,6 +22,8 @@ struct CarrierInfoView: View {
         enum Size {
             static let logoCardHeight: CGFloat = 104
             static let logoCorner: CGFloat = 24
+            static let logoMaxHeight: CGFloat = 80
+            static let logoHorizontalPadding: CGFloat = 24
         }
         
         enum FontSize {
@@ -42,17 +44,11 @@ struct CarrierInfoView: View {
     @Binding var navigationPath: NavigationPath
     @State private var viewModel: CarrierInfoViewModel
     
-    private let code: String
-    private let logoAssetName: String?
-    
     // MARK: - Init
     
     init(code: String, logoAssetName: String? = nil, navigationPath: Binding<NavigationPath>) {
-        self.code = code
-        self.logoAssetName = logoAssetName
         self._navigationPath = navigationPath
         
-        // Создаем сервис внутри
         let client = Client(
             serverURL: try! Servers.Server1.url(),
             transport: URLSessionTransport()
@@ -60,7 +56,10 @@ struct CarrierInfoView: View {
         let apikey = "a63c3bd4-fd50-47a4-a56b-def74416d733"
         let service = CarrierService(client: client, apikey: apikey)
         
-        self._viewModel = State(initialValue: CarrierInfoViewModel(code: code, service: service))
+        self._viewModel = State(initialValue: CarrierInfoViewModel(
+            code: code,
+            service: service
+        ))
     }
     
     // MARK: - Body
@@ -76,7 +75,6 @@ struct CarrierInfoView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 BackButton {
-                    // Возвращаемся к CarrierListView
                     navigationPath.removeLast()
                 }
             }
@@ -89,16 +87,17 @@ struct CarrierInfoView: View {
     
     // MARK: - Content Views
     
-    @ViewBuilder private var content: some View {
+    @ViewBuilder
+    private var content: some View {
         switch viewModel.state {
         case .idle, .loading:
             loadingView
             
-        case .failed:
-            EmptyView()
+        case .failed(let error):
+            errorView(error: error)
             
-        case .loaded(let resp):
-            loadedView(carrier: resp.carrier)
+        case .loaded(let carrierData):
+            loadedView(carrierData: carrierData)
         }
     }
     
@@ -107,23 +106,56 @@ struct CarrierInfoView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
-    private func loadedView(carrier: Components.Schemas.Carrier?) -> some View {
+    private func errorView(error: Error) -> some View {
+        VStack(spacing: 16) {
+            Spacer()
+            
+            VStack(spacing: 8) {
+                Image(systemName: "exclamationmark.triangle")
+                    .font(.system(size: 48))
+                    .foregroundColor(.ypRed)
+                
+                Text("Ошибка загрузки")
+                    .font(.headline)
+                    .foregroundColor(.ypBlack)
+                
+                Text(error.localizedDescription)
+                    .font(.subheadline)
+                    .foregroundColor(.ypGray)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            }
+            
+            Button("Повторить") {
+                Task {
+                    await viewModel.retry()
+                }
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.ypBlue)
+            
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+    
+    private func loadedView(carrierData: CarrierInfoViewModel.CarrierDisplayData) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Constants.Spacing.vstack) {
-                makeLogoCard(urlString: carrier?.logo)
+                logoCard(logoURL: carrierData.logoURL)
                 
-                Text(carrier?.title ?? "Перевозчик")
+                Text(carrierData.title)
                     .font(.system(size: Constants.FontSize.title, weight: .bold))
                     .foregroundColor(.ypBlack)
                 
-                // Email - проверяем сначала основное поле, затем извлекаем из contacts
+                // Email поле
                 makeField(title: "E-mail") {
-                    emailContent(for: carrier)
+                    emailContent(email: carrierData.firstEmail)
                 }
                 
-                // Phone - проверяем и phone и contacts
+                // Phone поле
                 makeField(title: "Телефон") {
-                    phoneContent(for: carrier)
+                    phoneContent(phoneNumber: carrierData.firstPhoneNumber)
                 }
             }
             .padding(Constants.Spacing.contentPadding)
@@ -134,52 +166,28 @@ struct CarrierInfoView: View {
     // MARK: - Email Content
     
     @ViewBuilder
-    private func emailContent(for carrier: Components.Schemas.Carrier?) -> some View {
-        // 1. Проверяем основное поле email
-        if let email = carrier?.email, !email.isEmpty {
-            makeEmailLink(email)
-        }
-        // 2. Если нет, извлекаем email из contacts
-        else if let contacts = carrier?.contacts, !contacts.isEmpty {
-            let contactInfo = ContactParser.parseContacts(contacts)
-            if let firstEmail = contactInfo.emails.first {
-                makeEmailLink(firstEmail)
+    private func emailContent(email: ContactInfo.Email?) -> some View {
+        if let email = email {
+            if let url = email.url {
+                Link(email.rawValue, destination: url)
             } else {
-                Text("Не указан")
-                    .foregroundStyle(.secondary)
+                Text(email.rawValue)
             }
         } else {
             Text("Не указан")
                 .foregroundStyle(.secondary)
-        }
-    }
-    
-    private func makeEmailLink(_ email: String) -> some View {
-        if let url = URL(string: "mailto:\(email)") {
-            return AnyView(Link(email, destination: url))
-        } else {
-            return AnyView(Text(email))
         }
     }
     
     // MARK: - Phone Content
     
     @ViewBuilder
-    private func phoneContent(for carrier: Components.Schemas.Carrier?) -> some View {
-        // 1. Проверяем основное поле phone
-        if let phone = carrier?.phone, !phone.isEmpty {
-            makePhoneLink(phone, displayText: formatPhoneForDisplay(phone))
-        }
-        // 2. Если нет, извлекаем телефон из contacts
-        else if let contacts = carrier?.contacts, !contacts.isEmpty {
-            let contactInfo = ContactParser.parseContacts(contacts)
-            if let firstPhone = contactInfo.phoneNumbers.first {
-                // Показываем только найденный телефон для ссылки
-                makePhoneLink(firstPhone, displayText: formatPhoneForDisplay(firstPhone))
+    private func phoneContent(phoneNumber: ContactInfo.PhoneNumber?) -> some View {
+        if let phoneNumber = phoneNumber {
+            if let url = ContactFormatter.createPhoneURL(phoneNumber.rawValue) {
+                Link(phoneNumber.formattedValue, destination: url)
             } else {
-                // Если телефона нет, показываем "Не указан"
-                Text("Не указан")
-                    .foregroundStyle(.secondary)
+                Text(phoneNumber.formattedValue)
             }
         } else {
             Text("Не указан")
@@ -187,72 +195,40 @@ struct CarrierInfoView: View {
         }
     }
     
-    private func makePhoneLink(_ phone: String, displayText: String) -> some View {
-        let digitsOnly = phone.filter { $0.isNumber || $0 == "+" }
-        if !digitsOnly.isEmpty, let url = URL(string: "tel:\(digitsOnly)") {
-            return AnyView(Link(displayText, destination: url))
-        } else {
-            return AnyView(Text(displayText))
-        }
-    }
-    
-    // Форматирование телефона для отображения
-    private func formatPhoneForDisplay(_ phone: String) -> String {
-        let cleanedPhone = phone.filter { $0.isNumber || $0 == "+" }
-        
-        // Форматируем российские номера
-        if cleanedPhone.hasPrefix("+7") {
-            let digits = String(cleanedPhone.dropFirst(2))
-            if digits.count == 10 {
-                // Формат: +7 (XXX) XXX-XX-XX
-                let areaCode = digits.prefix(3)
-                let firstPart = digits.dropFirst(3).prefix(3)
-                let secondPart = digits.dropFirst(6).prefix(2)
-                let thirdPart = digits.dropFirst(8).prefix(2)
-                return "+7 (\(areaCode)) \(firstPart)-\(secondPart)-\(thirdPart)"
-            }
-        }
-        
-        // Форматируем 8-800 номера
-        if cleanedPhone.hasPrefix("8800") || cleanedPhone.hasPrefix("+7800") {
-            let baseNumber = cleanedPhone.hasPrefix("+7800") ?
-            String(cleanedPhone.dropFirst(4)) : String(cleanedPhone.dropFirst(4))
-            
-            if baseNumber.count == 7 {
-                let part1 = baseNumber.prefix(3)
-                let part2 = baseNumber.dropFirst(3).prefix(2)
-                let part3 = baseNumber.dropFirst(5).prefix(2)
-                return "8-800-\(part1)-\(part2)-\(part3)"
-            }
-        }
-        
-        // Возвращаем оригинальный формат, если не подходит под шаблоны
-        return phone
-    }
-    
     // MARK: - Logo Card
     
-    private func makeLogoCard(urlString: String?) -> some View {
+    private func logoCard(logoURL: String?) -> some View {
         RoundedRectangle(cornerRadius: Constants.Size.logoCorner, style: .continuous)
             .fill(Color.ypWhiteUniversal)
             .frame(height: Constants.Size.logoCardHeight)
             .overlay {
-                logoContent(urlString: urlString)
+                logoContent(logoURL: logoURL)
             }
     }
     
     @ViewBuilder
-    private func logoContent(urlString: String?) -> some View {
-        if let s = nonEmpty(urlString) {
-            let fullUrlString = s.hasPrefix("//") ? "https:" + s : s
+    private func logoContent(logoURL: String?) -> some View {
+        if let urlString = logoURL?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !urlString.isEmpty {
+            let fullUrlString = urlString.hasPrefix("//") ? "https:" + urlString : urlString
+            
             if let url = URL(string: fullUrlString) {
-                AsyncImage(url: url) { image in
-                    image.resizable().scaledToFit()
-                } placeholder: {
-                    ProgressView()
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .empty:
+                        ProgressView()
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxHeight: Constants.Size.logoMaxHeight)
+                    case .failure:
+                        fallbackLogo
+                    @unknown default:
+                        EmptyView()
+                    }
                 }
-                .frame(maxHeight: 80)
-                .padding(.horizontal, 24)
+                .padding(.horizontal, Constants.Size.logoHorizontalPadding)
             } else {
                 fallbackLogo
             }
@@ -265,9 +241,9 @@ struct CarrierInfoView: View {
         Image(systemName: Constants.Images.System.fallback)
             .resizable()
             .scaledToFit()
-            .frame(maxHeight: 80)
+            .frame(maxHeight: Constants.Size.logoMaxHeight)
             .foregroundColor(.ypGray)
-            .padding(.horizontal, 24)
+            .padding(.horizontal, Constants.Size.logoHorizontalPadding)
     }
     
     // MARK: - Field Views
@@ -277,17 +253,11 @@ struct CarrierInfoView: View {
             Text(title)
                 .font(.system(size: Constants.FontSize.fieldTitle, weight: .regular))
                 .foregroundColor(.ypBlack)
+            
             content()
                 .font(.system(size: Constants.FontSize.fieldValue, weight: .regular))
                 .foregroundColor(.ypBlue)
         }
-    }
-    
-    // MARK: - Helper Methods
-    
-    private func nonEmpty(_ s: String?) -> String? {
-        guard let s = s?.trimmingCharacters(in: .whitespacesAndNewlines), !s.isEmpty else { return nil }
-        return s
     }
 }
 
@@ -299,14 +269,10 @@ struct CarrierInfoView: View {
         
         var body: some View {
             NavigationStack {
-                let client = Client(
-                    serverURL: try! Servers.Server1.url(),
-                    transport: URLSessionTransport()
+                CarrierInfoView(
+                    code: "203",
+                    navigationPath: $navigationPath
                 )
-                let apikey = "a63c3bd4-fd50-47a4-a56b-def74416d733"
-                let carrierService = CarrierService(client: client, apikey: apikey)
-                
-                CarrierInfoView(code: "203", logoAssetName: "rzd", navigationPath: $navigationPath)
             }
         }
     }

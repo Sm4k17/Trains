@@ -138,7 +138,7 @@ struct MainTabView: View {
             )
             
         case .userAgreement:
-            UserAgreementWebScreen()
+            UserAgreementWebScreen(navigationPath: navigationPath)
                 .toolbar(.hidden, for: .tabBar)
         }
     }
@@ -152,7 +152,7 @@ struct MainTabView: View {
     ) -> some View {
         switch route {
         case .userAgreement:
-            UserAgreementWebScreen()
+            UserAgreementWebScreen(navigationPath: navigationPath)
                 .toolbar(.hidden, for: .tabBar)
             
         default:

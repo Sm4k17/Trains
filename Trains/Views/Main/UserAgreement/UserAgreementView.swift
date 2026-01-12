@@ -69,8 +69,12 @@ struct UserAgreementView: UIViewRepresentable {
 }
 
 struct UserAgreementWebScreen: View {
-    @Environment(\.dismiss) private var dismiss
+    @Binding var navigationPath: NavigationPath
     private let urlString = "https://yandex.ru/legal/timetable_termsofuse/ru/"
+    
+    init(navigationPath: Binding<NavigationPath>) {
+        self._navigationPath = navigationPath
+    }
     
     var body: some View {
         Group {
@@ -86,7 +90,9 @@ struct UserAgreementWebScreen: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                BackButton { dismiss() }
+                BackButton {
+                    navigationPath.removeLast()
+                }
             }
             ToolbarItem(placement: .principal) {
                 Text("Пользовательское соглашение")
@@ -95,4 +101,20 @@ struct UserAgreementWebScreen: View {
             }
         }
     }
+}
+
+// MARK: - Preview
+
+#Preview {
+    struct PreviewWrapper: View {
+        @State private var navigationPath = NavigationPath()
+        
+        var body: some View {
+            NavigationStack {
+                UserAgreementWebScreen(navigationPath: $navigationPath)
+            }
+        }
+    }
+    
+    return PreviewWrapper()
 }

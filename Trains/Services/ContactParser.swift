@@ -6,8 +6,13 @@
 //
 
 import Foundation
+import OSLog
 
 final class ContactParser {
+    
+    // MARK: - Logger
+    
+    private static let logger = Logger(subsystem: "com.trains.app", category: "ContactParser")
     
     // MARK: - Main Parse Function
     
@@ -16,9 +21,11 @@ final class ContactParser {
         let phoneNumbers = extractPhoneNumbers(from: cleanText)
         let emails = extractEmails(from: cleanText)
         
+        logger.debug("Parsed contacts: \(phoneNumbers.count) phones, \(emails.count) emails")
+        
         return ContactInfo(
-            phoneNumbers: phoneNumbers,
-            emails: emails,
+            phoneNumbers: phoneNumbers.map { ContactInfo.PhoneNumber(rawValue: $0) },
+            emails: emails.map { ContactInfo.Email(rawValue: $0) },
             cleanText: cleanText
         )
     }
@@ -26,33 +33,9 @@ final class ContactParser {
     // MARK: - Phone Number Parsing
     
     private static func extractPhoneNumbers(from text: String) -> [String] {
-        var phones: [String] = []
+        var phones: Set<String> = []
         
-        // Международные форматы
-        let patterns = [
-            // Международный: +X XXX XXX XXXX
-            "\\+[0-9]{1,3}[\\s-]?\\(?[0-9]{1,5}\\)?[\\s-]?[0-9]{1,4}[\\s-]?[0-9]{1,4}[\\s-]?[0-9]{1,9}",
-            
-            // Российские
-            "8[\\s-]?800[\\s-]?[0-9]{3}[\\s-]?[0-9]{3}[\\s-]?[0-9]{1}", // 8-800-xxx-xxx-x (для S7: 8-800-200-000-7)
-            "8[\\s-]?800[\\s-]?[0-9]{3}[\\s-]?[0-9]{2}[\\s-]?[0-9]{2}", // 8-800-xxx-xx-xx
-            "8[\\s-]?\\(?[0-9]{3}\\)?[\\s-]?[0-9]{3}[\\s-]?[0-9]{2}[\\s-]?[0-9]{2}", // 8(xxx)xxx-xx-xx
-            
-            // Российские с кодом: +7 (XXX) XXX-XX-XX
-            "\\+7[\\s-]?\\(?[0-9]{3}\\)?[\\s-]?[0-9]{3}[\\s-]?[0-9]{2}[\\s-]?[0-9]{2}",
-            
-            // Общий формат: (XXX) XXX-XXXX или XXX-XXX-XXXX
-            "\\(?[0-9]{3}\\)?[\\s-]?[0-9]{3}[\\s-]?[0-9]{4}",
-            
-            // Формат с 4-мя группами цифр: XXX-XXX-XX-XX
-            "[0-9]{3}[\\s-]?[0-9]{3}[\\s-]?[0-9]{2}[\\s-]?[0-9]{2}",
-            
-            // Формат с тире: XXX-XX-XX
-            "[0-9]{3}[\\s-]?[0-9]{2}[\\s-]?[0-9]{2}",
-            
-            // Любая последовательность из 7+ цифр
-            "\\b[0-9]{7,}\\b"
-        ]
+        let patterns = PhoneNumberPatterns.all
         
         for pattern in patterns {
             do {
@@ -64,32 +47,25 @@ final class ContactParser {
                         let phone = String(text[range])
                         let cleanPhone = cleanPhoneNumber(phone)
                         
-                        // Проверяем минимальную длину (для России минимум 10 цифр без +7)
-                        if cleanPhone.hasPrefix("+7") {
-                            if cleanPhone.count >= 12 { // +7 и 10 цифр
-                                phones.append(cleanPhone)
-                            }
-                        } else if cleanPhone.count >= 10 {
-                            phones.append(cleanPhone)
+                        if isValidPhoneNumber(cleanPhone) {
+                            phones.insert(cleanPhone)
                         }
                     }
                 }
             } catch {
-                continue
+                logger.error("Failed to compile regex pattern: \(pattern), error: \(error)")
             }
         }
         
-        // Убираем дубликаты
-        return Array(Set(phones))
+        return Array(phones).sorted()
     }
     
     // MARK: - Email Parsing
     
     private static func extractEmails(from text: String) -> [String] {
-        var emails: [String] = []
+        var emails: Set<String> = []
         
-        // Основной email паттерн
-        let emailPattern = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"
+        let emailPattern = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
         
         do {
             let regex = try NSRegularExpression(pattern: emailPattern, options: .caseInsensitive)
@@ -98,14 +74,28 @@ final class ContactParser {
             for match in matches {
                 if let range = Range(match.range, in: text) {
                     let email = String(text[range]).trimmingCharacters(in: .whitespaces)
-                    emails.append(email)
+                    emails.insert(email.lowercased())
                 }
             }
         } catch {
-            // Игнорируем ошибки
+            logger.error("Failed to compile email regex: \(error)")
         }
         
-        return Array(Set(emails))
+        return Array(emails).sorted()
+    }
+    
+    // MARK: - Validation
+    
+    private static func isValidPhoneNumber(_ phone: String) -> Bool {
+        let digitsOnly = phone.filter { $0.isNumber }
+        
+        if phone.hasPrefix("+7") {
+            return digitsOnly.count == 11 // +7 и 10 цифр
+        } else if phone.hasPrefix("+") {
+            return digitsOnly.count >= 10 // международные номера
+        } else {
+            return digitsOnly.count >= 10 // локальные номера
+        }
     }
     
     // MARK: - Cleaning Functions
@@ -114,9 +104,28 @@ final class ContactParser {
         var cleaned = text
         
         // Убираем HTML теги
-        cleaned = cleaned.replacingOccurrences(of: "<[^>]+>", with: " ", options: .regularExpression)
+        cleaned = cleaned.replacingOccurrences(
+            of: "<[^>]+>",
+            with: " ",
+            options: .regularExpression
+        )
         
         // Заменяем HTML entities
+        cleaned = replaceHTMLEntities(in: cleaned)
+        
+        // Убираем лишние пробелы
+        cleaned = cleaned.replacingOccurrences(
+            of: "\\s+",
+            with: " ",
+            options: .regularExpression
+        )
+        
+        return cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    
+    private static func replaceHTMLEntities(in text: String) -> String {
+        var cleaned = text
+        
         let htmlEntities = [
             "&nbsp;": " ",
             "&quot;": "\"",
@@ -124,6 +133,7 @@ final class ContactParser {
             "&lt;": "<",
             "&gt;": ">",
             "&#39;": "'",
+            "&#34;": "\"",
             "&ndash;": "-",
             "&mdash;": "-",
             "<br>": "\n",
@@ -135,10 +145,7 @@ final class ContactParser {
             cleaned = cleaned.replacingOccurrences(of: entity, with: replacement)
         }
         
-        // Убираем лишние пробелы
-        cleaned = cleaned.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
-        
-        return cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
+        return cleaned
     }
     
     private static func cleanPhoneNumber(_ phone: String) -> String {
@@ -151,5 +158,30 @@ final class ContactParser {
         }
         
         return cleaned
+    }
+    
+    // MARK: - Patterns Enum
+    
+    private enum PhoneNumberPatterns {
+        static let all = [
+            // Международный: +X XXX XXX XXXX
+            "\\+[0-9]{1,3}[\\s-]?\\(?[0-9]{1,5}\\)?[\\s-]?[0-9]{1,4}[\\s-]?[0-9]{1,4}[\\s-]?[0-9]{1,9}",
+            
+            // Российские 8-800
+            "8[\\s-]?800[\\s-]?[0-9]{3}[\\s-]?[0-9]{3}[\\s-]?[0-9]{1}",
+            "8[\\s-]?800[\\s-]?[0-9]{3}[\\s-]?[0-9]{2}[\\s-]?[0-9]{2}",
+            
+            // Российские с кодом
+            "8[\\s-]?\\(?[0-9]{3}\\)?[\\s-]?[0-9]{3}[\\s-]?[0-9]{2}[\\s-]?[0-9]{2}",
+            "\\+7[\\s-]?\\(?[0-9]{3}\\)?[\\s-]?[0-9]{3}[\\s-]?[0-9]{2}[\\s-]?[0-9]{2}",
+            
+            // Общие форматы
+            "\\(?[0-9]{3}\\)?[\\s-]?[0-9]{3}[\\s-]?[0-9]{4}",
+            "[0-9]{3}[\\s-]?[0-9]{3}[\\s-]?[0-9]{2}[\\s-]?[0-9]{2}",
+            "[0-9]{3}[\\s-]?[0-9]{2}[\\s-]?[0-9]{2}",
+            
+            // Любая последовательность из 7+ цифр
+            "\\b[0-9]{7,}\\b"
+        ]
     }
 }
