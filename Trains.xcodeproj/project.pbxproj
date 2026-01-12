@@ -46,6 +46,7 @@
 		F1D716DD2F15620100C825EF /* RouteInputSectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D716DC2F15620100C825EF /* RouteInputSectionViewModel.swift */; };
 		F1D716E52F1564CE00C825EF /* CitySearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D716E42F1564CE00C825EF /* CitySearchViewModel.swift */; };
 		F1D716E82F1564F800C825EF /* StationSearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D716E72F1564F800C825EF /* StationSearchViewModel.swift */; };
+		F1D716EF2F15684C00C825EF /* ScheduleFilterViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D716EE2F15684C00C825EF /* ScheduleFilterViewModel.swift */; };
 		F1E7C62C2EF96B4400814681 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F1E7C62B2EF96B4400814681 /* LaunchScreen.storyboard */; };
 		F1E7C6C52EFBFC0C00814681 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6C42EFBFC0C00814681 /* AppState.swift */; };
 		F1E7C6D02EFC2A6B00814681 /* ErrorState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6CF2EFC2A6B00814681 /* ErrorState.swift */; };
@@ -102,6 +103,7 @@
 		F1D716DC2F15620100C825EF /* RouteInputSectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteInputSectionViewModel.swift; sourceTree = "<group>"; };
 		F1D716E42F1564CE00C825EF /* CitySearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CitySearchViewModel.swift; sourceTree = "<group>"; };
 		F1D716E72F1564F800C825EF /* StationSearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationSearchViewModel.swift; sourceTree = "<group>"; };
+		F1D716EE2F15684C00C825EF /* ScheduleFilterViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleFilterViewModel.swift; sourceTree = "<group>"; };
 		F1E7C62B2EF96B4400814681 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F1E7C6C42EFBFC0C00814681 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		F1E7C6CF2EFC2A6B00814681 /* ErrorState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorState.swift; sourceTree = "<group>"; };
@@ -278,6 +280,7 @@
 				F1E7C7572EFC9FDC00814681 /* ScheduleFilterView.swift */,
 				F1E7C7972EFCA8FD00814681 /* DayPartSectionView.swift */,
 				F1E7C79A2EFCA92400814681 /* TransfersSectionView.swift */,
+				F1D716EE2F15684C00C825EF /* ScheduleFilterViewModel.swift */,
 			);
 			path = ScheduleFilter;
 			sourceTree = "<group>";
@@ -384,6 +387,7 @@
 				F19E1EA12ECF37F100183F02 /* ScheduleService.swift in Sources */,
 				F19E1EA82ECF382E00183F02 /* NearestSettlementService.swift in Sources */,
 				F19E1E472ECB4C2F00183F02 /* ContentView.swift in Sources */,
+				F1D716EF2F15684C00C825EF /* ScheduleFilterViewModel.swift in Sources */,
 				F1D7155F2F0CFC4600C825EF /* CloseButtonView.swift in Sources */,
 				F19E1EAE2ECF385D00183F02 /* StationsListService.swift in Sources */,
 				F1D715692F0CFCEB00C825EF /* ProgressBarView.swift in Sources */,

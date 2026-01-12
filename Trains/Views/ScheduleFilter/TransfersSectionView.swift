@@ -7,28 +7,12 @@
 
 import SwiftUI
 
-// MARK: - TransfersOption Enum
-
-enum TransfersOption: String, Identifiable, Hashable {
-    case yes, no
-    
-    var id: Self { self }
-    
-    var title: String {
-        self == .yes ? "Да" : "Нет"
-    }
-}
-
-// MARK: - TransfersSectionView
-
 struct TransfersSectionView: View {
     
     // MARK: - Properties
-    
-    @Binding var transfers: TransfersOption?
+    let viewModel: ScheduleFilterViewModel
     
     // MARK: - Constants
-    
     private struct Constants {
         static let hInset: CGFloat = 16
         static let rowHeight: CGFloat = 60
@@ -39,7 +23,6 @@ struct TransfersSectionView: View {
     }
     
     // MARK: - Body
-    
     var body: some View {
         Section {
             ForEach([TransfersOption.yes, .no]) { option in
@@ -52,21 +35,20 @@ struct TransfersSectionView: View {
     }
     
     // MARK: - UI Components
-    
     private func transferOptionRow(for option: TransfersOption) -> some View {
         HStack {
             Text(option.title)
                 .font(.system(size: Constants.fontSize, weight: .regular))
                 .foregroundColor(.ypBlack)
             Spacer()
-            Image(transfers == option ? "circleOn" : "circleOff")
+            Image(viewModel.transfers == option ? "circleOn" : "circleOff")
                 .resizable()
                 .renderingMode(.template)
                 .foregroundColor(.ypBlack)
                 .frame(width: Constants.iconSize, height: Constants.iconSize)
         }
         .contentShape(Rectangle())
-        .onTapGesture { transfers = option }
+        .onTapGesture { viewModel.selectTransfers(option) }
         .listRowSeparator(.hidden)
         .frame(width: Constants.sectionWidth, height: Constants.rowHeight)
         .listRowInsets(EdgeInsets(
