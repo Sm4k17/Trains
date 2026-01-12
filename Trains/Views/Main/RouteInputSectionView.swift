@@ -10,96 +10,32 @@ import SwiftUI
 struct RouteInputSectionView: View {
     
     // MARK: - Properties
-    
     @Binding var navigationPath: NavigationPath
     @Binding var from: String
     @Binding var to: String
     
-    // MARK: - Constants
-    
-    private struct Constants {
-        enum Padding {
-            static let horizontal: CGFloat = 16.0
-            static let vertical: CGFloat = 16.0
-            static let leading: CGFloat = 20.0
-        }
-        
-        enum Size {
-            static let viewHeight: CGFloat = 128.0
-            static let button: CGFloat = 36.0
-            static let searchButtonWidth: CGFloat = 150.0
-            static let searchButtonHeight: CGFloat = 60.0
-            static let fieldHeight: CGFloat = 96.0
-            static let spacerHeight: CGFloat = 14.0
-        }
-        
-        enum Spacing {
-            static let view: CGFloat = 12.0
-            static let field: CGFloat = 8.0
-        }
-        
-        enum FontSize {
-            static let label: CGFloat = 17.0
-            static let labelButton: CGFloat = 17
-        }
-        
-        enum Colors {
-            static let textField: Color = .ypGray
-            static let squarepathButton: Color = .ypWhiteUniversal
-            static let cardBackground: Color = .ypWhiteUniversal
-            static let searchButtonBackground: Color = .ypBlue
-        }
-        
-        enum CornerRadius {
-            static let view: Double = 20.0
-            static let searchButton: CGFloat = 16.0
-        }
-        
-        enum Animation {
-            static let duration: Double = 0.2
-            static let swapSpringResponse: Double = 0.25
-            static let swapSpringDamping: Double = 0.9
-        }
-        
-        enum Placeholder {
-            static let from = "Откуда"
-            static let to   = "Куда"
-        }
-        
-        enum Titles {
-            static let searchButton = "Найти"
-        }
-        
-        enum Images {
-            enum System {
-                static let squarePathButton = "arrow.2.squarepath"
-            }
-        }
-    }
-    
     // MARK: - Computed Properties
-    
     private var hasBothInputs: Bool {
-        !from.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-        !to.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        RouteInputSectionViewModel.hasBothInputs(from: from, to: to)
     }
     
+    // MARK: - Body
     var body: some View {
-        VStack(spacing: Constants.Spacing.view) {
+        VStack(spacing: RouteInputSectionViewModel.Constants.Spacing.view) {
             ZStack {
-                Color.ypBlue.cornerRadius(Constants.CornerRadius.view)
+                Color.ypBlue.cornerRadius(RouteInputSectionViewModel.Constants.CornerRadius.view)
                 HStack {
                     searchCityField
                     squarePathButton
                 }
-                .padding(.horizontal, Constants.Padding.horizontal)
-                .padding(.vertical, Constants.Padding.vertical)
+                .padding(.horizontal, RouteInputSectionViewModel.Constants.Padding.horizontal)
+                .padding(.vertical, RouteInputSectionViewModel.Constants.Padding.vertical)
             }
-            .frame(height: Constants.Size.viewHeight)
-            .padding(.horizontal, Constants.Padding.horizontal)
+            .frame(height: RouteInputSectionViewModel.Constants.Size.viewHeight)
+            .padding(.horizontal, RouteInputSectionViewModel.Constants.Padding.horizontal)
             
             // Резервируем место под кнопку — безопасно для жестов
-            let buttonHeight = Constants.Size.searchButtonHeight
+            let buttonHeight = RouteInputSectionViewModel.Constants.Size.searchButtonHeight
             ZStack {
                 Rectangle()
                     .fill(.clear)
@@ -125,19 +61,19 @@ struct RouteInputSectionView: View {
     private var searchCityField: some View {
         ZStack {
             HStack {
-                VStack(alignment: .leading, spacing: Constants.Spacing.field) {
+                VStack(alignment: .leading, spacing: RouteInputSectionViewModel.Constants.Spacing.field) {
                     fromFieldButton
                     
                     Spacer()
-                        .frame(height: Constants.Size.spacerHeight)
+                        .frame(height: RouteInputSectionViewModel.Constants.Size.spacerHeight)
                     
                     toFieldButton
                 }
-                .padding(.vertical, Constants.Padding.vertical)
-                .padding(.horizontal, Constants.Padding.leading)
+                .padding(.vertical, RouteInputSectionViewModel.Constants.Padding.vertical)
+                .padding(.horizontal, RouteInputSectionViewModel.Constants.Padding.leading)
                 .background(Color.ypWhiteUniversal)
-                .cornerRadius(Constants.CornerRadius.view)
-                .frame(height: Constants.Size.fieldHeight)
+                .cornerRadius(RouteInputSectionViewModel.Constants.CornerRadius.view)
+                .frame(height: RouteInputSectionViewModel.Constants.Size.fieldHeight)
             }
         }
     }
@@ -146,13 +82,16 @@ struct RouteInputSectionView: View {
         Button {
             // Переход к поиску города "Откуда"
             navigationPath.append(
-                AppRoute.citySearch(context: .from, city: extractCity(from: from))
+                AppRoute.citySearch(
+                    context: .from,
+                    city: RouteInputSectionViewModel.getCityForSearch(from)
+                )
             )
         } label: {
             HStack {
-                Text(from.isEmpty ? Constants.Placeholder.from : from)
-                    .foregroundColor(from.isEmpty ? Constants.Colors.textField : .ypBlackUniversal)
-                    .font(.system(size: Constants.FontSize.label, weight: .regular))
+                Text(from.isEmpty ? RouteInputSectionViewModel.Constants.Placeholder.from : from)
+                    .foregroundColor(from.isEmpty ? RouteInputSectionViewModel.Constants.Colors.textField : .ypBlackUniversal)
+                    .font(.system(size: RouteInputSectionViewModel.Constants.FontSize.label, weight: .regular))
                     .animation(.default, value: from)
                 Spacer()
             }
@@ -165,13 +104,16 @@ struct RouteInputSectionView: View {
         Button {
             // Переход к поиску города "Куда"
             navigationPath.append(
-                AppRoute.citySearch(context: .to, city: extractCity(from: to))
+                AppRoute.citySearch(
+                    context: .to,
+                    city: RouteInputSectionViewModel.getCityForSearch(to)
+                )
             )
         } label: {
             HStack {
-                Text(to.isEmpty ? Constants.Placeholder.to : to)
-                    .foregroundColor(to.isEmpty ? Constants.Colors.textField : .ypBlackUniversal)
-                    .font(.system(size: Constants.FontSize.label, weight: .regular))
+                Text(to.isEmpty ? RouteInputSectionViewModel.Constants.Placeholder.to : to)
+                    .foregroundColor(to.isEmpty ? RouteInputSectionViewModel.Constants.Colors.textField : .ypBlackUniversal)
+                    .font(.system(size: RouteInputSectionViewModel.Constants.FontSize.label, weight: .regular))
                     .animation(.default, value: to)
                 Spacer()
             }
@@ -183,17 +125,20 @@ struct RouteInputSectionView: View {
     private var squarePathButton: some View {
         Button {
             withAnimation(.spring(
-                response: Constants.Animation.swapSpringResponse,
-                dampingFraction: Constants.Animation.swapSpringDamping
+                response: RouteInputSectionViewModel.Constants.Animation.swapSpringResponse,
+                dampingFraction: RouteInputSectionViewModel.Constants.Animation.swapSpringDamping
             )) {
                 swap(&from, &to)
             }
         } label: {
-            Image(systemName: Constants.Images.System.squarePathButton)
+            Image(systemName: RouteInputSectionViewModel.Constants.Images.System.squarePathButton)
                 .foregroundColor(.ypBlue)
-                .frame(width: Constants.Size.button, height: Constants.Size.button)
+                .frame(
+                    width: RouteInputSectionViewModel.Constants.Size.button,
+                    height: RouteInputSectionViewModel.Constants.Size.button
+                )
         }
-        .background(Constants.Colors.squarepathButton)
+        .background(RouteInputSectionViewModel.Constants.Colors.squarepathButton)
         .clipShape(Circle())
         .disabled(from.isEmpty && to.isEmpty)
     }
@@ -203,28 +148,18 @@ struct RouteInputSectionView: View {
             // Переход к списку перевозчиков
             navigationPath.append(AppRoute.carrierList(from: from, to: to))
         } label: {
-            Text(Constants.Titles.searchButton)
-                .font(.system(size: Constants.FontSize.labelButton, weight: .bold))
+            Text(RouteInputSectionViewModel.Constants.Titles.searchButton)
+                .font(.system(size: RouteInputSectionViewModel.Constants.FontSize.labelButton, weight: .bold))
                 .foregroundColor(.ypWhiteUniversal)
                 .frame(
-                    width: Constants.Size.searchButtonWidth,
-                    height: Constants.Size.searchButtonHeight
+                    width: RouteInputSectionViewModel.Constants.Size.searchButtonWidth,
+                    height: RouteInputSectionViewModel.Constants.Size.searchButtonHeight
                 )
-                .background(Constants.Colors.searchButtonBackground)
-                .cornerRadius(Constants.CornerRadius.searchButton)
+                .background(RouteInputSectionViewModel.Constants.Colors.searchButtonBackground)
+                .cornerRadius(RouteInputSectionViewModel.Constants.CornerRadius.searchButton)
         }
         .buttonStyle(.plain)
         .disabled(!hasBothInputs)
-    }
-    
-    // MARK: - Helper Methods
-    
-    private func extractCity(from text: String) -> String {
-        // Извлекаем название города из строки "Город (Станция)"
-        if let range = text.range(of: " (") {
-            return String(text[..<range.lowerBound])
-        }
-        return text
     }
 }
 

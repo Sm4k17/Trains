@@ -43,6 +43,9 @@
 		F1D7169F2F106E7800C825EF /* StoriesContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D7169E2F106E7800C825EF /* StoriesContainerView.swift */; };
 		F1D716CC2F15574800C825EF /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D716CB2F15574800C825EF /* SettingsViewModel.swift */; };
 		F1D716D82F155E9A00C825EF /* MainTabViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D716D72F155E9A00C825EF /* MainTabViewModel.swift */; };
+		F1D716DD2F15620100C825EF /* RouteInputSectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D716DC2F15620100C825EF /* RouteInputSectionViewModel.swift */; };
+		F1D716E52F1564CE00C825EF /* CitySearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D716E42F1564CE00C825EF /* CitySearchViewModel.swift */; };
+		F1D716E82F1564F800C825EF /* StationSearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D716E72F1564F800C825EF /* StationSearchViewModel.swift */; };
 		F1E7C62C2EF96B4400814681 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F1E7C62B2EF96B4400814681 /* LaunchScreen.storyboard */; };
 		F1E7C6C52EFBFC0C00814681 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6C42EFBFC0C00814681 /* AppState.swift */; };
 		F1E7C6D02EFC2A6B00814681 /* ErrorState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6CF2EFC2A6B00814681 /* ErrorState.swift */; };
@@ -96,6 +99,9 @@
 		F1D7169E2F106E7800C825EF /* StoriesContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoriesContainerView.swift; sourceTree = "<group>"; };
 		F1D716CB2F15574800C825EF /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		F1D716D72F155E9A00C825EF /* MainTabViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabViewModel.swift; sourceTree = "<group>"; };
+		F1D716DC2F15620100C825EF /* RouteInputSectionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteInputSectionViewModel.swift; sourceTree = "<group>"; };
+		F1D716E42F1564CE00C825EF /* CitySearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CitySearchViewModel.swift; sourceTree = "<group>"; };
+		F1D716E72F1564F800C825EF /* StationSearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationSearchViewModel.swift; sourceTree = "<group>"; };
 		F1E7C62B2EF96B4400814681 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F1E7C6C42EFBFC0C00814681 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		F1E7C6CF2EFC2A6B00814681 /* ErrorState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorState.swift; sourceTree = "<group>"; };
@@ -223,6 +229,7 @@
 				F1D715412F0CE2B100C825EF /* BackButton.swift */,
 				F1D716CB2F15574800C825EF /* SettingsViewModel.swift */,
 				F1D716D72F155E9A00C825EF /* MainTabViewModel.swift */,
+				F1D716DC2F15620100C825EF /* RouteInputSectionViewModel.swift */,
 			);
 			path = Main;
 			sourceTree = "<group>";
@@ -259,6 +266,8 @@
 				F1E7C76D2EFCA12A00814681 /* SearchTextField.swift */,
 				F1E7C7802EFCA4B100814681 /* StationSearchView.swift */,
 				F1E7C78E2EFCA53400814681 /* CitySearchView.swift */,
+				F1D716E42F1564CE00C825EF /* CitySearchViewModel.swift */,
+				F1D716E72F1564F800C825EF /* StationSearchViewModel.swift */,
 			);
 			path = Search;
 			sourceTree = "<group>";
@@ -371,6 +380,7 @@
 				F19E1EAB2ECF384600183F02 /* CarrierService.swift in Sources */,
 				F1E7C7812EFCA4B100814681 /* StationSearchView.swift in Sources */,
 				F1D715422F0CE2B100C825EF /* BackButton.swift in Sources */,
+				F1D716E52F1564CE00C825EF /* CitySearchViewModel.swift in Sources */,
 				F19E1EA12ECF37F100183F02 /* ScheduleService.swift in Sources */,
 				F19E1EA82ECF382E00183F02 /* NearestSettlementService.swift in Sources */,
 				F19E1E472ECB4C2F00183F02 /* ContentView.swift in Sources */,
@@ -378,6 +388,7 @@
 				F19E1EAE2ECF385D00183F02 /* StationsListService.swift in Sources */,
 				F1D715692F0CFCEB00C825EF /* ProgressBarView.swift in Sources */,
 				F1E7C7582EFC9FDC00814681 /* ScheduleFilterView.swift in Sources */,
+				F1D716E82F1564F800C825EF /* StationSearchViewModel.swift in Sources */,
 				F1D715C12F0FD1B000C825EF /* ContactInfo.swift in Sources */,
 				F1E7C6D02EFC2A6B00814681 /* ErrorState.swift in Sources */,
 				F1D715712F0CFEC100C825EF /* StoriesContentView.swift in Sources */,
@@ -395,6 +406,7 @@
 				F19E1E5D2ECDA50F00183F02 /* NearestStationsService.swift in Sources */,
 				F1E7C6D42EFC2CAA00814681 /* ErrorStateView.swift in Sources */,
 				F1D7156D2F0CFE2D00C825EF /* Story.swift in Sources */,
+				F1D716DD2F15620100C825EF /* RouteInputSectionViewModel.swift in Sources */,
 				F1D7157D2F0CFF2700C825EF /* StoryView.swift in Sources */,
 				F19E1E9E2ECF37D300183F02 /* SearchService.swift in Sources */,
 				F1D7148B2F0C96E200C825EF /* CarrierInfoView.swift in Sources */,
