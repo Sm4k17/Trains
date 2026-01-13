@@ -7,14 +7,14 @@
 
 import Foundation
 
-struct ContactInfo {
+struct ContactInfo: Sendable {
     let phoneNumbers: [PhoneNumber]
     let emails: [Email]
     let cleanText: String
     
     // MARK: - Nested Types
     
-    struct PhoneNumber: Hashable {
+    struct PhoneNumber: Hashable, Sendable {
         let rawValue: String
         let formattedValue: String
         
@@ -24,7 +24,7 @@ struct ContactInfo {
         }
     }
     
-    struct Email: Hashable {
+    struct Email: Hashable, Sendable {
         let rawValue: String
         let url: URL?
         

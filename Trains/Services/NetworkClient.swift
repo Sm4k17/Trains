@@ -28,7 +28,7 @@ actor NetworkClient {
             distance: distance,
             format: "json"
         ))
-        return try response.ok.body.json
+        return try await response.ok.body.json
     }
     
     // MARK: - Copyright
@@ -38,7 +38,7 @@ actor NetworkClient {
             apikey: apikey,
             format: .json
         ))
-        return try response.ok.body.json
+        return try await response.ok.body.json
     }
     
     // MARK: - Search
@@ -51,7 +51,7 @@ actor NetworkClient {
             format: "json",
             date: date
         ))
-        return try response.ok.body.json
+        return try await response.ok.body.json
     }
     
     // MARK: - Schedule
@@ -63,7 +63,7 @@ actor NetworkClient {
             format: "json",
             date: date
         ))
-        return try response.ok.body.json
+        return try await response.ok.body.json
     }
     
     // MARK: - Thread
@@ -74,7 +74,7 @@ actor NetworkClient {
             uid: uid,
             format: "json"
         ))
-        return try response.ok.body.json
+        return try await response.ok.body.json
     }
     
     // MARK: - Nearest Settlement
@@ -86,7 +86,7 @@ actor NetworkClient {
             lng: lng,
             format: "json"
         ))
-        return try response.ok.body.json
+        return try await response.ok.body.json
     }
     
     // MARK: - Carrier
@@ -107,7 +107,7 @@ actor NetworkClient {
             lang: "ru_RU",
             system: system
         ))
-        return try response.ok.body.json
+        return try await response.ok.body.json
     }
     
     // MARK: - Stations List
@@ -118,7 +118,7 @@ actor NetworkClient {
             format: "json"
         ))
         
-        let body = try response.ok.body
+        let body = try await response.ok.body
         return String(describing: body)
     }
 }

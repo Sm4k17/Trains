@@ -51,6 +51,7 @@
 		F1D716FE2F156FDF00C825EF /* ContactFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D716FD2F156FDF00C825EF /* ContactFormatter.swift */; };
 		F1D717072F157BBF00C825EF /* CarrierRowViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D717062F157BBF00C825EF /* CarrierRowViewModel.swift */; };
 		F1D7171A2F15E75A00C825EF /* NetworkClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D717192F15E75A00C825EF /* NetworkClient.swift */; };
+		F1D717212F15FA6700C825EF /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D717202F15FA6700C825EF /* NetworkService.swift */; };
 		F1E7C62C2EF96B4400814681 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F1E7C62B2EF96B4400814681 /* LaunchScreen.storyboard */; };
 		F1E7C6C52EFBFC0C00814681 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6C42EFBFC0C00814681 /* AppState.swift */; };
 		F1E7C6D02EFC2A6B00814681 /* ErrorState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6CF2EFC2A6B00814681 /* ErrorState.swift */; };
@@ -111,6 +112,7 @@
 		F1D716FD2F156FDF00C825EF /* ContactFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactFormatter.swift; sourceTree = "<group>"; };
 		F1D717062F157BBF00C825EF /* CarrierRowViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierRowViewModel.swift; sourceTree = "<group>"; };
 		F1D717192F15E75A00C825EF /* NetworkClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkClient.swift; sourceTree = "<group>"; };
+		F1D717202F15FA6700C825EF /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
 		F1E7C62B2EF96B4400814681 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F1E7C6C42EFBFC0C00814681 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		F1E7C6CF2EFC2A6B00814681 /* ErrorState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorState.swift; sourceTree = "<group>"; };
@@ -201,6 +203,7 @@
 				F1D715C02F0FD1B000C825EF /* ContactInfo.swift */,
 				F1D716FD2F156FDF00C825EF /* ContactFormatter.swift */,
 				F1D717192F15E75A00C825EF /* NetworkClient.swift */,
+				F1D717202F15FA6700C825EF /* NetworkService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -439,6 +442,7 @@
 				F1D715132F0CC3A800C825EF /* SettingsView.swift in Sources */,
 				F1D7169F2F106E7800C825EF /* StoriesContainerView.swift in Sources */,
 				F19E1E482ECB4C2F00183F02 /* TrainsApp.swift in Sources */,
+				F1D717212F15FA6700C825EF /* NetworkService.swift in Sources */,
 				F19E1E9B2ECF373500183F02 /* CopyrightService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -514,7 +518,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_STRICT_CONCURRENCY = complete;
 			};
 			name = Debug;
 		};
@@ -571,7 +575,7 @@
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -604,7 +608,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -639,7 +643,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

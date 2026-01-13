@@ -16,7 +16,7 @@ final class CarrierInfoViewModel {
     
     // MARK: - State
     
-    enum State {
+    enum State: Sendable {
         case idle
         case loading
         case loaded(CarrierDisplayData)
@@ -25,7 +25,7 @@ final class CarrierInfoViewModel {
     
     // MARK: - Display Data Model
     
-    struct CarrierDisplayData {
+    struct CarrierDisplayData: Sendable {
         let title: String
         let logoURL: String?
         let contactInfo: ContactInfo?
@@ -83,7 +83,7 @@ final class CarrierInfoViewModel {
     }
     
     func retry() async {
-        state = .idle
+        state = .loading
         await load()
     }
     

@@ -47,21 +47,16 @@ struct CarrierInfoView: View {
     // MARK: - Init
     
     init(code: String, logoAssetName: String? = nil, navigationPath: Binding<NavigationPath>) {
-        self._navigationPath = navigationPath
-        
-        // Создаем NetworkClient вместо конкретного сервиса
-        let client = Client(
-            serverURL: try! Servers.Server1.url(),
-            transport: URLSessionTransport()
-        )
-        let apikey = "a63c3bd4-fd50-47a4-a56b-def74416d733"
-        let networkClient = NetworkClient(client: client, apikey: apikey)
-        
-        self._viewModel = State(initialValue: CarrierInfoViewModel(
-            code: code,
-            networkClient: networkClient
-        ))
-    }
+            self._navigationPath = navigationPath
+            
+            let networkService = NetworkService()
+            let networkClient = networkService.createNetworkClient()
+            
+            self._viewModel = State(initialValue: CarrierInfoViewModel(
+                code: code,
+                networkClient: networkClient
+            ))
+        }
     
     // MARK: - Body
     
