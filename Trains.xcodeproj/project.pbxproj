@@ -52,6 +52,7 @@
 		F1D717072F157BBF00C825EF /* CarrierRowViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D717062F157BBF00C825EF /* CarrierRowViewModel.swift */; };
 		F1D7171A2F15E75A00C825EF /* NetworkClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D717192F15E75A00C825EF /* NetworkClient.swift */; };
 		F1D717212F15FA6700C825EF /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D717202F15FA6700C825EF /* NetworkService.swift */; };
+		F1D717282F1601D700C825EF /* StoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D717272F1601D700C825EF /* StoryViewModel.swift */; };
 		F1E7C62C2EF96B4400814681 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F1E7C62B2EF96B4400814681 /* LaunchScreen.storyboard */; };
 		F1E7C6C52EFBFC0C00814681 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6C42EFBFC0C00814681 /* AppState.swift */; };
 		F1E7C6D02EFC2A6B00814681 /* ErrorState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6CF2EFC2A6B00814681 /* ErrorState.swift */; };
@@ -113,6 +114,7 @@
 		F1D717062F157BBF00C825EF /* CarrierRowViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierRowViewModel.swift; sourceTree = "<group>"; };
 		F1D717192F15E75A00C825EF /* NetworkClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkClient.swift; sourceTree = "<group>"; };
 		F1D717202F15FA6700C825EF /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
+		F1D717272F1601D700C825EF /* StoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoryViewModel.swift; sourceTree = "<group>"; };
 		F1E7C62B2EF96B4400814681 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F1E7C6C42EFBFC0C00814681 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		F1E7C6CF2EFC2A6B00814681 /* ErrorState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorState.swift; sourceTree = "<group>"; };
@@ -258,6 +260,7 @@
 				F1D715782F0CFF0C00C825EF /* StoryCardView.swift */,
 				F1D7157C2F0CFF2700C825EF /* StoryView.swift */,
 				F1D7169E2F106E7800C825EF /* StoriesContainerView.swift */,
+				F1D717272F1601D700C825EF /* StoryViewModel.swift */,
 			);
 			path = StoryScreen;
 			sourceTree = "<group>";
@@ -342,7 +345,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2610;
-				LastUpgradeCheck = 2610;
+				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					F19E1E0B2ECB3C2800183F02 = {
 						CreatedOnToolsVersion = 26.1.1;
@@ -433,6 +436,7 @@
 				F1E7C76E2EFCA12A00814681 /* SearchTextField.swift in Sources */,
 				F1E7C79B2EFCA92400814681 /* TransfersSectionView.swift in Sources */,
 				F1E7C7742EFCA15E00814681 /* CarrierListView.swift in Sources */,
+				F1D717282F1601D700C825EF /* StoryViewModel.swift in Sources */,
 				F1E7C6C52EFBFC0C00814681 /* AppState.swift in Sources */,
 				F1E7C7632EFCA05B00814681 /* CarrierRowView.swift in Sources */,
 				F1D715102F0CC3A800C825EF /* UserAgreementView.swift in Sources */,
@@ -516,6 +520,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_STRICT_CONCURRENCY = complete;
@@ -574,6 +579,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				VALIDATE_PRODUCT = YES;
