@@ -11,11 +11,11 @@ import OpenAPIURLSession
 
 typealias ThreadResponse = Components.Schemas.ThreadResponse
 
-protocol ThreadServiceProtocol {
+protocol ThreadServiceProtocol: Sendable {
     func getThread(uid: String) async throws -> ThreadResponse
 }
 
-final class ThreadService: ThreadServiceProtocol {
+final class ThreadService: ThreadServiceProtocol, @unchecked Sendable {
     private let client: Client
     private let apikey: String
     

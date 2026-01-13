@@ -28,6 +28,8 @@ enum TransfersOption: String, Identifiable, Hashable {
 }
 
 // MARK: - ViewModel
+
+@MainActor
 @Observable
 final class ScheduleFilterViewModel {
     // MARK: - Properties

@@ -11,11 +11,11 @@ import OpenAPIURLSession
 
 typealias Settlement = Components.Schemas.Settlement
 
-protocol NearestSettlementServiceProtocol {
+protocol NearestSettlementServiceProtocol: Sendable {
     func getNearestSettlement(lat: Double, lng: Double) async throws -> Settlement
 }
 
-final class NearestSettlementService: NearestSettlementServiceProtocol {
+final class NearestSettlementService: NearestSettlementServiceProtocol, @unchecked Sendable {
     private let client: Client
     private let apikey: String
     

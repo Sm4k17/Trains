@@ -10,6 +10,7 @@ import Observation
 
 // MARK: - ViewModel
 
+@MainActor
 @Observable
 final class CarrierInfoViewModel {
     
@@ -68,7 +69,6 @@ final class CarrierInfoViewModel {
     
     // MARK: - Public Methods
     
-    @MainActor
     func load() async {
         guard case .idle = state else { return }
         state = .loading
@@ -82,7 +82,6 @@ final class CarrierInfoViewModel {
         }
     }
     
-    @MainActor
     func retry() async {
         state = .idle
         await load()

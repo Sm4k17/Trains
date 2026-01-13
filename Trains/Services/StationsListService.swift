@@ -9,11 +9,11 @@ import Foundation
 import OpenAPIRuntime
 import OpenAPIURLSession
 
-protocol StationsListServiceProtocol {
+protocol StationsListServiceProtocol: Sendable {
     func getStationsList() async throws -> String
 }
 
-final class StationsListService: StationsListServiceProtocol {
+final class StationsListService: StationsListServiceProtocol, @unchecked Sendable {
     private let client: Client
     private let apikey: String
     

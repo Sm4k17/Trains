@@ -8,6 +8,7 @@
 import Foundation
 import Observation
 
+@MainActor
 @Observable
 final class CarrierListViewModel {
     
@@ -93,7 +94,6 @@ final class CarrierListViewModel {
     
     // MARK: - Public Methods
     
-    @MainActor
     func loadCarriers() async {
         isLoading = true
         errorMessage = nil
