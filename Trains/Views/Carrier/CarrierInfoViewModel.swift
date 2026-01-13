@@ -55,16 +55,16 @@ final class CarrierInfoViewModel {
     var state: State = .idle
     
     private let code: String
-    private let service: CarrierServiceProtocol
+    private let networkClient: NetworkClient
     
     // MARK: - Init
     
     init(
         code: String,
-        service: CarrierServiceProtocol
+        networkClient: NetworkClient
     ) {
         self.code = code
-        self.service = service
+        self.networkClient = networkClient
     }
     
     // MARK: - Public Methods
@@ -74,7 +74,7 @@ final class CarrierInfoViewModel {
         state = .loading
         
         do {
-            let response = try await service.getCarrier(code: code)
+            let response = try await networkClient.getCarrier(code: code)
             let displayData = processResponse(response)
             state = .loaded(displayData)
         } catch {

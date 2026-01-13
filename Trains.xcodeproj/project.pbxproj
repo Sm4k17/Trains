@@ -50,6 +50,7 @@
 		F1D716F82F156B3B00C825EF /* CarrierListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D716F72F156B3B00C825EF /* CarrierListViewModel.swift */; };
 		F1D716FE2F156FDF00C825EF /* ContactFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D716FD2F156FDF00C825EF /* ContactFormatter.swift */; };
 		F1D717072F157BBF00C825EF /* CarrierRowViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D717062F157BBF00C825EF /* CarrierRowViewModel.swift */; };
+		F1D7171A2F15E75A00C825EF /* NetworkClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D717192F15E75A00C825EF /* NetworkClient.swift */; };
 		F1E7C62C2EF96B4400814681 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F1E7C62B2EF96B4400814681 /* LaunchScreen.storyboard */; };
 		F1E7C6C52EFBFC0C00814681 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6C42EFBFC0C00814681 /* AppState.swift */; };
 		F1E7C6D02EFC2A6B00814681 /* ErrorState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E7C6CF2EFC2A6B00814681 /* ErrorState.swift */; };
@@ -109,6 +110,7 @@
 		F1D716F72F156B3B00C825EF /* CarrierListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierListViewModel.swift; sourceTree = "<group>"; };
 		F1D716FD2F156FDF00C825EF /* ContactFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactFormatter.swift; sourceTree = "<group>"; };
 		F1D717062F157BBF00C825EF /* CarrierRowViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierRowViewModel.swift; sourceTree = "<group>"; };
+		F1D717192F15E75A00C825EF /* NetworkClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkClient.swift; sourceTree = "<group>"; };
 		F1E7C62B2EF96B4400814681 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F1E7C6C42EFBFC0C00814681 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		F1E7C6CF2EFC2A6B00814681 /* ErrorState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorState.swift; sourceTree = "<group>"; };
@@ -198,6 +200,7 @@
 				F1D714D92F0CB4A500C825EF /* ContactParser.swift */,
 				F1D715C02F0FD1B000C825EF /* ContactInfo.swift */,
 				F1D716FD2F156FDF00C825EF /* ContactFormatter.swift */,
+				F1D717192F15E75A00C825EF /* NetworkClient.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -394,6 +397,7 @@
 				F19E1EA82ECF382E00183F02 /* NearestSettlementService.swift in Sources */,
 				F19E1E472ECB4C2F00183F02 /* ContentView.swift in Sources */,
 				F1D716EF2F15684C00C825EF /* ScheduleFilterViewModel.swift in Sources */,
+				F1D7171A2F15E75A00C825EF /* NetworkClient.swift in Sources */,
 				F1D7155F2F0CFC4600C825EF /* CloseButtonView.swift in Sources */,
 				F19E1EAE2ECF385D00183F02 /* StationsListService.swift in Sources */,
 				F1D715692F0CFCEB00C825EF /* ProgressBarView.swift in Sources */,
