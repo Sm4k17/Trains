@@ -79,24 +79,40 @@ final class CarrierRowViewModel: Identifiable {
             return "airplane"
         case "train":
             return "train.side.front.car"
-        case "bus":
-            return "bus"
         case "suburban":
             return "tram"
+        case "bus":
+            return "bus"
+        case "water":
+            return "ferry"
+        case "helicopter":
+            return "helicopter"
         default:
             let lowercasedName = carrierName.lowercased()
             
             if lowercasedName.contains("авиа") ||
                lowercasedName.contains("airlines") ||
-               lowercasedName.contains("аэро") {
+               lowercasedName.contains("аэро") ||
+               lowercasedName.contains("авиакомпания") {
                 return "airplane"
             } else if lowercasedName.contains("жд") ||
                       lowercasedName.contains("поезд") ||
-                      lowercasedName.contains("ржд") {
+                      lowercasedName.contains("ржд") ||
+                      lowercasedName.contains("железнодорож") {
                 return "train.side.front.car"
             } else if lowercasedName.contains("авто") ||
-                      lowercasedName.contains("автобус") {
+                      lowercasedName.contains("автобус") ||
+                      lowercasedName.contains("автовокзал") {
                 return "bus"
+            } else if lowercasedName.contains("электр") ||
+                      lowercasedName.contains("электричк") {
+                return "tram"
+            } else if lowercasedName.contains("водн") ||
+                      lowercasedName.contains("пар") ||
+                      lowercasedName.contains("теплоход") {
+                return "ferry"
+            } else if lowercasedName.contains("вертолет") {
+                return "helicopter"
             } else {
                 return "train.side.front.car"
             }

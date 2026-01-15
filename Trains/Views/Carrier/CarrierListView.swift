@@ -105,6 +105,11 @@ struct CarrierListView: View {
         .onAppear {
             viewModel.applySavedFilter()
         }
+        .onChange(of: ScheduleFilterViewModel.savedFilter) { oldValue, newValue in
+            // Применяем новый фильтр и перезагружаем данные
+            viewModel.applySavedFilter()
+            viewModel.reloadWithCurrentFilter()
+        }
     }
     
     // MARK: - Main Content Views
