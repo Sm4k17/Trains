@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import OpenAPIURLSession
 
 struct CarrierListView: View {
     
@@ -17,7 +16,7 @@ struct CarrierListView: View {
             static let view: CGFloat = 12
             static let horizontal: CGFloat = 16
             static let titleTop: CGFloat = 12
-            static let rowVerticalInset: CGFloat = 8
+            static let rowVerticalInset: CGFloat = 4
             static let rowHorizontalInset: CGFloat = 16
             static let listBottom: CGFloat = 10
             static let bottom: CGFloat = 24
@@ -54,18 +53,12 @@ struct CarrierListView: View {
         self._headerTo = headerTo
         self._navigationPath = navigationPath
         
-        // Создаем реальный сервис
-        let client = Client(
-            serverURL: try! Servers.Server1.url(),
-            transport: URLSessionTransport()
-        )
-        let apikey = "a63c3bd4-fd50-47a4-a56b-def74416d733"
-        let carrierService = CarrierService(client: client, apikey: apikey)
+        let networkClient = NetworkService.shared.createNetworkClient()
         
         self._viewModel = State(initialValue: CarrierListViewModel(
-            fromCity: headerFrom.wrappedValue,
-            toCity: headerTo.wrappedValue,
-            carrierService: carrierService
+            fromText: headerFrom.wrappedValue,
+            toText: headerTo.wrappedValue,
+            networkClient: networkClient
         ))
     }
     
@@ -109,6 +102,9 @@ struct CarrierListView: View {
         .task {
             await viewModel.loadCarriers()
         }
+        .onAppear {
+            viewModel.applySavedFilter()
+        }
     }
     
     // MARK: - Main Content Views
@@ -140,7 +136,8 @@ struct CarrierListView: View {
     private var emptyStateView: some View {
         VStack {
             Spacer()
-            Text("Вариантов нет")
+            Text(viewModel.hasActiveFilter && viewModel.filteredCarriers.isEmpty ?
+                 "Вариантов нет" : "Вариантов нет")
                 .font(.system(size: Constants.FontSize.emptyState, weight: .bold))
                 .foregroundColor(.ypBlack)
             Spacer()
@@ -149,29 +146,29 @@ struct CarrierListView: View {
     }
     
     private var listView: some View {
-        List(viewModel.carriers.indices, id: \.self) { index in
-            let carrier = viewModel.carriers[index]
-            
-            Button {
-                if let info = viewModel.getCarrierInfo(for: index) {
-                    navigationPath.append(
-                        AppRoute.carrierInfo(
-                            carrierCode: info.code,
-                            logoAssetName: info.logoName
+        List {
+            ForEach(Array(viewModel.displayCarriers.enumerated()), id: \.element.id) { index, carrier in
+                Button {
+                    if let info = viewModel.getCarrierInfo(for: index) {
+                        navigationPath.append(
+                            AppRoute.carrierInfo(
+                                carrierCode: info.code,
+                                logoAssetName: info.logoName ?? "building.2"
+                            )
                         )
-                    )
+                    }
+                } label: {
+                    CarrierTableRow(viewModel: carrier)
                 }
-            } label: {
-                CarrierTableRow(viewModel: carrier)
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+                .listRowInsets(.init(
+                    top: Constants.Spacing.rowVerticalInset,
+                    leading: Constants.Spacing.rowHorizontalInset,
+                    bottom: Constants.Spacing.rowVerticalInset,
+                    trailing: Constants.Spacing.rowHorizontalInset
+                ))
             }
-            .listRowSeparator(.hidden)
-            .listRowBackground(Color.clear)
-            .listRowInsets(.init(
-                top: Constants.Spacing.rowVerticalInset,
-                leading: Constants.Spacing.rowHorizontalInset,
-                bottom: Constants.Spacing.rowVerticalInset,
-                trailing: Constants.Spacing.rowHorizontalInset
-            ))
         }
         .listStyle(.plain)
         .scrollIndicators(.hidden)

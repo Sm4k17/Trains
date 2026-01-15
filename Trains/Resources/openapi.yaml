@@ -30,58 +30,58 @@ paths:
             type: string
         - name: lat
           in: query
-          description: широта согласно WGS84
+          description: Широта согласно WGS84
           required: true
           schema:
             type: number
         - name: lng
           in: query
-          description: долгота согласно WGS84
+          description: Долгота согласно WGS84
           required: true
           schema:
             type: number
         - name: distance
           in: query
-          description: радиус охвата в километрах
+          description: Радиус охвата в километрах
           required: true
           schema:
             type: integer
-        - name: format
-          in: query
-          description: json или xml
-          required: false
-          schema:
-            type: string
         - name: lang
           in: query
-          description: язык (например, ru_RU)
+          description: Язык возвращаемой информации (например, ru_RU)
           required: false
           schema:
             type: string
-        - name: offset
+        - name: format
           in: query
-          description: сдвиг относительно первого результата
+          description: Формат ответа (json или xml)
           required: false
           schema:
-            type: integer
-        - name: limit
-          in: query
-          description: ограничение на количество возвращаемых станций
-          required: false
-          schema:
-            type: integer
+            type: string
         - name: station_types
           in: query
-          description: тип станции
+          description: Типы запрашиваемых станций (например, station, bus_station)
           required: false
           schema:
             type: string
         - name: transport_types
           in: query
-          description: тип транспорта
+          description: Тип транспортного средства (например, plane, train, bus)
           required: false
           schema:
             type: string
+        - name: offset
+          in: query
+          description: Смещение относительно первого результата
+          required: false
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Ограничение на количество возвращаемых станций
+          required: false
+          schema:
+            type: integer
       responses:
         "200":
           description: Успешный ответ
@@ -105,37 +105,37 @@ paths:
             type: string
         - name: from
           in: query
-          description: код станции отправления
+          description: Код станции отправления
           required: true
           schema:
             type: string
         - name: to
           in: query
-          description: код станции прибытия
+          description: Код станции прибытия
           required: true
           schema:
             type: string
         - name: format
           in: query
-          description: формат ответа
+          description: Формат ответа, по умолчанию JSON
           required: false
           schema:
             type: string
         - name: lang
           in: query
-          description: язык ответа
+          description: Язык ответа (например, ru_RU)
           required: false
           schema:
             type: string
         - name: date
           in: query
-          description: дата в формате YYYY-MM-DD
+          description: Дата в формате YYYY-MM-DD
           required: false
           schema:
             type: string
         - name: transport_types
           in: query
-          description: тип транспорта
+          description: Тип транспорта (plane, train, bus и т.д.)
           required: false
           schema:
             type: string
@@ -153,31 +153,25 @@ paths:
             type: string
         - name: offset
           in: query
-          description: сдвиг результатов
+          description: Смещение результатов
           required: false
           schema:
             type: integer
         - name: limit
           in: query
-          description: лимит на количество результатов
+          description: Лимит на количество результатов, по умолчанию 100
           required: false
           schema:
             type: integer
-        - name: add_days_mask
-          in: query
-          description: календарь хождения рейсов
-          required: false
-          schema:
-            type: boolean
         - name: result_timezone
           in: query
-          description: часовой пояс для дат и времени в ответе
+          description: Часовой пояс для дат и времени в ответе
           required: false
           schema:
             type: string
         - name: transfers
           in: query
-          description: маршруты с пересадками
+          description: Включить маршруты с пересадками (true/false)
           required: false
           schema:
             type: boolean
@@ -204,61 +198,55 @@ paths:
             type: string
         - name: station
           in: query
-          description: код станции
+          description: Код станции
           required: true
           schema:
             type: string
         - name: lang
           in: query
-          description: язык
+          description: Язык возвращаемой информации (например, ru_RU)
           required: false
           schema:
             type: string
         - name: format
           in: query
-          description: формат ответа
+          description: Формат ответа (json по умолчанию)
           required: false
           schema:
             type: string
         - name: date
           in: query
-          description: дата в формате YYYY-MM-DD
+          description: Дата, на которую требуется расписание (формат YYYY-MM-DD)
           required: false
           schema:
             type: string
         - name: transport_types
           in: query
-          description: тип транспорта
+          description: Тип транспорта (plane, train, bus и т.д.)
           required: false
           schema:
             type: string
         - name: event
           in: query
-          description: прибытие или отправление
-          required: false
-          schema:
-            type: string
-        - name: system
-          in: query
-          description: система кодирования
-          required: false
-          schema:
-            type: string
-        - name: show_systems
-          in: query
-          description: коды в ответе
+          description: Событие для фильтрации (arrival/отправление)
           required: false
           schema:
             type: string
         - name: direction
           in: query
-          description: направление
+          description: Направление (например, на Москву)
+          required: false
+          schema:
+            type: string
+        - name: system
+          in: query
+          description: Система кодирования для параметра station
           required: false
           schema:
             type: string
         - name: result_timezone
           in: query
-          description: часовой пояс для отображения времени
+          description: Часовой пояс для отображения времени
           required: false
           schema:
             type: string
@@ -348,31 +336,31 @@ paths:
             type: string
         - name: lat
           in: query
-          description: широта согласно WGS84
+          description: Широта согласно WGS84
           required: true
           schema:
             type: number
         - name: lng
           in: query
-          description: долгота согласно WGS84
+          description: Долгота согласно WGS84
           required: true
           schema:
             type: number
         - name: distance
           in: query
-          description: радиус поиска в километрах
+          description: Радиус поиска ближайшего города (в километрах)
           required: false
           schema:
             type: integer
         - name: lang
           in: query
-          description: язык
+          description: Язык возвращаемой информации (например, ru_RU)
           required: false
           schema:
             type: string
         - name: format
           in: query
-          description: формат ответа
+          description: Формат ответа (json по умолчанию)
           required: false
           schema:
             type: string
@@ -482,11 +470,10 @@ paths:
             type: string
         - name: format
           in: query
-          description: формат ответа
+          description: Формат ответа (json или xml)
           required: true
           schema:
             type: string
-            enum: [json, xml]
       responses:
         "200":
           description: Успешный ответ
@@ -629,6 +616,15 @@ components:
           type: number
         majority:
           type: integer
+        codes:
+          type: object
+          properties:
+            express:
+              type: string
+            yandex:
+              type: string
+            esr:
+              type: string
 
     Segment:
       type: object

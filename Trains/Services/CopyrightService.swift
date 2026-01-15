@@ -27,7 +27,7 @@ final class CopyrightService: CopyrightServiceProtocol, @unchecked Sendable {
     func getCopyright() async throws -> Copyright {
         let response = try await client.getCopyright(query: .init(
             apikey: apikey,
-            format: .json  
+            format: "json"
         ))
         return try response.ok.body.json
     }

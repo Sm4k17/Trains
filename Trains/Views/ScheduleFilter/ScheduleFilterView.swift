@@ -16,6 +16,8 @@ struct ScheduleFilterView: View {
     // MARK: - Body
     var body: some View {
         ZStack {
+            Color(.systemBackground).ignoresSafeArea()
+            
             filterList
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -32,6 +34,9 @@ struct ScheduleFilterView: View {
             if viewModel.isApplyEnabled {
                 applyButtonView
             }
+        }
+        .onAppear {
+            viewModel.loadSavedFilter()
         }
     }
     
@@ -50,6 +55,7 @@ struct ScheduleFilterView: View {
     private var applyButtonView: some View {
         HStack {
             Button("Применить") {
+                viewModel.applyFilter()
                 navigationPath.removeLast()
             }
             .font(.system(size: 17, weight: .bold))

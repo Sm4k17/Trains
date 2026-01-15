@@ -13,11 +13,10 @@ actor NetworkClient {
     private let client: Client
     private let apikey: String
     
-    // MARK: - Кэширование
     private var citiesCache: [String]?
-    private var stationsCache: [String: [String]] = [:] // [город: [станции]]
+    private var stationsCache: [String: [String]] = [:]
     private var lastUpdate: Date?
-    private let cacheTTL: TimeInterval = 3600 // 1 час
+    private let cacheTTL: TimeInterval = 3600
     
     init(client: Client, apikey: String) {
         self.client = client
@@ -28,49 +27,35 @@ actor NetworkClient {
     
     func getAllCities(cached: Bool = true) async throws -> [String] {
         if cached, let cachedCities = citiesCache, !isCacheExpired() {
-            print("✅ Используем кэш городов (\(cachedCities.count) городов)")
             return cachedCities
         }
         
-        print("🔄 Загружаем города из сети...")
         let response = try await getStations()
         let cities = extractCities(from: response)
         
-        // Кэшируем
         citiesCache = cities
         lastUpdate = Date()
         
-        print("✅ Загружено \(cities.count) городов, сохранено в кэш")
         return cities
     }
     
     func getStationsByCity(_ cityName: String, cached: Bool = true) async throws -> [String] {
         if cached, let cachedStations = stationsCache[cityName], !isCacheExpired() {
-            print("✅ Используем кэш станций для \(cityName) (\(cachedStations.count) станций)")
             return cachedStations
         }
         
-        // Если нужно загрузить станции для города, загружаем все данные
-        print("🔄 Загружаем станции для \(cityName) из сети...")
         let response = try await getStations()
-        
-        // Извлекаем ВСЕ города и станции
         let allData = extractAllCitiesWithStations(from: response)
         
-        // Сохраняем все в кэш
         citiesCache = allData.map { $0.key }
         for (city, stations) in allData {
             stationsCache[city] = stations
         }
         lastUpdate = Date()
         
-        // Возвращаем станции для запрошенного города
-        let stations = allData[cityName] ?? []
-        print("✅ Загружено \(stations.count) станций для \(cityName)")
-        return stations
+        return allData[cityName] ?? []
     }
     
-    // MARK: - Проверка кэша
     private func isCacheExpired() -> Bool {
         guard let lastUpdate = lastUpdate else { return true }
         return Date().timeIntervalSince(lastUpdate) > cacheTTL
@@ -88,7 +73,6 @@ actor NetworkClient {
                 guard let settlements = region.settlements else { continue }
                 
                 for settlement in settlements {
-                    // Фильтруем пустые названия городов
                     guard let title = settlement.title,
                           !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                         continue
@@ -113,7 +97,6 @@ actor NetworkClient {
                 guard let settlements = region.settlements else { continue }
                 
                 for settlement in settlements {
-                    // Фильтруем пустые названия городов
                     guard let cityName = settlement.title,
                           !cityName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                         continue
@@ -123,7 +106,6 @@ actor NetworkClient {
                     if let settlementStations = settlement.stations {
                         for station in settlementStations {
                             let stationTitle = getStationTitle(from: station)
-                            // Фильтруем пустые названия станций
                             if !stationTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                                 stations.append(stationTitle)
                             }
@@ -154,39 +136,172 @@ actor NetworkClient {
         return "Неизвестная станция"
     }
     
-    // MARK: - Очистка кэша
     func clearCache() {
         citiesCache = nil
         stationsCache.removeAll()
         lastUpdate = nil
-        print("🧹 Кэш очищен")
     }
     
-    // MARK: - Nearest Stations
+    // MARK: - Получение ID станций и городов
     
-    func getNearestStations(lat: Double, lng: Double, distance: Int = 50) async throws -> Components.Schemas.Stations {
-        let response = try await client.getNearestStations(query: .init(
-            apikey: apikey,
-            lat: lat,
-            lng: lng,
-            distance: distance,
-            format: "json",
-            lang: "ru_RU"
-        ))
-        return try await response.ok.body.json
+    func getStationID(cityName: String, stationName: String) async throws -> String? {
+        let response = try await getStations()
+        
+        guard let countries = response.countries else {
+            return nil
+        }
+        
+        for country in countries {
+            guard let regions = country.regions else { continue }
+            
+            for region in regions {
+                guard let settlements = region.settlements else { continue }
+                
+                for settlement in settlements {
+                    guard let settlementTitle = settlement.title,
+                          settlementTitle == cityName else {
+                        continue
+                    }
+                    
+                    if let stations = settlement.stations {
+                        for station in stations {
+                            let stationTitle = getStationTitle(from: station)
+                            
+                            if stationTitle == stationName {
+                                if let codes = station.codes {
+                                    if let yandexCode = codes.yandex {
+                                        return yandexCode
+                                    }
+                                }
+                                
+                                if let settlementCode = settlement.codes?.yandex_code {
+                                    return settlementCode
+                                }
+                                
+                                return nil
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return nil
     }
     
-    // MARK: - Copyright
-    
-    func getCopyright() async throws -> Components.Schemas.Copyright {
-        let response = try await client.getCopyright(query: .init(
-            apikey: apikey,
-            format: .json
-        ))
-        return try await response.ok.body.json
+    func getCityID(cityName: String) async throws -> String? {
+        let response = try await getStations()
+        
+        guard let countries = response.countries else { return nil }
+        
+        for country in countries {
+            guard let regions = country.regions else { continue }
+            
+            for region in regions {
+                guard let settlements = region.settlements else { continue }
+                
+                for settlement in settlements {
+                    if let title = settlement.title,
+                       title == cityName,
+                       let settlementCode = settlement.codes?.yandex_code {
+                        return "c\(settlementCode)"
+                    }
+                }
+            }
+        }
+        
+        return nil
     }
     
-    // MARK: - Search
+    // MARK: - Получение данных для поиска
+    
+    func getSearchData(from formattedFromText: String, to formattedToText: String) async throws -> (fromCode: String, toCode: String) {
+        let fromData = parseFormattedText(formattedFromText)
+        let toData = parseFormattedText(formattedToText)
+        
+        var fromCode: String
+        var toCode: String
+        
+        if let stationName = fromData.stationName {
+            if let stationCode = try await getStationID(cityName: fromData.cityName, stationName: stationName) {
+                fromCode = stationCode
+            } else if let cityCode = try await getCityID(cityName: fromData.cityName) {
+                fromCode = cityCode
+            } else {
+                fromCode = fromData.cityName
+            }
+        } else {
+            if let cityCode = try await getCityID(cityName: fromData.cityName) {
+                fromCode = cityCode
+            } else {
+                fromCode = fromData.cityName
+            }
+        }
+        
+        if let stationName = toData.stationName {
+            if let stationCode = try await getStationID(cityName: toData.cityName, stationName: stationName) {
+                toCode = stationCode
+            } else if let cityCode = try await getCityID(cityName: toData.cityName) {
+                toCode = cityCode
+            } else {
+                toCode = toData.cityName
+            }
+        } else {
+            if let cityCode = try await getCityID(cityName: toData.cityName) {
+                toCode = cityCode
+            } else {
+                toCode = toData.cityName
+            }
+        }
+        
+        return (fromCode, toCode)
+    }
+    
+    private func parseFormattedText(_ text: String) -> (cityName: String, stationName: String?) {
+        let trimmedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        if !trimmedText.contains("(") || !trimmedText.contains(")") {
+            return (trimmedText, nil)
+        }
+        
+        let pattern = #"^([^\(]+) \(([^\(\)]+(?: \([^\(\)]+\))?)\)$"#
+        
+        if let regex = try? NSRegularExpression(pattern: pattern),
+           let match = regex.firstMatch(in: trimmedText, range: NSRange(trimmedText.startIndex..., in: trimmedText)),
+           match.numberOfRanges >= 3,
+           let cityRange = Range(match.range(at: 1), in: trimmedText),
+           let stationRange = Range(match.range(at: 2), in: trimmedText) {
+            
+            let city = String(trimmedText[cityRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+            var station = String(trimmedText[stationRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+            
+            if station.hasPrefix(city + " (") && station.last == ")" {
+                station = String(station.dropFirst(city.count + 2).dropLast())
+            }
+            
+            return (city, station.isEmpty ? nil : station)
+        }
+        
+        if let openBracket = trimmedText.firstIndex(of: "("),
+           let closeBracket = trimmedText.lastIndex(of: ")") {
+            
+            let city = String(trimmedText[..<openBracket]).trimmingCharacters(in: .whitespacesAndNewlines)
+            var station = String(trimmedText[trimmedText.index(after: openBracket)..<closeBracket])
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            
+            if station.hasPrefix(city + " (") && station.last == ")" {
+                let innerStart = station.index(station.startIndex, offsetBy: city.count + 2)
+                let innerEnd = station.index(before: station.endIndex)
+                station = String(station[innerStart..<innerEnd])
+            }
+            
+            return (city, station.isEmpty ? nil : station)
+        }
+        
+        return (trimmedText, nil)
+    }
+    
+    // MARK: - API Methods
     
     func search(
         from: String,
@@ -208,8 +323,6 @@ actor NetworkClient {
         return try await response.ok.body.json
     }
     
-    // MARK: - Schedule
-    
     func getSchedule(
         station: String,
         date: String? = nil,
@@ -227,8 +340,6 @@ actor NetworkClient {
         ))
         return try await response.ok.body.json
     }
-    
-    // MARK: - Thread
     
     func getThread(
         uid: String,
@@ -248,38 +359,15 @@ actor NetworkClient {
         return try await response.ok.body.json
     }
     
-    // MARK: - Nearest Settlement
-    
-    func getNearestSettlement(
-        lat: Double,
-        lng: Double,
-        distance: Int? = 50
-    ) async throws -> Components.Schemas.NearestSettlement {
-        let response = try await client.getNearestSettlement(query: .init(
-            apikey: apikey,
-            lat: lat,
-            lng: lng,
-            distance: distance,
-            lang: "ru_RU",
-            format: "json"
-        ))
-        return try await response.ok.body.json
-    }
-    
-    // MARK: - Carrier
-    
     func getCarrier(
         code: String,
         system: Operations.getCarrier.Input.Query.systemPayload? = nil
     ) async throws -> Components.Schemas.CarrierResponse {
-        // Определяем system
         let determinedSystem: Operations.getCarrier.Input.Query.systemPayload?
         
         if let system = system {
-            // Если система указана явно, используем её
             determinedSystem = system
         } else {
-            // Автоматически определяем систему по формату кода
             if code.rangeOfCharacter(from: .letters) != nil {
                 determinedSystem = .iata
             } else {
@@ -297,8 +385,6 @@ actor NetworkClient {
         return try await response.ok.body.json
     }
     
-    // MARK: - Stations List
-    
     func getStations() async throws -> getStationsResponse {
         let response = try await client.getStations(query: .init(
             apikey: apikey,
@@ -308,11 +394,10 @@ actor NetworkClient {
         
         let responseBody = try await response.ok.body.html
         
-        let limit = 50 * 1024 * 1024 // 50Mb
+        let limit = 50 * 1024 * 1024
         
         let fullData = try await Data(collecting: responseBody, upTo: limit)
         
-        // Вызываем MainActor функцию для декодирования
         return try await MainActor.run {
             try JSONDecoder().decode(getStationsResponse.self, from: fullData)
         }

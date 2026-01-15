@@ -107,10 +107,17 @@ final class StationSearchViewModel {
         isLoading = false
     }
     
-    func selectStation(_ stationTitle: String) -> String {
-        // Возвращаем формат: "Город (Название станции)"
-        return "\(city) (\(stationTitle))"
+    func selectStation(_ station: String) -> String {
+        let result: String
+        if station.contains(city) {
+            result = station
+        } else {
+            result = "\(city) (\(station))"
+        }
+                
+        return result
     }
+
     
     func clearSearch() {
         searchText = ""

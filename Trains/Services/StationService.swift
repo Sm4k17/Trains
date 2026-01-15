@@ -9,6 +9,7 @@ import Foundation
 
 protocol StationServiceProtocol: Sendable {
     func getStationsByCity(_ cityName: String, cached: Bool) async throws -> [String]
+    func getStationID(cityName: String, stationName: String) async throws -> String?
 }
 
 final class StationService: StationServiceProtocol {
@@ -24,5 +25,10 @@ final class StationService: StationServiceProtocol {
     func getStationsByCity(_ cityName: String, cached: Bool = true) async throws -> [String] {
         let networkClient = networkService.createNetworkClient()
         return try await networkClient.getStationsByCity(cityName, cached: cached)
+    }
+    
+    func getStationID(cityName: String, stationName: String) async throws -> String? {
+        let networkClient = networkService.createNetworkClient()
+        return try await networkClient.getStationID(cityName: cityName, stationName: stationName)
     }
 }

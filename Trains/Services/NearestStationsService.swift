@@ -28,8 +28,8 @@ final class NearestStationsService: NearestStationsServiceProtocol, @unchecked S
             lat: lat,
             lng: lng,
             distance: distance,
-            format: "json",
-            lang: "ru_RU"
+            lang: "ru_RU", 
+            format: "json"
         ))
         return try response.ok.body.json
     }

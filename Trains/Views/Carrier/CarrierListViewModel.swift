@@ -19,77 +19,53 @@ final class CarrierListViewModel {
     var showEmptyState = false
     var errorMessage: String?
     
-    private let carrierService: CarrierServiceProtocol
-    private let fromCity: String
-    private let toCity: String
+    // Состояние фильтра
+    private var currentFilter: ScheduleFilter = .default
+    
+    private let networkClient: NetworkClient
+    private let fromText: String
+    private let toText: String
     
     // MARK: - Computed Properties
     
     var headerTitle: String {
-        "\(fromCity) → \(toCity)"
+        "\(fromText) → \(toText)"
     }
     
-    // MARK: - Mock Data
+    var hasActiveFilter: Bool {
+        currentFilter.isActive
+    }
     
-    private let mockData = [
-        CarrierRowViewModel(
-            carrierName: "РЖД",
-            logoSystemName: "train.side.front.car",
-            carrierCode: "680",
-            dateText: "14 января",
-            departTime: "22:30",
-            arriveTime: "08:15",
-            durationText: "20 часов",
-            note: "С пересадкой в Костроме"
-        ),
-        CarrierRowViewModel(
-            carrierName: "ФГК",
-            logoSystemName: "box.truck.fill",
-            carrierCode: "104",
-            dateText: "15 января",
-            departTime: "01:15",
-            arriveTime: "09:00",
-            durationText: "9 часов",
-            note: nil
-        ),
-        CarrierRowViewModel(
-            carrierName: "S7 Airlines",
-            logoSystemName: "airplane",
-            carrierCode: "S7",
-            dateText: "15 января",
-            departTime: "12:30",
-            arriveTime: "21:00",
-            durationText: "9 часов",
-            note: nil
-        ),
-        CarrierRowViewModel(
-            carrierName: "Аэрофлот",
-            logoSystemName: "airplane",
-            carrierCode: "SU",
-            dateText: "16 января",
-            departTime: "08:45",
-            arriveTime: "11:30",
-            durationText: "2 часа 45 минут",
-            note: nil
-        ),
-        CarrierRowViewModel(
-            carrierName: "ТрансКонтейнер",
-            logoSystemName: "shippingbox.fill",
-            carrierCode: "113",
-            dateText: "17 января",
-            departTime: "14:00",
-            arriveTime: "06:00",
-            durationText: "16 часов",
-            note: "Грузовой поезд"
-        )
-    ]
+    var filteredCarriers: [CarrierRowViewModel] {
+        if currentFilter.isActive {
+            return carriers.filter { carrier in
+                // Фильтр по времени отправления
+                let timeFilterPassed = filterByTime(carrier.departTime)
+                
+                // Фильтр по пересадкам
+                let transferFilterPassed = filterByTransfers(carrier.note)
+                
+                return timeFilterPassed && transferFilterPassed
+            }
+        } else {
+            return carriers
+        }
+    }
+    
+    var displayCarriers: [CarrierRowViewModel] {
+        hasActiveFilter ? filteredCarriers : carriers
+    }
     
     // MARK: - Initialization
     
-    init(fromCity: String, toCity: String, carrierService: CarrierServiceProtocol) {
-        self.fromCity = fromCity
-        self.toCity = toCity
-        self.carrierService = carrierService
+    init(
+        fromText: String,
+        toText: String,
+        networkClient: NetworkClient
+    ) {
+        self.fromText = fromText
+        self.toText = toText
+        self.networkClient = networkClient
     }
     
     // MARK: - Public Methods
@@ -97,32 +73,202 @@ final class CarrierListViewModel {
     func loadCarriers() async {
         isLoading = true
         errorMessage = nil
+        carriers = []
         
         do {
-            // Имитация загрузки данных
-            try await Task.sleep(nanoseconds: 500_000_000)
+            let (fromCode, toCode) = try await networkClient.getSearchData(
+                from: fromText,
+                to: toText
+            )
             
-            // Временно используем мок данные
-            carriers = mockData
-            showEmptyState = carriers.isEmpty
+            let response = try await networkClient.search(
+                from: fromCode,
+                to: toCode,
+                date: nil,
+                transportTypes: nil,
+                limit: 20
+            )
             
+            await processSearchResponse(response)
+            
+        } catch let error as URLError where error.code == .badServerResponse {
+            errorMessage = "Маршруты не найдены между выбранными пунктами"
+            showEmptyState = true
         } catch {
             errorMessage = "Ошибка загрузки данных"
-            carriers = mockData
+            showEmptyState = true
         }
         
         isLoading = false
+        updateEmptyState()
     }
     
-    func getCarrierInfo(for index: Int) -> (code: String, logoName: String)? {
-        guard index >= 0 && index < carriers.count else { return nil }
-        let carrier = carriers[index]
+    func applySavedFilter() {
+        // Загружаем сохраненный фильтр
+        self.currentFilter = ScheduleFilterViewModel.savedFilter
+        updateEmptyState()
+    }
+    
+    func getCarrierInfo(for index: Int) -> (code: String, logoName: String?)? {
+        let targetCarriers = displayCarriers
+        guard index >= 0 && index < targetCarriers.count else { return nil }
+        let carrier = targetCarriers[index]
         
-        guard let code = carrier.carrierCode,
-              let logoName = carrier.logoSystemName else {
+        guard let code = carrier.carrierCode else {
             return nil
         }
         
-        return (code, logoName)
+        return (code, carrier.logoAssetName)
+    }
+    
+    // MARK: - Private Methods
+    
+    private func processSearchResponse(_ response: Components.Schemas.SearchResponse) async {
+        guard let segments = response.segments else {
+            carriers = []
+            showEmptyState = true
+            return
+        }
+        
+        var carrierViewModels: [CarrierRowViewModel] = []
+        
+        for segment in segments {
+            guard let thread = segment.thread,
+                  let departure = segment.departure,
+                  let arrival = segment.arrival else {
+                continue
+            }
+            
+            let carrierName = thread.carrier?.title ?? "Неизвестный перевозчик"
+            let carrierCode = thread.carrier?.code.flatMap { String($0) }
+            let carrierLogo = thread.carrier?.logo
+            
+            let departTime = formatTime(from: departure)
+            let arriveTime = formatTime(from: arrival)
+            let durationSeconds = Int(segment.duration ?? 0.0)
+            let durationText = formatDuration(durationSeconds)
+            let dateText = formatDate(from: departure)
+            
+            let note = extractTransferInfo(from: segment)
+            let transportType = thread.transport_type
+            
+            let viewModel = CarrierRowViewModel(
+                carrierName: carrierName,
+                logoURL: carrierLogo,
+                transportType: transportType,
+                carrierCode: carrierCode,
+                dateText: dateText,
+                departTime: departTime,
+                arriveTime: arriveTime,
+                durationText: durationText,
+                note: note
+            )
+            
+            carrierViewModels.append(viewModel)
+        }
+        
+        carriers = carrierViewModels
+        updateEmptyState()
+    }
+    
+    private func filterByTime(_ departTime: String) -> Bool {
+        guard !currentFilter.selectedDayParts.isEmpty else { return true }
+        
+        let components = departTime.split(separator: ":")
+        guard components.count >= 2,
+              let hour = Int(components[0]) else {
+            return true
+        }
+        
+        return currentFilter.selectedDayParts.contains { dayPart in
+            let range = dayPart.timeRange
+            
+            if range.start < range.end {
+                // Нормальный диапазон (например, 6-12)
+                return hour >= range.start && hour < range.end
+            } else {
+                // Диапазон через полночь (например, 0-6)
+                return hour >= range.start || hour < range.end
+            }
+        }
+    }
+    
+    private func filterByTransfers(_ note: String?) -> Bool {
+        guard let showTransfers = currentFilter.showTransfers else {
+            // Если фильтр по пересадкам не выбран - показываем все
+            return true
+        }
+        
+        if showTransfers {
+            // Показываем все, включая с пересадками
+            return true
+        } else {
+            // Показываем только без пересадок
+            return note == nil
+        }
+    }
+    
+    private func updateEmptyState() {
+        showEmptyState = displayCarriers.isEmpty
+    }
+    
+    private func formatTime(from timeString: String) -> String {
+        let components = timeString.split(separator: ":")
+        
+        guard components.count >= 2 else {
+            return "--:--"
+        }
+        
+        let hour = String(components[0])
+        let minute = String(components[1])
+        
+        return "\(hour):\(minute)"
+    }
+    
+    private func formatDate(from timeString: String) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "ru_RU")
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+        
+        guard let date = dateFormatter.date(from: timeString) else {
+            return formatCurrentDate()
+        }
+        
+        dateFormatter.dateFormat = "d MMMM"
+        return dateFormatter.string(from: date)
+    }
+    
+    private func formatCurrentDate() -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "ru_RU")
+        dateFormatter.dateFormat = "d MMMM"
+        return dateFormatter.string(from: Date())
+    }
+    
+    private func formatDuration(_ seconds: Int) -> String {
+        let hours = seconds / 3600
+        let minutes = (seconds % 3600) / 60
+        
+        if hours > 0 && minutes > 0 {
+            return "\(hours) ч \(minutes) мин"
+        } else if hours > 0 {
+            return "\(hours) ч"
+        } else if minutes > 0 {
+            return "\(minutes) мин"
+        } else {
+            return "менее минуты"
+        }
+    }
+    
+    private func extractTransferInfo(from segment: Components.Schemas.Segment) -> String? {
+        guard let hasTransfers = segment.has_transfers else {
+            return nil
+        }
+        
+        if hasTransfers {
+            return "С пересадками"
+        } else {
+            return nil
+        }
     }
 }
