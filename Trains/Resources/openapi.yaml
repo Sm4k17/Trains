@@ -4,7 +4,7 @@ info:
   description: API для получения информации о расписании транспорта
   version: 3.0.0
 servers:
-  - url: https://api.rasp.yandex-net.ru
+  - url: https://api.rasp.yandex.net
 tags:
   - name: Ближайшие станции
   - name: Поиск расписания
@@ -626,6 +626,7 @@ components:
             esr:
               type: string
 
+    # ОБНОВЛЕННЫЙ Segment с полной информацией о пересадках
     Segment:
       type: object
       properties:
@@ -643,12 +644,58 @@ components:
           $ref: '#/components/schemas/Station'
         has_transfers:
           type: boolean
+          description: Признак наличия пересадок по маршруту
         tickets_info:
           $ref: '#/components/schemas/TicketsInfo'
         duration:
           type: number
         start_date:
           type: string
+        # ДОБАВЛЕННЫЕ ПОЛЯ для работы с пересадками
+        transfers:
+          type: array
+          description: Информация о пересадках
+          items:
+            $ref: '#/components/schemas/Transfer'
+        details:
+          type: array
+          description: Детали сегментов (включая пересадки)
+          items:
+            $ref: '#/components/schemas/Segment'
+        departure_platform:
+          type: string
+        arrival_platform:
+          type: string
+        departure_terminal:
+          type: string
+        arrival_terminal:
+          type: string
+        stops:
+          type: string
+        days:
+          type: string
+        except_days:
+          type: string
+
+    # НОВАЯ схема Transfer для информации о пересадках
+    Transfer:
+      type: object
+      properties:
+        type:
+          type: string
+          description: Тип транспортного пункта
+        title:
+          type: string
+          description: Полное название пункта пересадки
+        short_title:
+          type: string
+          description: Краткое название пункта пересадки
+        popular_title:
+          type: string
+          description: Общепринятое название пункта пересадки
+        code:
+          type: string
+          description: Код пункта пересадки в системе Яндекс Расписаний
 
     IntervalSegment:
       type: object

@@ -10,7 +10,7 @@ import OpenAPIURLSession
 
 class NetworkService {
     
-    private let apiKey = "a63c3bd4-fd50-47a4-a56b-def74416d733"
+    private let apiKey = "17a7b5d3-ce93-4508-bdd7-5058909c0fbd"
     
     // MARK: - Shared Instance (синглтон для кэша)
     static let shared = NetworkService()
