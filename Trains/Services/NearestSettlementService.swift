@@ -9,10 +9,8 @@ import Foundation
 import OpenAPIRuntime
 import OpenAPIURLSession
 
-typealias Settlement = Components.Schemas.Settlement
-
 protocol NearestSettlementServiceProtocol: Sendable {
-    func getNearestSettlement(lat: Double, lng: Double) async throws -> Settlement
+    func getNearestSettlement(lat: Double, lng: Double, distance: Int?) async throws -> Components.Schemas.NearestSettlement
 }
 
 final class NearestSettlementService: NearestSettlementServiceProtocol, @unchecked Sendable {
@@ -24,13 +22,15 @@ final class NearestSettlementService: NearestSettlementServiceProtocol, @uncheck
         self.apikey = apikey
     }
     
-    func getNearestSettlement(lat: Double, lng: Double) async throws -> Settlement {
+    func getNearestSettlement(lat: Double, lng: Double, distance: Int? = 50) async throws -> Components.Schemas.NearestSettlement {
         let response = try await client.getNearestSettlement(query: .init(
             apikey: apikey,
             lat: lat,
             lng: lng,
-            format: "json" 
+            distance: distance,
+            lang: "ru_RU",
+            format: "json"
         ))
-        return try response.ok.body.json
+        return try await response.ok.body.json
     }
 }

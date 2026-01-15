@@ -93,7 +93,7 @@ func testAllServices() async throws {
     
     // 6. Тест Stations List
     let stationsListService = StationsListService(client: client, apikey: apikey)
-    _ = try await stationsListService.getStationsList()
+    _ = try await stationsListService.getStations()
     print("📋 Список станций получена")
     
     // 7. Тест Carrier

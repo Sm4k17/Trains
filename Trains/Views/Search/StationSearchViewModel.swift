@@ -16,23 +16,23 @@ final class StationSearchViewModel {
     let context: AppRoute.CitySearchContext
     
     var searchText: String = ""
-    
-    // MARK: - Mock Data (изолируем от View)
-    private let stations = [
-        "Киевский вокзал",
-        "Курский вокзал",
-        "Ярославский вокзал",
-        "Белорусский вокзал",
-        "Савеловский вокзал",
-        "Ленинградский вокзал"
-    ]
+    var allStations: [String] = []
+    var isLoading = false
+    var errorMessage: String?
     
     // MARK: - Computed Properties
+    var dataHash: String {
+        filteredStations.joined(separator: "|") + "|count:\(filteredStations.count)"
+    }
+    
     var filteredStations: [String] {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        return query.isEmpty
-        ? stations
-        : stations.filter { $0.localizedCaseInsensitiveContains(query) }
+        
+        if query.isEmpty {
+            return allStations
+        }
+        
+        return allStations.filter { $0.localizedCaseInsensitiveContains(query) }
     }
     
     var navigationTitle: String {
@@ -40,11 +40,27 @@ final class StationSearchViewModel {
     }
     
     var searchPlaceholder: String {
-        "Введите запрос"
+        "Введите название станции"
     }
     
     var notFoundText: String {
-        "Станция не найдена"
+        if isLoading {
+            return "Загрузка станций..."
+        }
+        
+        if let error = errorMessage {
+            return "Ошибка: \(error)"
+        }
+        
+        if allStations.isEmpty && !isLoading {
+            return "Станции не найдены для города \(city)"
+        }
+        
+        if !searchText.isEmpty && filteredStations.isEmpty {
+            return "Станция '\(searchText)' не найдена"
+        }
+        
+        return "Выберите станцию"
     }
     
     // MARK: - Initialization
@@ -56,8 +72,44 @@ final class StationSearchViewModel {
     }
     
     // MARK: - Methods
-    func selectStation(_ station: String) -> String {
-        "\(city) (\(station))"
+    @MainActor
+    func loadStations() async {
+        // Проверяем, если уже загружено, не загружаем снова
+        if !allStations.isEmpty && !searchText.isEmpty && !filteredStations.isEmpty {
+            isLoading = false
+            return
+        }
+        
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            // Используем shared сервис
+            allStations = try await StationService.shared.getStationsByCity(city, cached: true)
+            print("✅ Загружено \(allStations.count) станций для города: \(city)")
+            
+            if allStations.isEmpty {
+                print("⚠️ Не найдено станций для города: \(city)")
+            }
+        } catch {
+            errorMessage = "Не удалось загрузить станции"
+            print("❌ Ошибка загрузки станций: \(error)")
+            allStations = [
+                "Киевский вокзал",
+                "Курский вокзал",
+                "Ярославский вокзал",
+                "Белорусский вокзал",
+                "Савеловский вокзал",
+                "Ленинградский вокзал"
+            ]
+        }
+        
+        isLoading = false
+    }
+    
+    func selectStation(_ stationTitle: String) -> String {
+        // Возвращаем формат: "Город (Название станции)"
+        return "\(city) (\(stationTitle))"
     }
     
     func clearSearch() {

@@ -77,7 +77,7 @@ struct SearchTextField: View {
 // MARK: - Preview
 
 #Preview {
-    @State var text = "Москва"
+    @Previewable @State var text = "Москва"
     
     return SearchTextField(
         text: $text,

@@ -46,7 +46,9 @@ struct StationSearchView: View {
         VStack(spacing: 0) {
             searchField
             
-            if viewModel.filteredStations.isEmpty {
+            if viewModel.isLoading {
+                loadingView
+            } else if viewModel.filteredStations.isEmpty {
                 notFoundView
             } else {
                 stationList
@@ -61,6 +63,9 @@ struct StationSearchView: View {
                     navigationPath.removeLast()
                 }
             }
+        }
+        .task {
+            await viewModel.loadStations()
         }
     }
     
@@ -79,7 +84,7 @@ struct StationSearchView: View {
         }
         
         enum FontSize {
-            static let notFound: CGFloat = 24
+            static let notFound: CGFloat = 18
             static let station: CGFloat = 17
         }
         
@@ -107,7 +112,13 @@ struct StationSearchView: View {
         List(viewModel.filteredStations, id: \.self) { station in
             stationRow(for: station)
         }
+        .id(viewModel.dataHash)
         .listStyle(.plain)
+        .animation(.easeInOut(duration: 0.2), value: viewModel.filteredStations)
+        .transition(.opacity)
+        .refreshable {
+            await viewModel.loadStations()
+        }
     }
     
     private func stationRow(for station: String) -> some View {
@@ -144,6 +155,17 @@ struct StationSearchView: View {
         ))
     }
     
+    private var loadingView: some View {
+        VStack {
+            Spacer()
+                .frame(height: Constants.Offset.notFoundTop)
+            
+            ProgressView()
+            
+            Spacer()
+        }
+    }
+
     private var notFoundView: some View {
         VStack {
             Spacer()
@@ -152,6 +174,8 @@ struct StationSearchView: View {
             Text(viewModel.notFoundText)
                 .font(.system(size: Constants.FontSize.notFound, weight: .bold))
                 .foregroundColor(.ypBlack)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
             
             Spacer()
         }

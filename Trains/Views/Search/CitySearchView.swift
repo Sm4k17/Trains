@@ -42,7 +42,9 @@ struct CitySearchView: View {
         VStack(spacing: 0) {
             searchField
             
-            if viewModel.filteredCities.isEmpty {
+            if viewModel.isLoading {
+                loadingView
+            } else if viewModel.filteredCities.isEmpty {
                 notFoundView
             } else {
                 cityList
@@ -57,6 +59,9 @@ struct CitySearchView: View {
                     navigationPath.removeLast()
                 }
             }
+        }
+        .task {
+            await viewModel.loadCities()
         }
     }
     
@@ -75,7 +80,7 @@ struct CitySearchView: View {
         }
         
         enum FontSize {
-            static let notFound: CGFloat = 24
+            static let notFound: CGFloat = 18
             static let city: CGFloat = 17
         }
         
@@ -103,7 +108,13 @@ struct CitySearchView: View {
         List(viewModel.filteredCities, id: \.self) { city in
             cityRow(for: city)
         }
+        .id(viewModel.dataHash)
         .listStyle(.plain)
+        .animation(.easeInOut(duration: 0.2), value: viewModel.filteredCities)
+        .transition(.opacity)
+        .refreshable {
+            await viewModel.loadCities()
+        }
     }
     
     private func cityRow(for city: String) -> some View {
@@ -132,6 +143,17 @@ struct CitySearchView: View {
         ))
     }
     
+    private var loadingView: some View {
+        VStack {
+            Spacer()
+                .frame(height: Constants.Offset.notFoundTop)
+            
+            ProgressView()
+            
+            Spacer()
+        }
+    }
+    
     private var notFoundView: some View {
         VStack {
             Spacer()
@@ -140,6 +162,8 @@ struct CitySearchView: View {
             Text(viewModel.notFoundText)
                 .font(.system(size: Constants.FontSize.notFound, weight: .bold))
                 .foregroundColor(.ypBlack)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
             
             Spacer()
         }

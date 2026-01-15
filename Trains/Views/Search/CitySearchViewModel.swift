@@ -15,24 +15,23 @@ final class CitySearchViewModel {
     let initialCity: String
     
     var searchText: String = ""
-    
-    // MARK: - Mock Data (изолируем от View)
-    private let cities = [
-        "Москва",
-        "Санкт-Петербург",
-        "Сочи",
-        "Горный воздух",
-        "Краснодар",
-        "Казань",
-        "Омск"
-    ]
+    var allCities: [String] = []
+    var isLoading = false
+    var errorMessage: String?
     
     // MARK: - Computed Properties
+    var dataHash: String {
+        filteredCities.joined(separator: "|") + "|count:\(filteredCities.count)"
+    }
+    
     var filteredCities: [String] {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        return query.isEmpty
-        ? cities
-        : cities.filter { $0.localizedCaseInsensitiveContains(query) }
+        
+        if query.isEmpty {
+            return allCities
+        }
+        
+        return allCities.filter { $0.localizedCaseInsensitiveContains(query) }
     }
     
     var navigationTitle: String {
@@ -40,11 +39,23 @@ final class CitySearchViewModel {
     }
     
     var searchPlaceholder: String {
-        "Введите запрос"
+        "Введите название города"
     }
     
     var notFoundText: String {
-        "Город не найден"
+        if isLoading {
+            return "Загрузка..."
+        }
+        
+        if let error = errorMessage {
+            return "Ошибка: \(error)"
+        }
+        
+        if !searchText.isEmpty && filteredCities.isEmpty {
+            return "Город '\(searchText)' не найден"
+        }
+        
+        return "Введите название города"
     }
     
     // MARK: - Initialization
@@ -55,6 +66,38 @@ final class CitySearchViewModel {
     }
     
     // MARK: - Methods
+    @MainActor
+    func loadCities() async {
+        // Проверяем, если уже загружено, не загружаем снова
+        if !allCities.isEmpty && !searchText.isEmpty && !filteredCities.isEmpty {
+            isLoading = false
+            return
+        }
+        
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            // Используем shared сервис
+            allCities = try await CityService.shared.getAllCities(cached: true)
+            print("✅ Загружено \(allCities.count) городов")
+        } catch {
+            errorMessage = "Не удалось загрузить города"
+            print("❌ Ошибка загрузки городов: \(error)")
+            allCities = [
+                "Москва",
+                "Санкт-Петербург",
+                "Сочи",
+                "Горный воздух",
+                "Краснодар",
+                "Казань",
+                "Омск"
+            ]
+        }
+        
+        isLoading = false
+    }
+    
     func selectCity(_ city: String) -> AppRoute {
         AppRoute.stationSearch(context: context, city: city, station: "")
     }

@@ -30,19 +30,19 @@ paths:
             type: string
         - name: lat
           in: query
-          description: широта
+          description: широта согласно WGS84
           required: true
           schema:
             type: number
         - name: lng
           in: query
-          description: долгота
+          description: долгота согласно WGS84
           required: true
           schema:
             type: number
         - name: distance
           in: query
-          description: радиус охвата
+          description: радиус охвата в километрах
           required: true
           schema:
             type: integer
@@ -54,19 +54,19 @@ paths:
             type: string
         - name: lang
           in: query
-          description: язык
+          description: язык (например, ru_RU)
           required: false
           schema:
             type: string
         - name: offset
           in: query
-          description: сдвиг
+          description: сдвиг относительно первого результата
           required: false
           schema:
             type: integer
         - name: limit
           in: query
-          description: лимит
+          description: ограничение на количество возвращаемых станций
           required: false
           schema:
             type: integer
@@ -84,7 +84,7 @@ paths:
             type: string
       responses:
         "200":
-          description: success
+          description: Успешный ответ
           content:
             application/json:
               schema:
@@ -117,19 +117,19 @@ paths:
             type: string
         - name: format
           in: query
-          description: формат
+          description: формат ответа
           required: false
           schema:
             type: string
         - name: lang
           in: query
-          description: язык
+          description: язык ответа
           required: false
           schema:
             type: string
         - name: date
           in: query
-          description: дата
+          description: дата в формате YYYY-MM-DD
           required: false
           schema:
             type: string
@@ -153,13 +153,13 @@ paths:
             type: string
         - name: offset
           in: query
-          description: сдвиг
+          description: сдвиг результатов
           required: false
           schema:
             type: integer
         - name: limit
           in: query
-          description: лимит
+          description: лимит на количество результатов
           required: false
           schema:
             type: integer
@@ -171,7 +171,7 @@ paths:
             type: boolean
         - name: result_timezone
           in: query
-          description: часовой пояс
+          description: часовой пояс для дат и времени в ответе
           required: false
           schema:
             type: string
@@ -183,7 +183,7 @@ paths:
             type: boolean
       responses:
         "200":
-          description: success
+          description: Успешный ответ
           content:
             application/json:
               schema:
@@ -216,13 +216,13 @@ paths:
             type: string
         - name: format
           in: query
-          description: формат
+          description: формат ответа
           required: false
           schema:
             type: string
         - name: date
           in: query
-          description: дата
+          description: дата в формате YYYY-MM-DD
           required: false
           schema:
             type: string
@@ -258,13 +258,13 @@ paths:
             type: string
         - name: result_timezone
           in: query
-          description: часовой пояс
+          description: часовой пояс для отображения времени
           required: false
           schema:
             type: string
       responses:
         "200":
-          description: success
+          description: Успешный ответ
           content:
             application/json:
               schema:
@@ -303,7 +303,7 @@ paths:
             type: string
         - name: format
           in: query
-          description: формат
+          description: формат ответа
           required: false
           schema:
             type: string
@@ -315,7 +315,7 @@ paths:
             type: string
         - name: date
           in: query
-          description: дата
+          description: дата в формате YYYY-MM-DD
           required: false
           schema:
             type: string
@@ -327,7 +327,7 @@ paths:
             type: string
       responses:
         "200":
-          description: success
+          description: Успешный ответ
           content:
             application/json:
               schema:
@@ -348,19 +348,19 @@ paths:
             type: string
         - name: lat
           in: query
-          description: широта
+          description: широта согласно WGS84
           required: true
           schema:
             type: number
         - name: lng
           in: query
-          description: долгота
+          description: долгота согласно WGS84
           required: true
           schema:
             type: number
         - name: distance
           in: query
-          description: радиус охвата
+          description: радиус поиска в километрах
           required: false
           schema:
             type: integer
@@ -372,17 +372,17 @@ paths:
             type: string
         - name: format
           in: query
-          description: формат
+          description: формат ответа
           required: false
           schema:
             type: string
       responses:
         "200":
-          description: success
+          description: Успешный ответ
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Settlement'
+                $ref: '#/components/schemas/NearestSettlement'
 
   /v3.0/carrier/:
     get:
@@ -405,7 +405,7 @@ paths:
             type: string
         - name: format
           in: query
-          description: формат
+          description: формат ответа
           required: false
           schema:
             type: string
@@ -424,7 +424,7 @@ paths:
             enum: [yandex, iata, sirena, express, esr]
       responses:
         "200":
-          description: success
+          description: Успешный ответ
           content:
             application/json:
               schema:
@@ -435,7 +435,7 @@ paths:
       tags:
         - Список станций
       summary: Список всех доступных станций
-      operationId: getStationsList
+      operationId: getStations
       parameters:
         - name: apikey
           in: query
@@ -445,10 +445,11 @@ paths:
             type: string
         - name: format
           in: query
-          description: формат
+          description: формат ответа
           required: false
           schema:
             type: string
+            enum: [json, xml]
         - name: lang
           in: query
           description: язык
@@ -457,8 +458,11 @@ paths:
             type: string
       responses:
         "200":
-          description: success
+          description: Успешный ответ
           content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getStationsResponse'
             text/html:
               schema:
                 type: string
@@ -485,7 +489,7 @@ paths:
             enum: [json, xml]
       responses:
         "200":
-          description: success
+          description: Успешный ответ
           content:
             application/json:
               schema:
@@ -555,7 +559,7 @@ components:
         transport_subtype:
           $ref: '#/components/schemas/TransportSubtype'
 
-    Settlement:
+    NearestSettlement:
       type: object
       properties:
         distance:
@@ -576,28 +580,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Carrier'
-
-    Carrier:
-      type: object
-      properties:
-        code:
-          type: integer
-        contacts:
-          type: string
-        url:
-          type: string
-        title:
-          type: string
-        phone:
-          type: string
-        codes:
-          $ref: '#/components/schemas/CarrierCodes'
-        address:
-          type: string
-        logo:
-          type: string
-        email:
-          type: string
 
     Copyright:
       type: object
@@ -774,6 +756,28 @@ components:
         whole:
           type: integer
 
+    Carrier:
+      type: object
+      properties:
+        code:
+          type: integer
+        contacts:
+          type: string
+        url:
+          type: string
+        title:
+          type: string
+        phone:
+          type: string
+        codes:
+          $ref: '#/components/schemas/CarrierCodes'
+        address:
+          type: string
+        logo:
+          type: string
+        email:
+          type: string
+
     CarrierCodes:
       type: object
       properties:
@@ -783,3 +787,62 @@ components:
           type: string
         iata:
           type: string
+
+    getStationsResponse:
+      type: object
+      properties:
+        countries:
+          type: array
+          items:
+            $ref: '#/components/schemas/Country'
+
+    Country:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Название страны
+        codes:
+          type: object
+          properties:
+            yandex_code:
+              type: string
+              description: Код страны в системе Яндекс Расписаний
+        regions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Region'
+
+    Region:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Название региона
+        codes:
+          type: object
+          properties:
+            yandex_code:
+              type: string
+              description: Код региона в системе Яндекс Расписаний
+        settlements:
+          type: array
+          items:
+            $ref: '#/components/schemas/SettlementDetail'
+
+    SettlementDetail:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Название населенного пункта
+        codes:
+          type: object
+          properties:
+            yandex_code:
+              type: string
+              description: Код населенного пункта в системе Яндекс Расписаний
+        stations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Station'

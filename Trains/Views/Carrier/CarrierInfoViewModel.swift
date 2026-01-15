@@ -89,7 +89,7 @@ final class CarrierInfoViewModel {
     
     // MARK: - Private Methods
     
-    private func processResponse(_ response: CarrierResponse) -> CarrierDisplayData {
+    private func processResponse(_ response: Components.Schemas.CarrierResponse) -> CarrierDisplayData {
         guard let carrier = response.carrier else {
             return CarrierDisplayData()
         }

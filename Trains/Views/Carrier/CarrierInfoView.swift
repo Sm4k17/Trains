@@ -47,16 +47,15 @@ struct CarrierInfoView: View {
     // MARK: - Init
     
     init(code: String, logoAssetName: String? = nil, navigationPath: Binding<NavigationPath>) {
-            self._navigationPath = navigationPath
-            
-            let networkService = NetworkService()
-            let networkClient = networkService.createNetworkClient()
-            
-            self._viewModel = State(initialValue: CarrierInfoViewModel(
-                code: code,
-                networkClient: networkClient
-            ))
-        }
+        self._navigationPath = navigationPath
+        
+        let networkClient = NetworkService.shared.createNetworkClient()
+        
+        self._viewModel = State(initialValue: CarrierInfoViewModel(
+            code: code,
+            networkClient: networkClient
+        ))
+    }
     
     // MARK: - Body
     

@@ -9,10 +9,14 @@ import Foundation
 import OpenAPIRuntime
 import OpenAPIURLSession
 
-typealias SearchResponse = Components.Schemas.SearchResponse
-
 protocol SearchServiceProtocol: Sendable {
-    func search(from: String, to: String, date: String?) async throws -> SearchResponse
+    func search(
+        from: String,
+        to: String,
+        date: String?,
+        transportTypes: String?,
+        limit: Int?
+    ) async throws -> Components.Schemas.SearchResponse
 }
 
 final class SearchService: SearchServiceProtocol, @unchecked Sendable {
@@ -24,13 +28,22 @@ final class SearchService: SearchServiceProtocol, @unchecked Sendable {
         self.apikey = apikey
     }
     
-    func search(from: String, to: String, date: String? = nil) async throws -> SearchResponse {
+    func search(
+        from: String,
+        to: String,
+        date: String? = nil,
+        transportTypes: String? = nil,
+        limit: Int? = 100
+    ) async throws -> Components.Schemas.SearchResponse {
         let response = try await client.getSearch(query: .init(
             apikey: apikey,
             from: from,
             to: to,
             format: "json",
-            date: date
+            lang: "ru_RU",
+            date: date,
+            transport_types: transportTypes,
+            limit: limit
         ))
         return try response.ok.body.json
     }

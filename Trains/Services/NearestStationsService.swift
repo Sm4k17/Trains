@@ -9,10 +9,8 @@ import Foundation
 import OpenAPIRuntime
 import OpenAPIURLSession
 
-typealias NearestStations = Components.Schemas.Stations
-
 protocol NearestStationsServiceProtocol: Sendable {
-    func getNearestStations(lat: Double, lng: Double, distance: Int) async throws -> NearestStations
+    func getNearestStations(lat: Double, lng: Double, distance: Int) async throws -> Components.Schemas.Stations
 }
 
 final class NearestStationsService: NearestStationsServiceProtocol, @unchecked Sendable {
@@ -24,13 +22,14 @@ final class NearestStationsService: NearestStationsServiceProtocol, @unchecked S
         self.apikey = apikey
     }
     
-    func getNearestStations(lat: Double, lng: Double, distance: Int) async throws -> NearestStations {
+    func getNearestStations(lat: Double, lng: Double, distance: Int = 50) async throws -> Components.Schemas.Stations {
         let response = try await client.getNearestStations(query: .init(
             apikey: apikey,
             lat: lat,
             lng: lng,
             distance: distance,
-            format: "json"
+            format: "json",
+            lang: "ru_RU"
         ))
         return try response.ok.body.json
     }

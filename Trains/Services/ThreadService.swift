@@ -9,10 +9,13 @@ import Foundation
 import OpenAPIRuntime
 import OpenAPIURLSession
 
-typealias ThreadResponse = Components.Schemas.ThreadResponse
-
 protocol ThreadServiceProtocol: Sendable {
-    func getThread(uid: String) async throws -> ThreadResponse
+    func getThread(
+        uid: String,
+        from: String?,
+        to: String?,
+        date: String?
+    ) async throws -> Components.Schemas.ThreadResponse
 }
 
 final class ThreadService: ThreadServiceProtocol, @unchecked Sendable {
@@ -24,11 +27,20 @@ final class ThreadService: ThreadServiceProtocol, @unchecked Sendable {
         self.apikey = apikey
     }
     
-    func getThread(uid: String) async throws -> ThreadResponse {
+    func getThread(
+        uid: String,
+        from: String? = nil,
+        to: String? = nil,
+        date: String? = nil
+    ) async throws -> Components.Schemas.ThreadResponse {
         let response = try await client.getThread(query: .init(
             apikey: apikey,
             uid: uid,
-            format: "json"  
+            from: from,
+            to: to,
+            format: "json",
+            lang: "ru_RU",
+            date: date
         ))
         return try response.ok.body.json
     }
