@@ -105,10 +105,9 @@ struct CitySearchView: View {
     }
     
     private var cityList: some View {
-        List(viewModel.filteredCities, id: \.self) { city in
-            cityRow(for: city)
+        List(viewModel.filteredCities) { cityItem in
+            cityRow(for: cityItem.name)
         }
-        .id(viewModel.dataHash)
         .listStyle(.plain)
         .animation(.easeInOut(duration: 0.2), value: viewModel.filteredCities)
         .transition(.opacity)

@@ -15,23 +15,30 @@ final class CitySearchViewModel {
     let initialCity: String
     
     var searchText: String = ""
-    var allCities: [String] = []
+    
+    struct CityItem: Identifiable, Hashable {
+        let id = UUID()
+        let name: String
+        let originalIndex: Int
+    }
+    
+    var allCities: [CityItem] = []
     var isLoading = false
     var errorMessage: String?
     
     // MARK: - Computed Properties
     var dataHash: String {
-        filteredCities.joined(separator: "|") + "|count:\(filteredCities.count)"
+        allCities.map { $0.name }.joined(separator: "|") + "|count:\(allCities.count)"
     }
     
-    var filteredCities: [String] {
+    var filteredCities: [CityItem] {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         
         if query.isEmpty {
             return allCities
         }
         
-        return allCities.filter { $0.localizedCaseInsensitiveContains(query) }
+        return allCities.filter { $0.name.localizedCaseInsensitiveContains(query) }
     }
     
     var navigationTitle: String {
@@ -79,12 +86,19 @@ final class CitySearchViewModel {
         
         do {
             // Используем shared сервис
-            allCities = try await CityService.shared.getAllCities(cached: true)
+            let cityNames = try await CityService.shared.getAllCities(cached: true)
+            
+            // Преобразуем в CityItem с уникальными ID
+            allCities = cityNames.enumerated().map { index, name in
+                CityItem(name: name, originalIndex: index)
+            }
+            
             print("✅ Загружено \(allCities.count) городов")
         } catch {
             errorMessage = "Не удалось загрузить города"
             print("❌ Ошибка загрузки городов: \(error)")
-            allCities = [
+            
+            let testCities = [
                 "Москва",
                 "Санкт-Петербург",
                 "Сочи",
@@ -93,6 +107,10 @@ final class CitySearchViewModel {
                 "Казань",
                 "Омск"
             ]
+            
+            allCities = testCities.enumerated().map { index, name in
+                CityItem(name: name, originalIndex: index)
+            }
         }
         
         isLoading = false

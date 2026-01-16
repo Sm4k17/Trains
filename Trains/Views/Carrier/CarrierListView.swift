@@ -143,8 +143,8 @@ struct CarrierListView: View {
             Spacer()
             Text(viewModel.hasActiveFilter && viewModel.filteredCarriers.isEmpty ?
                  "Вариантов нет" : "Вариантов нет")
-                .font(.system(size: Constants.FontSize.emptyState, weight: .bold))
-                .foregroundColor(.ypBlack)
+            .font(.system(size: Constants.FontSize.emptyState, weight: .bold))
+            .foregroundColor(.ypBlack)
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -152,7 +152,7 @@ struct CarrierListView: View {
     
     private var listView: some View {
         List {
-            ForEach(Array(viewModel.displayCarriers.enumerated()), id: \.element.id) { index, carrier in
+            ForEach(Array(viewModel.carriers.enumerated()), id: \.element.id) { index, carrier in
                 Button {
                     if let info = viewModel.getCarrierInfo(for: index) {
                         navigationPath.append(
@@ -187,10 +187,20 @@ struct CarrierListView: View {
     
     private var bottomButtonView: some View {
         HStack {
-            Button("Уточнить время") {
+            Button {
                 navigationPath.append(AppRoute.scheduleFilter)
+            } label: {
+                HStack(spacing: 8) {
+                    Text("Уточнить время")
+                        .font(.system(size: Constants.FontSize.bottomButton, weight: .bold))
+                    
+                    if ScheduleFilterViewModel.savedFilter.isActive {
+                        Circle()
+                            .fill(Color.ypRed)
+                            .frame(width: 8, height: 8)
+                    }
+                }
             }
-            .font(.system(size: Constants.FontSize.bottomButton, weight: .bold))
             .frame(maxWidth: .infinity, minHeight: Constants.Size.bottomButtonHeight)
             .background(Color.ypBlue)
             .foregroundColor(.ypWhiteUniversal)
@@ -200,26 +210,26 @@ struct CarrierListView: View {
         .padding(.bottom, Constants.Spacing.bottom)
         .background(Color(.systemBackground))
     }
-}
-
-// MARK: - Preview
-
-#Preview {
-    struct PreviewWrapper: View {
-        @State private var navigationPath = NavigationPath()
-        @State private var from = "Москва"
-        @State private var to = "Санкт-Петербург"
-        
-        var body: some View {
-            NavigationStack {
-                CarrierListView(
-                    headerFrom: $from,
-                    headerTo: $to,
-                    navigationPath: $navigationPath
-                )
+    
+    // MARK: - Preview
+    
+    #Preview {
+        struct PreviewWrapper: View {
+            @State private var navigationPath = NavigationPath()
+            @State private var from = "Москва"
+            @State private var to = "Санкт-Петербург"
+            
+            var body: some View {
+                NavigationStack {
+                    CarrierListView(
+                        headerFrom: $from,
+                        headerTo: $to,
+                        navigationPath: $navigationPath
+                    )
+                }
             }
         }
+        
+        return PreviewWrapper()
     }
-    
-    return PreviewWrapper()
 }

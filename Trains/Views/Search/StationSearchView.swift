@@ -109,10 +109,9 @@ struct StationSearchView: View {
     }
     
     private var stationList: some View {
-        List(viewModel.filteredStations, id: \.self) { station in
-            stationRow(for: station)
+        List(viewModel.filteredStations) { stationItem in
+            stationRow(for: stationItem.name)
         }
-        .id(viewModel.dataHash)
         .listStyle(.plain)
         .animation(.easeInOut(duration: 0.2), value: viewModel.filteredStations)
         .transition(.opacity)

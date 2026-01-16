@@ -14,13 +14,29 @@ final class CarrierListViewModel {
     
     // MARK: - Properties
     
-    var carriers: [CarrierRowViewModel] = []
+    private var allRoutes: [Route] = [] {
+        didSet {
+            updateDisplayedCarriers()
+        }
+    }
+    
+    private var allCarriers: [CarrierRowViewModel] = []
+    
+    var carriers: [CarrierRowViewModel] {
+        hasActiveFilter ? filteredCarriers : allCarriers
+    }
+    
     var isLoading = false
     var showEmptyState = false
     var errorMessage: String?
     
-    // Состояние фильтра
-    private var currentFilter: ScheduleFilter = .default
+    private var currentFilter: ScheduleFilter = .default {
+        didSet {
+            if oldValue != currentFilter {
+                updateDisplayedCarriers()
+            }
+        }
+    }
     
     private let networkClient: NetworkClient
     private let fromText: String
@@ -28,25 +44,20 @@ final class CarrierListViewModel {
     
     // MARK: - Кэширование
     
-    // Статический кэш для всех экземпляров
-    private static var routeCache: [String: [CarrierRowViewModel]] = [:]
+    private static var routeCache: [String: [Route]] = [:]
     private static var cacheTimestamp: [String: Date] = [:]
-    private let cacheTTL: TimeInterval = 300 // 5 минут
+    private let cacheTTL: TimeInterval = 300
     
-    // Ключ для кэша
     private var cacheKey: String {
-        "\(cleanStationText(fromText))|\(cleanStationText(toText))|\(currentFilter.selectedTransportTypes.hashValue)"
+        return "\(fromText)|\(toText)"
     }
     
-    // Флаг, были ли уже загружены данные
     private var hasLoadedData = false
     
     // MARK: - Computed Properties
     
     var headerTitle: String {
-        let cleanFrom = cleanStationText(fromText)
-        let cleanTo = cleanStationText(toText)
-        return "\(cleanFrom) → \(cleanTo)"
+        return "\(fromText) → \(toText)"
     }
     
     var hasActiveFilter: Bool {
@@ -54,26 +65,34 @@ final class CarrierListViewModel {
     }
     
     var filteredCarriers: [CarrierRowViewModel] {
-        if currentFilter.isActive {
-            return carriers.filter { carrier in
-                // Фильтр по времени отправления
-                let timeFilterPassed = filterByTime(carrier.departTime)
-                
-                // Фильтр по пересадкам
-                let transferFilterPassed = filterByTransfers(carrier.note)
-                
-                // Фильтр по типу транспорта
-                let transportTypeFilterPassed = filterByTransportType(carrier.transportType)
-                
-                return timeFilterPassed && transferFilterPassed && transportTypeFilterPassed
+        var routesToProcess = allRoutes
+        
+        // Фильтр пересадок
+        if let showTransfers = currentFilter.showTransfers {
+            routesToProcess = routesToProcess.filter { route in
+                if showTransfers {
+                    return route.hasTransfers // Показать только с пересадками
+                } else {
+                    return !route.hasTransfers // Показать только прямые
+                }
             }
-        } else {
-            return carriers
         }
-    }
-    
-    var displayCarriers: [CarrierRowViewModel] {
-        hasActiveFilter ? filteredCarriers : carriers
+        
+        // Фильтр по времени
+        if !currentFilter.selectedDayParts.isEmpty {
+            routesToProcess = routesToProcess.filter { route in
+                filterByTime(route.departureTime)
+            }
+        }
+        
+        // Фильтр по типу транспорта
+        if !currentFilter.selectedTransportTypes.isEmpty {
+            routesToProcess = routesToProcess.filter { route in
+                filterByTransportType(route.transportTypes)
+            }
+        }
+        
+        return routesToProcess.map { convertToCarrierRowViewModel($0) }
     }
     
     // MARK: - Initialization
@@ -81,37 +100,24 @@ final class CarrierListViewModel {
     init(
         fromText: String,
         toText: String,
-        networkClient: NetworkClient,
-        hasLoadedData: Bool = false // Добавьте этот параметр
+        networkClient: NetworkClient
     ) {
         self.fromText = fromText
         self.toText = toText
         self.networkClient = networkClient
-        self.hasLoadedData = hasLoadedData
     }
     
     // MARK: - Public Methods
     
     func loadCarriers(forceRefresh: Bool = false) async {
-        // Проверяем кэш, если не принудительное обновление
-        if !forceRefresh && hasLoadedData {
-            print("📋 Данные уже загружены, пропускаем")
-            isLoading = false
-            updateEmptyState()
-            return
-        }
-        
-        // Пробуем загрузить из кэша
-        if !forceRefresh, let cachedCarriers = Self.routeCache[cacheKey], !isCacheExpired() {
-            print("📦 Загружаем из кэша, элементов: \(cachedCarriers.count)")
-            self.carriers = cachedCarriers
+        if !forceRefresh, let cachedRoutes = Self.routeCache[cacheKey], !isCacheExpired() {
+            self.allRoutes = cachedRoutes
             self.hasLoadedData = true
             self.isLoading = false
             updateEmptyState()
             return
         }
         
-        // Если нет в кэше или кэш устарел, загружаем из сети
         await loadFromNetwork()
     }
     
@@ -119,413 +125,577 @@ final class CarrierListViewModel {
         isLoading = true
         errorMessage = nil
         
-        // Очищаем только если это не кэшированные данные
         if !hasLoadedData {
-            carriers = []
+            allRoutes = []
         }
         
         do {
-            print("🚀 Начинаем загрузку маршрутов из: \(fromText) в: \(toText)")
-            
             let (fromCode, toCode) = try await networkClient.getSearchData(
                 from: fromText,
                 to: toText
             )
             
-            print("✅ Получены коды станций: from=\(fromCode), to=\(toCode)")
-            
-            // Используем фильтр по типам транспорта если есть
-            let transportTypes = getTransportTypesString()
-            if let transportTypes = transportTypes {
-                print("🚌 Используем фильтр типов транспорта: \(transportTypes)")
-            }
-            
             let response = try await networkClient.search(
                 from: fromCode,
                 to: toCode,
                 date: nil,
-                transportTypes: transportTypes,
-                limit: 20
+                transportTypes: nil,
+                limit: 50
             )
-            
-            print("✅ Получен ответ поиска, количество сегментов: \(response.segments?.count ?? 0)")
             
             await processSearchResponse(response)
             
-            // Сохраняем в кэш
-            saveToCache(carriers)
+            saveToCache(allRoutes)
             hasLoadedData = true
             
         } catch let error as URLError {
-            switch error.code {
-            case .badServerResponse:
-                print("❌ Ошибка сервера: маршруты не найдены между выбранными пунктами")
-                errorMessage = "Маршруты не найдены между выбранными пунктами"
-            case .timedOut:
-                print("❌ Таймаут соединения")
-                errorMessage = "Таймаут соединения, проверьте интернет"
-            case .notConnectedToInternet:
-                print("❌ Нет соединения с интернетом")
-                errorMessage = "Нет соединения с интернетом"
-            default:
-                print("❌ Ошибка сети: \(error.localizedDescription)")
-                errorMessage = "Ошибка сети: \(error.localizedDescription)"
-            }
-            showEmptyState = true
-        } catch let error as DecodingError {
-            print("❌ Ошибка декодирования данных: \(error)")
-            errorMessage = "Ошибка обработки данных от сервера"
+            handleNetworkError(error)
+        } catch _ as DecodingError {
+            errorMessage = "Ошибка обработки данных"
             showEmptyState = true
         } catch {
-            print("❌ Общая ошибка загрузки данных: \(error)")
-            errorMessage = "Ошибка загрузки данных: \(error.localizedDescription)"
+            errorMessage = "Ошибка загрузки: \(error.localizedDescription)"
             showEmptyState = true
         }
         
         isLoading = false
         updateEmptyState()
-        print("✅ Загрузка завершена. Показано маршрутов: \(displayCarriers.count)")
     }
     
     func applySavedFilter() {
-        print("🔍 Применяем сохраненный фильтр")
-        // Загружаем сохраненный фильтр
         self.currentFilter = ScheduleFilterViewModel.savedFilter
-        
-        // Очищаем кэш для этого ключа, так как фильтр изменился
-        Self.routeCache.removeValue(forKey: cacheKey)
-        Self.cacheTimestamp.removeValue(forKey: cacheKey)
-        
-        updateEmptyState()
     }
     
     func reloadWithCurrentFilter() {
-        print("🔄 Перезагружаем данные с текущим фильтром (принудительно)")
         Task {
             await loadCarriers(forceRefresh: true)
         }
     }
     
     func getCarrierInfo(for index: Int) -> (code: String, logoName: String?)? {
-        let targetCarriers = displayCarriers
+        let targetCarriers = carriers
         guard index >= 0 && index < targetCarriers.count else { return nil }
         let carrier = targetCarriers[index]
         
-        guard let code = carrier.carrierCode else {
-            return nil
+        // Исправление: Проверяем валидность кода перевозчика
+        guard let code = carrier.carrierCode,
+              let intCode = Int(code),
+              intCode > 0 else {
+            return nil // Не передаем некорректные коды в API
         }
         
         return (code, carrier.logoAssetName)
     }
     
-    // MARK: - Кэширование методов
+    // MARK: - Private Methods
     
-    private func saveToCache(_ carriers: [CarrierRowViewModel]) {
-        guard !carriers.isEmpty else { return }
+    private func processSearchResponse(_ response: Components.Schemas.SearchResponse) async {
+        guard let segments = response.segments else {
+            allRoutes = []
+            showEmptyState = true
+            return
+        }
         
-        print("💾 Сохраняем в кэш, ключ: \(cacheKey), элементов: \(carriers.count)")
-        Self.routeCache[cacheKey] = carriers
+    #if DEBUG
+        print("=== DEBUG: Получено сегментов от API: \(segments.count)")
+    #endif
+        
+        var routes: [Route] = []
+        
+        // 1. Сначала собираем все DirectSegment
+        var directSegments: [(index: Int, segment: Components.Schemas.DirectSegment)] = []
+        var transferSegments: [(index: Int, segment: Components.Schemas.TransferSegment)] = []
+        
+        for (index, segment) in segments.enumerated() {
+            switch segment {
+            case .DirectSegment(let direct):
+                directSegments.append((index, direct))
+            case .TransferSegment(let transfer):
+                transferSegments.append((index, transfer))
+            }
+        }
+        
+        // 2. Обрабатываем TransferSegment как есть
+        for (index, transfer) in transferSegments {
+            let route = createTransferRoute(from: transfer, index: index)
+            routes.append(route)
+        }
+        
+        // 3. Анализируем DirectSegment и группируем пересадочные
+        var groupedTransfers: [Route] = []
+        var standaloneDirects: [Route] = []
+        
+        // Простой алгоритм: если у DirectSegment нет перевозчика или код=0,
+        // это часть пересадочного маршрута
+        for (index, direct) in directSegments {
+            let route = createDirectRoute(from: direct, index: index)
+            
+            // Проверяем, реальный ли это прямой рейс
+            if isRealDirectRoute(direct) {
+                standaloneDirects.append(route)
+            } else {
+                // Это часть пересадочного маршрута
+                // Нужно сгруппировать с другими такими же сегментами
+                // Пока просто добавляем как отдельный маршрут с пометкой
+                let transferRoute = Route(
+                    id: "grouped_\(index)_transfer",
+                    title: route.title,
+                    departureTime: route.departureTime,
+                    arrivalTime: route.arrivalTime,
+                    duration: route.duration,
+                    carriers: route.carriers,
+                    transportTypes: route.transportTypes,
+                    hasTransfers: true, // <- ОТМЕТКА, ЧТО ЭТО ПЕРЕСАДКА
+                    transfersCount: 1,
+                    transfers: [],
+                    details: [],
+                    transferPointName: extractCityFromTitle(route.title)
+                )
+                groupedTransfers.append(transferRoute)
+            }
+        }
+        
+        // 4. Объединяем все маршруты
+        routes.append(contentsOf: standaloneDirects)
+        routes.append(contentsOf: groupedTransfers)
+        
+        allRoutes = routes.sorted { $0.departureTime < $1.departureTime }
+    }
+
+    private func isRealDirectRoute(_ direct: Components.Schemas.DirectSegment) -> Bool {
+        // Реальный прямой рейс имеет:
+        // 1. Перевозчика с кодом > 0
+        if let carrier = direct.thread?.carrier,
+           let code = carrier.code,
+           code > 0,
+           let title = carrier.title,
+           !title.isEmpty {
+            return true
+        }
+        
+        // 2. Длительность > 1 часа (реальный маршрут)
+        if let duration = direct.duration, duration > 3600 {
+            return true
+        }
+        
+        // 3. Есть номер рейса или нормальное название
+        if let thread = direct.thread,
+           (thread.number != nil ||
+            (thread.title?.contains("→") == true ||
+             thread.title?.contains("-") == true)) {
+            return true
+        }
+        
+        return false
+    }
+
+    private func extractCityFromTitle(_ title: String?) -> String? {
+        guard let title = title else { return nil }
+        
+        // Пытаемся извлечь название города из заголовка маршрута
+        // Например: "Москва → Кострома" -> "Кострома"
+        if let arrowRange = title.range(of: "→") {
+            let cityPart = title[arrowRange.upperBound...]
+                .trimmingCharacters(in: .whitespaces)
+                .split(separator: ",")
+                .first?
+                .trimmingCharacters(in: .whitespaces)
+            
+            return cityPart?.isEmpty == false ? String(cityPart!) : nil
+        }
+        
+        return nil
+    }
+    
+    private func createDirectRoute(from direct: Components.Schemas.DirectSegment, index: Int) -> Route {
+        let carrier: Components.Schemas.Carrier
+        
+        if let foundCarrier = direct.thread?.carrier {
+            carrier = foundCarrier
+        } else if let thread = direct.thread {
+            carrier = createSyntheticCarrier(from: thread)
+        } else {
+            carrier = createUnknownCarrier()
+        }
+        
+        return Route(
+            id: "\(index)_direct",
+            title: direct.thread?.title ?? "Прямой рейс",
+            departureTime: direct.departure ?? "",
+            arrivalTime: direct.arrival ?? "",
+            duration: Int(direct.duration ?? 0),
+            carriers: [carrier],
+            transportTypes: [direct.thread?.transport_type ?? "train"],
+            hasTransfers: false,
+            transfersCount: 0,
+            transfers: [],
+            details: [],
+            transferPointName: nil
+        )
+    }
+    
+    private func createTransferRoute(from transfer: Components.Schemas.TransferSegment, index: Int) -> Route {
+        let carriers = extractCarriersFromDetails(transfer.details)
+        let transportTypes = extractTransportTypesFromDetails(transfer.details)
+        
+        // Получаем название города пересадки
+        let transferPointName = extractTransferCityName(from: transfer)
+        
+        return Route(
+            id: "\(index)_transfer_\(transfer.transfers.count)",
+            title: "Маршрут с пересадкой", 
+            departureTime: transfer.departure ?? "",
+            arrivalTime: transfer.arrival ?? "",
+            duration: calculateTotalDuration(transfer.details),
+            carriers: carriers.isEmpty ? [createUnknownCarrier()] : carriers,
+            transportTypes: transportTypes.isEmpty ? ["train"] : transportTypes,
+            hasTransfers: true,
+            transfersCount: transfer.transfers.count,
+            transfers: transfer.transfers,
+            details: extractJourneySegments(from: transfer.details),
+            transferPointName: transferPointName // <- добавлена запятая
+        )
+    }
+
+    // Новый метод для извлечения названия города пересадки
+    private func extractTransferCityName(from transfer: Components.Schemas.TransferSegment) -> String? {
+        // Ищем в transfers
+        if let firstTransfer = transfer.transfers.first {
+            // Берем популярное название, обычное или короткое
+            return firstTransfer.popular_title ?? firstTransfer.title ?? firstTransfer.short_title
+        }
+        
+        // Или ищем в details (первая промежуточная станция)
+        for detail in transfer.details {
+            switch detail {
+            case .JourneySegment(let journeySegment):
+                if let fromTitle = journeySegment.from?.popular_title ?? journeySegment.from?.title ?? journeySegment.from?.short_title {
+                    // Пропускаем начальную точку маршрута
+                    if fromTitle != transfer.departure_from?.title &&
+                       fromTitle != transfer.departure_from?.popular_title &&
+                       fromTitle != transfer.departure_from?.short_title {
+                        return fromTitle
+                    }
+                }
+            case .TransferStop:
+                continue
+            }
+        }
+        
+        return nil
+    }
+    
+    private func extractCarriersFromDetails(_ details: [Components.Schemas.TransferSegment.detailsPayloadPayload]?) -> [Components.Schemas.Carrier] {
+        guard let details = details else { return [] }
+        
+        var carriers: [Components.Schemas.Carrier] = []
+        
+        for detail in details {
+            switch detail {
+            case .JourneySegment(let journeySegment):
+                if let thread = journeySegment.thread {
+                    if let carrier = thread.carrier {
+                        if !carriers.contains(where: { $0.code == carrier.code }) {
+                            carriers.append(carrier)
+                        }
+                    } else {
+                        carriers.append(createSyntheticCarrier(from: thread))
+                    }
+                }
+            case .TransferStop:
+                continue
+            }
+        }
+        
+        return carriers
+    }
+    
+    private func extractTransportTypesFromDetails(_ details: [Components.Schemas.TransferSegment.detailsPayloadPayload]?) -> [String] {
+        guard let details = details else { return ["train"] }
+        
+        var types: Set<String> = []
+        
+        for detail in details {
+            switch detail {
+            case .JourneySegment(let journeySegment):
+                if let transportType = journeySegment.thread?.transport_type {
+                    types.insert(transportType)
+                }
+            case .TransferStop:
+                continue
+            }
+        }
+        
+        return types.isEmpty ? ["train"] : Array(types)
+    }
+    
+    private func calculateTotalDuration(_ details: [Components.Schemas.TransferSegment.detailsPayloadPayload]?) -> Int {
+        guard let details = details else { return 0 }
+        
+        var totalDuration: Double = 0
+        
+        for detail in details {
+            switch detail {
+            case .JourneySegment(let journeySegment):
+                totalDuration += journeySegment.duration ?? 0
+            case .TransferStop(let transferStop):
+                totalDuration += transferStop.duration ?? 0
+            }
+        }
+        
+        return Int(totalDuration)
+    }
+    
+    private func extractJourneySegments(from detailsPayload: [Components.Schemas.TransferSegment.detailsPayloadPayload]?) -> [Components.Schemas.JourneySegment] {
+        guard let detailsPayload = detailsPayload else { return [] }
+        
+        return detailsPayload.compactMap { detail in
+            switch detail {
+            case .JourneySegment(let journeySegment):
+                return journeySegment
+            case .TransferStop:
+                return nil
+            }
+        }
+    }
+    
+    private func createSyntheticCarrier(from thread: Components.Schemas.Thread) -> Components.Schemas.Carrier {
+        let code = extractCodeFromUid(thread.uid)
+        
+        return Components.Schemas.Carrier(
+            code: code,
+            contacts: nil,
+            url: nil,
+            title: thread.short_title ?? thread.title, // ФИКС: short_title приоритетнее
+            phone: nil,
+            codes: Components.Schemas.CarrierCodes(icao: nil, sirena: nil, iata: nil),
+            address: nil,
+            logo: nil,
+            email: nil
+        )
+    }
+    
+    private func createUnknownCarrier() -> Components.Schemas.Carrier {
+        return Components.Schemas.Carrier(
+            code: 0,
+            contacts: nil,
+            url: nil,
+            title: "Неизвестный перевозчик",
+            phone: nil,
+            codes: Components.Schemas.CarrierCodes(icao: nil, sirena: nil, iata: nil),
+            address: nil,
+            logo: nil,
+            email: nil
+        )
+    }
+    
+    private func extractCodeFromUid(_ uid: String?) -> Int? {
+        guard let uid = uid else { return nil }
+        
+        let numericPart = uid.components(separatedBy: CharacterSet.decimalDigits.inverted)
+            .joined()
+        
+        if let intCode = Int(numericPart), intCode > 0 {
+            return intCode
+        }
+        
+        return nil // Не создаем синтетический код из hash
+    }
+    
+    private func convertToCarrierRowViewModel(_ route: Route) -> CarrierRowViewModel {
+        let carrier = route.carriers.first
+        let carrierName: String
+        let carrierCode: String?
+        let logoURL: String?
+        
+#if DEBUG
+    print("=== DEBUG Carrier Info ===")
+    print("Carrier title: \(carrier?.title ?? "nil")")
+    print("Carrier code: \(carrier?.code ?? -1)")
+    print("Has transfers: \(route.hasTransfers)")
+    print("Route ID: \(route.id)")
+    print("==========================")
+#endif
+        
+        // Общая логика для определения имени перевозчика
+        if let carrier = carrier {
+            if let title = carrier.title, !title.isEmpty {
+                carrierName = title
+            } else {
+                carrierName = route.hasTransfers ? "Несколько перевозчиков" : "Неизвестный перевозчик"
+            }
+            
+            // Исправление: Проверяем валидность кода
+            if let code = carrier.code, code > 0 {
+                carrierCode = String(code)
+            } else {
+                carrierCode = nil
+            }
+            
+            logoURL = carrier.logo
+        } else {
+            carrierName = route.hasTransfers ? "Несколько перевозчиков" : "Неизвестный перевозчик"
+            carrierCode = nil
+            logoURL = nil
+        }
+        
+        // Используем DateFormatterHelper
+        let departTime = DateFormatterHelper.formatTime(from: route.departureTime)
+        let arriveTime = DateFormatterHelper.formatTime(from: route.arrivalTime)
+        
+        // Исправление: Форматирование длительности с проверкой
+        let durationText: String
+        if route.duration > 0 {
+            durationText = DateFormatterHelper.formatDuration(route.duration)
+        } else {
+            durationText = "Время уточняется"
+        }
+        
+        let dateText = DateFormatterHelper.formatDateFromArrivalTime(route.arrivalTime)
+        
+        // Логика для заметки (note) - ТОЧНО КАК НА СКРИНЕ
+        let note: String?
+        if route.hasTransfers {
+            if let cityName = route.transferPointName, !cityName.isEmpty {
+                // Убираем "вокзал" или "станция" из названия
+                let cleanedName = cityName
+                    .replacingOccurrences(of: " вокзал", with: "")
+                    .replacingOccurrences(of: " станция", with: "")
+                    .replacingOccurrences(of: " ст.", with: "")
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                
+                note = "С пересадкой в \(cleanedName)"
+            } else if route.transfersCount == 1 {
+                note = "С пересадкой"
+            } else if route.transfersCount > 1 {
+                note = "С \(route.transfersCount) пересадками"
+            } else {
+                note = "С пересадками"
+            }
+        } else {
+            note = nil
+        }
+        
+        let transportType = route.transportTypes.first ?? "train"
+        
+        return CarrierRowViewModel(
+            carrierName: carrierName,
+            logoURL: logoURL,
+            transportType: transportType,
+            carrierCode: carrierCode,
+            dateText: dateText,
+            departTime: departTime,
+            arriveTime: arriveTime,
+            durationText: durationText,
+            note: note
+        )
+    }
+    
+    private func updateDisplayedCarriers() {
+        allCarriers = filteredCarriers
+        updateEmptyState()
+    }
+    
+    private func filterByTime(_ timeString: String) -> Bool {
+        guard !currentFilter.selectedDayParts.isEmpty else {
+            return true
+        }
+        
+        guard let date = DateFormatterHelper.parseDate(from: timeString) else {
+            return true
+        }
+        
+        let calendar = Calendar.current
+        let hour = calendar.component(.hour, from: date)
+        
+        for dayPart in currentFilter.selectedDayParts {
+            let range = dayPart.timeRange
+            
+            if range.start < range.end {
+                if hour >= range.start && hour < range.end {
+                    return true
+                }
+            } else {
+                if hour >= range.start || hour < range.end {
+                    return true
+                }
+            }
+        }
+        
+        return false
+    }
+    
+    private func filterByTransportType(_ transportTypes: [String]) -> Bool {
+        guard !currentFilter.selectedTransportTypes.isEmpty else { return true }
+        
+        for routeType in transportTypes {
+            for filterType in currentFilter.selectedTransportTypes {
+                if filterType.rawValue == routeType {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+    
+    private func updateEmptyState() {
+        showEmptyState = carriers.isEmpty
+    }
+    
+    private func handleNetworkError(_ error: URLError) {
+        switch error.code {
+        case .badServerResponse:
+            errorMessage = "Маршруты не найдены"
+        case .timedOut:
+            errorMessage = "Таймаут соединения"
+        case .notConnectedToInternet:
+            errorMessage = "Нет соединения с интернетом"
+        default:
+            errorMessage = "Ошибка сети: \(error.localizedDescription)"
+        }
+        showEmptyState = true
+    }
+    
+    private func saveToCache(_ routes: [Route]) {
+        guard !routes.isEmpty else { return }
+        
+        Self.routeCache[cacheKey] = routes
         Self.cacheTimestamp[cacheKey] = Date()
     }
     
     private func isCacheExpired() -> Bool {
         guard let timestamp = Self.cacheTimestamp[cacheKey] else {
-            print("⏰ Кэш не существует для ключа: \(cacheKey)")
             return true
         }
         
-        let isExpired = Date().timeIntervalSince(timestamp) > cacheTTL
-        print("⏰ Проверка кэша: \(isExpired ? "истек" : "актуален"), возраст: \(Int(Date().timeIntervalSince(timestamp))) секунд")
-        return isExpired
+        return Date().timeIntervalSince(timestamp) > cacheTTL
     }
-    
-    // MARK: - Private Methods
-    
-    private func cleanStationText(_ text: String) -> String {
-        var result = text
-        
-        // Убираем "(без кода)" в разных вариациях
-        result = result.replacingOccurrences(of: " \\(без кода\\)", with: "")
-        result = result.replacingOccurrences(of: "(без кода)", with: "")
-        
-        // Убираем лишние пробелы
-        result = result.trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        return result
-    }
-    
-    private func getTransportTypesString() -> String? {
-        // Преобразуем Set<TransportType> в строку для API
-        guard !currentFilter.selectedTransportTypes.isEmpty else { return nil }
-        
-        let transportTypes = currentFilter.selectedTransportTypes.map { $0.rawValue }
-        return transportTypes.joined(separator: ",")
-    }
-    
-    private func processSearchResponse(_ response: Components.Schemas.SearchResponse) async {
-        guard let segments = response.segments else {
-            print("⚠️ В ответе нет сегментов маршрутов")
-            carriers = []
-            showEmptyState = true
-            return
-        }
-        
-        print("🎯 Обрабатываем \(segments.count) сегментов маршрутов")
-        
-        var carrierViewModels: [CarrierRowViewModel] = []
-        
-        for (index, segment) in segments.enumerated() {
-            guard let thread = segment.thread,
-                  let departure = segment.departure,
-                  let arrival = segment.arrival else {
-                print("⚠️ Пропускаем сегмент \(index): отсутствуют обязательные данные")
-                continue
-            }
-            
-            let carrierName = thread.carrier?.title ?? "Неизвестный перевозчик"
-            let carrierCode = thread.carrier?.code.flatMap { String($0) }
-            let carrierLogo = thread.carrier?.logo
-            
-            let departTime = formatTime(from: departure)
-            let arriveTime = formatTime(from: arrival)
-            let durationSeconds = Int(segment.duration ?? 0.0)
-            let durationText = formatDuration(durationSeconds)
-            let dateText = formatDate(from: departure)
-            
-            let note = extractTransferInfo(from: segment)
-            let transportType = thread.transport_type ?? "train" // Значение по умолчанию
-            
-            let viewModel = CarrierRowViewModel(
-                carrierName: carrierName,
-                logoURL: carrierLogo,
-                transportType: transportType,
-                carrierCode: carrierCode,
-                dateText: dateText,
-                departTime: departTime,
-                arriveTime: arriveTime,
-                durationText: durationText,
-                note: note
-            )
-            
-            carrierViewModels.append(viewModel)
-            
-            print("✅ Добавлен маршрут \(index+1): \(carrierName), \(departTime) → \(arriveTime)")
-        }
-        
-        carriers = carrierViewModels
-        updateEmptyState()
-    }
-    
-    private func filterByTime(_ departTime: String) -> Bool {
-        guard !currentFilter.selectedDayParts.isEmpty else { return true }
-        
-        let components = departTime.split(separator: ":")
-        guard components.count >= 2,
-              let hour = Int(components[0]) else {
-            return true
-        }
-        
-        return currentFilter.selectedDayParts.contains { dayPart in
-            let range = dayPart.timeRange
-            
-            if range.start < range.end {
-                // Нормальный диапазон (например, 6-12)
-                return hour >= range.start && hour < range.end
-            } else {
-                // Диапазон через полночь (например, 0-6)
-                return hour >= range.start || hour < range.end
-            }
-        }
-    }
-    
-    private func filterByTransfers(_ note: String?) -> Bool {
-        guard let showTransfers = currentFilter.showTransfers else {
-            // Если фильтр по пересадкам не выбран - показываем все
-            return true
-        }
-        
-        if showTransfers {
-            // Показываем все, включая с пересадками
-            return true
-        } else {
-            // Показываем только без пересадок
-            return note == nil
-        }
-    }
-    
-    private func filterByTransportType(_ transportType: String?) -> Bool {
-        guard !currentFilter.selectedTransportTypes.isEmpty else { return true }
-        
-        guard let type = transportType else { return false }
-        
-        // Проверяем, есть ли выбранный тип в фильтре
-        return currentFilter.selectedTransportTypes.contains { filterType in
-            filterType.rawValue == type
-        }
-    }
-    
-    private func updateEmptyState() {
-        showEmptyState = displayCarriers.isEmpty
-        if showEmptyState {
-            print("📭 Список маршрутов пуст. Показано: 0 элементов")
-        }
-    }
-    
-    private func formatTime(from timeString: String) -> String {
-        print("🕐 Форматирование времени из строки: \(timeString)")
-        
-        // Сначала пробуем распарсить как полную дату
-        let dateFormatter = DateFormatter()
-        dateFormatter.locale = Locale(identifier: "ru_RU")
-        
-        // Пробуем несколько форматов даты
-        let possibleFormats = [
-            "yyyy-MM-dd'T'HH:mm:ssZ",
-            "yyyy-MM-dd'T'HH:mm:ss",
-            "yyyy-MM-dd HH:mm:ss",
-            "HH:mm:ss",
-            "HH:mm"
-        ]
-        
-        for format in possibleFormats {
-            dateFormatter.dateFormat = format
-            if let date = dateFormatter.date(from: timeString) {
-                // Форматируем в 24-часовой формат
-                dateFormatter.dateFormat = "HH:mm"
-                let result = dateFormatter.string(from: date)
-                print("   ✅ Время форматировано: \(result)")
-                return result
-            }
-        }
-        
-        // Если не удалось распарсить как дату, извлекаем часы и минуты напрямую
-        let pattern = #"(\d{1,2}):(\d{2})"#
-        
-        if let regex = try? NSRegularExpression(pattern: pattern),
-           let match = regex.firstMatch(in: timeString, range: NSRange(timeString.startIndex..., in: timeString)),
-           match.numberOfRanges >= 3,
-           let hourRange = Range(match.range(at: 1), in: timeString),
-           let minuteRange = Range(match.range(at: 2), in: timeString) {
-            
-            var hour = String(timeString[hourRange])
-            let minute = String(timeString[minuteRange])
-            
-            // Убеждаемся, что час имеет 2 цифры
-            if hour.count == 1 { hour = "0\(hour)" }
-            
-            let result = "\(hour):\(minute)"
-            print("   ✅ Время извлечено: \(result)")
-            return result
-        }
-        
-        print("   ⚠️ Не удалось форматировать время: \(timeString)")
-        return "--:--"
-    }
-    
-    private func formatDate(from timeString: String) -> String {
-        print("📅 Форматирование даты из строки: \(timeString)")
-        
-        // Пытаемся извлечь дату из строки
-        let datePattern = #"(\d{4})-(\d{2})-(\d{2})"#
-        
-        if let regex = try? NSRegularExpression(pattern: datePattern),
-           let match = regex.firstMatch(in: timeString, range: NSRange(timeString.startIndex..., in: timeString)),
-           match.numberOfRanges >= 4 {
-            
-            if let yearRange = Range(match.range(at: 1), in: timeString),
-               let monthRange = Range(match.range(at: 2), in: timeString),
-               let dayRange = Range(match.range(at: 3), in: timeString) {
-                
-                let year = String(timeString[yearRange])
-                let month = String(timeString[monthRange])
-                let day = String(timeString[dayRange])
-                
-                // Форматируем день
-                let dayInt = Int(day) ?? 0
-                
-                // Форматируем месяц
-                let monthNames = [
-                    "01": "января", "02": "февраля", "03": "марта", "04": "апреля",
-                    "05": "мая", "06": "июня", "07": "июля", "08": "августа",
-                    "09": "сентября", "10": "октября", "11": "ноября", "12": "декабря"
-                ]
-                
-                let monthName = monthNames[month] ?? "неизвестного"
-                
-                let result = "\(dayInt) \(monthName)"
-                print("   ✅ Дата форматирована: \(result)")
-                return result
-            }
-        }
-        
-        // Если не удалось извлечь дату, возвращаем текущую дату
-        print("   ⚠️ Не удалось извлечь дату, используем текущую")
-        return formatCurrentDate()
-    }
-    
-    private func formatCurrentDate() -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.locale = Locale(identifier: "ru_RU")
-        dateFormatter.dateFormat = "d MMMM"
-        
-        let dateString = dateFormatter.string(from: Date())
-        
-        // Корректируем падеж месяцев
-        let monthCorrections: [String: String] = [
-            "Январь": "января",
-            "Февраль": "февраля",
-            "Март": "марта",
-            "Апрель": "апреля",
-            "Май": "мая",
-            "Июнь": "июня",
-            "Июль": "июля",
-            "Август": "августа",
-            "Сентябрь": "сентября",
-            "Октябрь": "октября",
-            "Ноябрь": "ноября",
-            "Декабрь": "декабря"
-        ]
-        
-        var result = dateString
-        for (incorrect, correct) in monthCorrections {
-            result = result.replacingOccurrences(of: incorrect, with: correct)
-        }
-        
-        return result
-    }
-    
-    private func formatDuration(_ seconds: Int) -> String {
-        let hours = seconds / 3600
-        let minutes = (seconds % 3600) / 60
-        
-        if hours > 0 && minutes > 0 {
-            return "\(hours) ч \(minutes) мин"
-        } else if hours > 0 {
-            return "\(hours) ч"
-        } else if minutes > 0 {
-            return "\(minutes) мин"
-        } else {
-            return "менее минуты"
-        }
-    }
-    
-    private func extractTransferInfo(from segment: Components.Schemas.Segment) -> String? {
-        guard let hasTransfers = segment.has_transfers else {
-            return nil
-        }
-        
-        if hasTransfers {
-            return "С пересадками"
-        } else {
-            return nil
-        }
-    }
-    
-    // MARK: - Очистка кэша (опционально, для отладки)
     
     static func clearCache() {
-        print("🗑️ Очистка кэша маршрутов")
         routeCache.removeAll()
         cacheTimestamp.removeAll()
+    }
+}
+
+// MARK: - Модель маршрута (упрощаем - делаем вложенной)
+
+extension CarrierListViewModel {
+    struct Route {
+        let id: String
+        let title: String
+        let departureTime: String
+        let arrivalTime: String
+        let duration: Int
+        let carriers: [Components.Schemas.Carrier]
+        let transportTypes: [String]
+        let hasTransfers: Bool
+        let transfersCount: Int
+        let transfers: [Components.Schemas.TransferPoint]
+        let details: [Components.Schemas.JourneySegment]
+        let transferPointName: String?
+        
+        var carrier: Components.Schemas.Carrier? {
+            carriers.first
+        }
     }
 }

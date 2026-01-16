@@ -71,6 +71,17 @@ final class CarrierInfoViewModel {
     
     func load() async {
         guard case .idle = state else { return }
+        
+        // Исправление: Проверяем валидность кода перевозчика перед запросом
+        guard let intCode = Int(code), intCode > 0 else {
+            state = .failed(NSError(
+                domain: "InvalidCarrierCode",
+                code: 400,
+                userInfo: [NSLocalizedDescriptionKey: "Неверный код перевозчика"]
+            ))
+            return
+        }
+        
         state = .loading
         
         do {
@@ -78,13 +89,37 @@ final class CarrierInfoViewModel {
             let displayData = processResponse(response)
             state = .loaded(displayData)
         } catch {
-            state = .failed(error)
+            // Исправление: Обрабатываем специфические ошибки
+            let errorDescription: String
+            if let urlError = error as? URLError {
+                switch urlError.code {
+                case .badServerResponse:
+                    errorDescription = "Перевозчик не найден"
+                case .timedOut:
+                    errorDescription = "Таймаут соединения"
+                default:
+                    errorDescription = "Ошибка сети: \(error.localizedDescription)"
+                }
+            } else if (error as NSError).code == 404 {
+                errorDescription = "Информация о перевозчике не найдена"
+            } else {
+                errorDescription = "Ошибка загрузки: \(error.localizedDescription)"
+            }
+            
+            state = .failed(NSError(
+                domain: "CarrierInfoError",
+                code: (error as NSError).code,
+                userInfo: [NSLocalizedDescriptionKey: errorDescription]
+            ))
         }
     }
     
     func retry() async {
-        state = .loading
-        await load()
+        // Исправление: Сбрасываем состояние только для валидных кодов
+        if let intCode = Int(code), intCode > 0 {
+            state = .loading
+            await load()
+        }
     }
     
     // MARK: - Private Methods

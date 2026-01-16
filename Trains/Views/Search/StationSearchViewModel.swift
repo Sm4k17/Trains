@@ -16,23 +16,30 @@ final class StationSearchViewModel {
     let context: AppRoute.CitySearchContext
     
     var searchText: String = ""
-    var allStations: [String] = []
+    
+    struct StationItem: Identifiable, Hashable {
+        let id = UUID()
+        let name: String
+        let originalIndex: Int
+    }
+    
+    var allStations: [StationItem] = []
     var isLoading = false
     var errorMessage: String?
     
     // MARK: - Computed Properties
     var dataHash: String {
-        filteredStations.joined(separator: "|") + "|count:\(filteredStations.count)"
+        allStations.map { $0.name }.joined(separator: "|") + "|count:\(allStations.count)"
     }
     
-    var filteredStations: [String] {
+    var filteredStations: [StationItem] {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         
         if query.isEmpty {
             return allStations
         }
         
-        return allStations.filter { $0.localizedCaseInsensitiveContains(query) }
+        return allStations.filter { $0.name.localizedCaseInsensitiveContains(query) }
     }
     
     var navigationTitle: String {
@@ -85,7 +92,13 @@ final class StationSearchViewModel {
         
         do {
             // Используем shared сервис
-            allStations = try await StationService.shared.getStationsByCity(city, cached: true)
+            let stationNames = try await StationService.shared.getStationsByCity(city, cached: true)
+            
+            // Преобразуем в StationItem с уникальными ID
+            allStations = stationNames.enumerated().map { index, name in
+                StationItem(name: name, originalIndex: index)
+            }
+            
             print("✅ Загружено \(allStations.count) станций для города: \(city)")
             
             if allStations.isEmpty {
@@ -94,7 +107,9 @@ final class StationSearchViewModel {
         } catch {
             errorMessage = "Не удалось загрузить станции"
             print("❌ Ошибка загрузки станций: \(error)")
-            allStations = [
+            
+            // Тестовые данные тоже нужно преобразовать
+            let testStations = [
                 "Киевский вокзал",
                 "Курский вокзал",
                 "Ярославский вокзал",
@@ -102,6 +117,10 @@ final class StationSearchViewModel {
                 "Савеловский вокзал",
                 "Ленинградский вокзал"
             ]
+            
+            allStations = testStations.enumerated().map { index, name in
+                StationItem(name: name, originalIndex: index)
+            }
         }
         
         isLoading = false
@@ -114,10 +133,9 @@ final class StationSearchViewModel {
         } else {
             result = "\(city) (\(station))"
         }
-                
+        
         return result
     }
-
     
     func clearSearch() {
         searchText = ""

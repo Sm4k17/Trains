@@ -1,4 +1,5 @@
 // ScheduleFilterViewModel.swift
+
 import SwiftUI
 
 // MARK: - Enums
@@ -74,15 +75,10 @@ struct ScheduleFilter: Hashable {
     var selectedTransportTypes: Set<TransportType> = []
     
     var isActive: Bool {
-        // Фильтр активен только если выбраны ОБА параметра: время И пересадки
-        (!selectedDayParts.isEmpty && showTransfers != nil) || !selectedTransportTypes.isEmpty
+        !selectedDayParts.isEmpty || showTransfers != nil || !selectedTransportTypes.isEmpty
     }
     
-    // Проверка валидности для применения
-    var isValidForApply: Bool {
-        // Можно применить если выбраны оба: время и пересадки
-        (!selectedDayParts.isEmpty && showTransfers != nil) || !selectedTransportTypes.isEmpty
-    }
+    // УДАЛЕНО: isValidForApply - дублирует isActive
     
     static let `default` = ScheduleFilter(showTransfers: nil)
 }
@@ -102,8 +98,8 @@ final class ScheduleFilterViewModel {
     
     // MARK: - Computed Properties
     var isApplyEnabled: Bool {
-        // Кнопка активна только если выбраны ОБА: время и пересадки ИЛИ тип транспорта
-        (!selectedParts.isEmpty && transfers != nil) || !selectedTransportTypes.isEmpty
+        // Кнопка активна если выбрано что-то из фильтров
+        !selectedParts.isEmpty || transfers != nil || !selectedTransportTypes.isEmpty
     }
     
     var selectedPartsCount: Int {
@@ -119,62 +115,44 @@ final class ScheduleFilterViewModel {
     }
     
     // MARK: - Methods
+    
+    // Удаляем выводы в консоль в продакшн-коде
     func toggleDayPart(_ part: DayPart) {
-        print("🕐 Изменение времени: \(part.rawValue)")
         if selectedParts.contains(part) {
             selectedParts.remove(part)
-            print("   ❌ Удалено")
         } else {
             selectedParts.insert(part)
-            print("   ✅ Добавлено")
         }
-        print("   Выбрано частей дня: \(selectedPartsCount)")
-        print("   Можно применить фильтр: \(isApplyEnabled)")
     }
     
     func toggleTransportType(_ type: TransportType) {
-        print("🚌 Изменение типа транспорта: \(type.displayName)")
         if selectedTransportTypes.contains(type) {
             selectedTransportTypes.remove(type)
-            print("   ❌ Удалено")
         } else {
             selectedTransportTypes.insert(type)
-            print("   ✅ Добавлено")
         }
-        print("   Выбрано типов транспорта: \(selectedTransportTypesCount)")
-        print("   Можно применить фильтр: \(isApplyEnabled)")
     }
     
     func selectTransfers(_ option: TransfersOption) {
-        print("🔄 Выбор пересадок: \(option.title)")
         transfers = option
-        print("   Можно применить фильтр: \(isApplyEnabled)")
     }
     
     func clearAll() {
-        print("🗑️ Очистка всех фильтров")
         selectedParts.removeAll()
         transfers = nil
         selectedTransportTypes.removeAll()
-        print("   Можно применить фильтр: \(isApplyEnabled)")
     }
     
     func selectAllDayParts() {
-        print("🕐 Выбор всех частей дня")
         selectedParts = Set(DayPart.allCases)
-        print("   Можно применить фильтр: \(isApplyEnabled)")
     }
     
     func selectAllTransportTypes() {
-        print("🚌 Выбор всех типов транспорта")
         selectedTransportTypes = Set(TransportType.allCases)
-        print("   Можно применить фильтр: \(isApplyEnabled)")
     }
     
     func deselectAllTransportTypes() {
-        print("🚌 Снятие всех типов транспорта")
         selectedTransportTypes.removeAll()
-        print("   Можно применить фильтр: \(isApplyEnabled)")
     }
     
     func hasSelectedDayPart(_ part: DayPart) -> Bool {
@@ -186,24 +164,15 @@ final class ScheduleFilterViewModel {
     }
     
     func applyFilter() {
-        print("✅ Применение фильтра:")
-        print("   - Выбрано частей дня: \(selectedPartsCount)")
-        print("   - Пересадки: \(transfers?.title ?? "не выбрано")")
-        print("   - Типы транспорта: \(selectedTransportTypesCount)")
-        print("   - Фильтр активен: \(isApplyEnabled)")
-        
         // Сохраняем фильтр в статической переменной
         ScheduleFilterViewModel.savedFilter = ScheduleFilter(
             selectedDayParts: selectedParts,
-            showTransfers: transfers?.boolValue,
+            showTransfers: transfers?.boolValue, // nil означает "все маршруты"
             selectedTransportTypes: selectedTransportTypes
         )
-        
-        print("💾 Фильтр сохранен")
     }
     
     func loadSavedFilter() {
-        print("📂 Загрузка сохраненного фильтра")
         let savedFilter = ScheduleFilterViewModel.savedFilter
         self.selectedParts = savedFilter.selectedDayParts
         self.selectedTransportTypes = savedFilter.selectedTransportTypes
@@ -214,9 +183,5 @@ final class ScheduleFilterViewModel {
         } else {
             self.transfers = nil
         }
-        
-        print("   - Загружено частей дня: \(selectedPartsCount)")
-        print("   - Пересадки: \(transfers?.title ?? "не выбрано")")
-        print("   - Типы транспорта: \(selectedTransportTypesCount)")
     }
 }
