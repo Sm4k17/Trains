@@ -16,7 +16,7 @@ final class CitySearchViewModel {
     
     var searchText: String = ""
     
-    struct CityItem: Identifiable, Hashable {
+    struct CityItem: Identifiable, Hashable, Sendable {
         let id = UUID()
         let name: String
         let originalIndex: Int

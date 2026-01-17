@@ -17,7 +17,7 @@ final class StationSearchViewModel {
     
     var searchText: String = ""
     
-    struct StationItem: Identifiable, Hashable {
+    struct StationItem: Identifiable, Hashable, Sendable {
         let id = UUID()
         let name: String
         let originalIndex: Int

@@ -141,8 +141,8 @@ struct CarrierListView: View {
     private var emptyStateView: some View {
         VStack {
             Spacer()
-            Text(viewModel.hasActiveFilter && viewModel.filteredCarriers.isEmpty ?
-                 "Вариантов нет" : "Вариантов нет")
+            Text(viewModel.hasActiveFilter ?
+                 "Нет подходящих маршрутов" : "Маршрутов не найдено")
             .font(.system(size: Constants.FontSize.emptyState, weight: .bold))
             .foregroundColor(.ypBlack)
             Spacer()
@@ -158,7 +158,7 @@ struct CarrierListView: View {
                         navigationPath.append(
                             AppRoute.carrierInfo(
                                 carrierCode: info.code,
-                                logoAssetName: info.logoName ?? "building.2"
+                                logoAssetName: info.logoName
                             )
                         )
                     }

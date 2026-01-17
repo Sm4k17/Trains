@@ -95,6 +95,9 @@ paths:
       tags:
         - Поиск расписания
       summary: Расписание рейсов между станций
+      description: >
+        Поиск маршрутов между пунктами.
+        Используйте параметр transfers=true для получения маршрутов с пересадками.
       operationId: getSearch
       parameters:
         - name: apikey
@@ -175,6 +178,7 @@ paths:
           required: false
           schema:
             type: boolean
+            default: true
       responses:
         "200":
           description: Успешный ответ
@@ -484,16 +488,7 @@ paths:
 
 components:
   schemas:
-    Stations:
-      type: object
-      properties:
-        pagination:
-          $ref: '#/components/schemas/Pagination'
-        stations:
-          type: array
-          items:
-            $ref: '#/components/schemas/Station'
-
+    # ==================== ПОИСК И СЕГМЕНТЫ ====================
     SearchResponse:
       type: object
       properties:
@@ -503,9 +498,7 @@ components:
           type: array
           description: Массив сегментов маршрутов (прямых и с пересадками)
           items:
-            oneOf:
-              - $ref: '#/components/schemas/DirectSegment'
-              - $ref: '#/components/schemas/TransferSegment'
+            $ref: '#/components/schemas/Segment'
         interval_segments:
           type: array
           items:
@@ -513,99 +506,105 @@ components:
         pagination:
           $ref: '#/components/schemas/Pagination'
 
-    SearchQuery:
+    Segment:
       type: object
+      description: >
+        Универсальный сегмент маршрута.
+        Если has_transfers = false — прямой маршрут (используются поля thread, from, to).
+        Если has_transfers = true — маршрут с пересадками (используется поле details).
       properties:
-        from:
-          $ref: '#/components/schemas/Location'
-        to:
-          $ref: '#/components/schemas/Location'
-        date:
-          type: string
-
-    # ПРЯМОЙ РЕЙС (без пересадок)
-    DirectSegment:
-      type: object
-      required:
-        - has_transfers
-      properties:
-        arrival:
-          type: string
-        from:
-          $ref: '#/components/schemas/Station'
-        thread:
-          $ref: '#/components/schemas/Thread'
-        departure:
-          type: string
-        stop_time:
-          type: string
-        to:
-          $ref: '#/components/schemas/Station'
         has_transfers:
           type: boolean
-          description: Всегда false для этого типа
-          enum: [false]
-        tickets_info:
-          $ref: '#/components/schemas/TicketsInfo'
+          description: |
+            true — маршрут с пересадками
+            false — прямой маршрут без пересадок
+
+        # Общие поля (присутствуют всегда)
+        departure:
+          type: string
+          description: Дата и время отправления
+        arrival:
+          type: string
+          description: Дата и время прибытия
         duration:
           type: number
+          description: Общая продолжительность маршрута в секундах
         start_date:
           type: string
-        departure_platform:
-          type: string
-        arrival_platform:
-          type: string
-        departure_terminal:
-          type: string
-        arrival_terminal:
-          type: string
-        stops:
-          type: string
-        days:
-          type: string
-        except_days:
-          type: string
+          description: Дата начала маршрута
+        tickets_info:
+          $ref: '#/components/schemas/TicketsInfo'
+          nullable: true
+          
+        transfers:
+          type: array
+          nullable: true
+          description: >
+            Массив пунктов пересадок.
+            Используется только если has_transfers = true.
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/Location'
+              - $ref: '#/components/schemas/Station'
 
-    # МАРШРУТ С ПЕРЕСАДКАМИ
-    TransferSegment:
-      type: object
-      required:
-        - has_transfers
-        - transfers
-        - details
-      properties:
-        departure_from:
+        # Поля для прямых маршрутов (has_transfers = false)
+        thread:
+          $ref: '#/components/schemas/Thread'
+          nullable: true
+          description: Информация о нитке (для прямых маршрутов)
+        from:
           $ref: '#/components/schemas/Station'
-        arrival_to:
+          nullable: true
+          description: Станция отправления (для прямых маршрутов)
+        to:
           $ref: '#/components/schemas/Station'
+          nullable: true
+          description: Станция прибытия (для прямых маршрутов)
         transport_types:
           type: array
           items:
             type: string
-        departure:
+          nullable: true
+          description: Типы транспорта (есть у сегментов с пересадками)
+        stops:
           type: string
-        arrival:
+          nullable: true
+          description: Остановки (для прямых маршрутов)
+        departure_platform:
           type: string
-        transfers:
-          type: array
-          description: Список точек пересадки
-          items:
-            $ref: '#/components/schemas/TransferPoint'
-        has_transfers:
-          type: boolean
-          description: Всегда true для этого типа
-          enum: [true]
+          nullable: true
+        arrival_platform:
+          type: string
+          nullable: true
+        departure_terminal:
+          type: string
+          nullable: true
+        arrival_terminal:
+          type: string
+          nullable: true
+        days:
+          type: string
+          nullable: true
+        except_days:
+          type: string
+          nullable: true
+
+        # Поле для маршрутов с пересадками (has_transfers = true)
         details:
           type: array
-          description: Детали маршрута (сегменты перевозки + пересадки)
+          nullable: true
+          description: >
+            Детали маршрута с пересадками.
+            Содержит чередующиеся JourneySegment (участки движения) и TransferStop (пересадки).
+            Используется только если has_transfers = true.
           items:
             oneOf:
               - $ref: '#/components/schemas/JourneySegment'
               - $ref: '#/components/schemas/TransferStop'
 
-    # СЕГМЕНТ ПЕРЕВОЗКИ (часть маршрута с пересадками)
     JourneySegment:
       type: object
+      description: Участок движения между двумя пунктами в маршруте с пересадками
       properties:
         thread:
           $ref: '#/components/schemas/Thread'
@@ -623,18 +622,23 @@ components:
           type: string
         departure_platform:
           type: string
+          nullable: true
         arrival_platform:
           type: string
+          nullable: true
         departure_terminal:
           type: string
+          nullable: true
         arrival_terminal:
           type: string
+          nullable: true
         stops:
           type: string
+          nullable: true
 
-    # ПЕРЕСАДКА/ОЖИДАНИЕ между сегментами
     TransferStop:
       type: object
+      description: Точка пересадки между сегментами маршрута
       required:
         - is_transfer
       properties:
@@ -647,12 +651,36 @@ components:
           description: Время пересадки в секундах
         transfer_point:
           $ref: '#/components/schemas/TransferPoint'
+          nullable: true
+          description: Пункт пересадки (город или станция)
         transfer_from:
           $ref: '#/components/schemas/Station'
+          nullable: true
         transfer_to:
           $ref: '#/components/schemas/Station'
+          nullable: true
 
-    # ТОЧКА ПЕРЕСАДКИ
+    # ==================== БАЗОВЫЕ МОДЕЛИ ====================
+    Stations:
+      type: object
+      properties:
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+        stations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Station'
+
+    SearchQuery:
+      type: object
+      properties:
+        from:
+          $ref: '#/components/schemas/Location'
+        to:
+          $ref: '#/components/schemas/Location'
+        date:
+          type: string
+
     TransferPoint:
       type: object
       properties:
@@ -673,7 +701,6 @@ components:
           type: string
           description: Код в системе Яндекс
 
-    # ЛОКАЦИЯ (город или станция)
     Location:
       type: object
       properties:
@@ -760,6 +787,7 @@ components:
             url:
               type: string
 
+    # ==================== ВСПОМОГАТЕЛЬНЫЕ МОДЕЛИ ====================
     Pagination:
       type: object
       properties:
@@ -930,6 +958,10 @@ components:
           type: string
         logo:
           type: string
+          nullable: true
+        logo_svg:
+          type: string
+          nullable: true
         email:
           type: string
 

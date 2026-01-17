@@ -10,7 +10,7 @@ import Observation
 
 @MainActor
 @Observable
-final class CarrierRowViewModel: Identifiable {
+final class CarrierRowViewModel: Identifiable, Sendable {
     let id = UUID()
     var carrierName: String
     var logoURL: String?
