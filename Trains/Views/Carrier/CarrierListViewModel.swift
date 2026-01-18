@@ -29,8 +29,13 @@ final class CarrierListViewModel {
     
     private var allSegments: [Components.Schemas.Segment] = [] {
         didSet {
-            updateFilteredCarriers()
-            updateDisplayedCarriers()
+            // При получении новых данных сохраняем их в кэш
+            saveToCache(allSegments)
+            // Создаем представления для всех сегментов
+            allCarriers = allSegments.map { convertToCarrierRowViewModel($0) }
+            // Применяем текущий фильтр к новым данным
+            applyCurrentFilter()
+            updateEmptyState()
         }
     }
     
@@ -48,8 +53,8 @@ final class CarrierListViewModel {
     private var currentFilter: ScheduleFilter = .default {
         didSet {
             if oldValue != currentFilter {
-                updateFilteredCarriers()
-                updateDisplayedCarriers()
+                // При изменении фильтра просто пересчитываем отфильтрованные данные
+                applyCurrentFilter()
             }
         }
     }
@@ -95,7 +100,6 @@ final class CarrierListViewModel {
         if !forceRefresh, let cachedSegments = Self.segmentsCache[cacheKey], !isCacheExpired() {
             self.allSegments = cachedSegments
             self.isLoading = false
-            updateEmptyState()
             return
         }
         
@@ -108,6 +112,7 @@ final class CarrierListViewModel {
     
     func reloadWithCurrentFilter() {
         Task {
+            // Принудительное обновление с текущим фильтром
             await loadCarriers(forceRefresh: true)
         }
     }
@@ -152,7 +157,6 @@ final class CarrierListViewModel {
         }
         
         isLoading = false
-        updateEmptyState()
     }
     
     private func processSearchResponse(_ response: Components.Schemas.SearchResponse) async {
@@ -350,7 +354,7 @@ final class CarrierListViewModel {
     
     // MARK: - Filtering
     
-    private func updateFilteredCarriers() {
+    private func applyCurrentFilter() {
         var segmentsToProcess = allSegments
         
         // Фильтр пересадок
@@ -374,11 +378,9 @@ final class CarrierListViewModel {
             }
         }
         
+        // Преобразуем отфильтрованные сегменты в view models
         _filteredCarriers = segmentsToProcess.map { convertToCarrierRowViewModel($0) }
-    }
-    
-    private func updateDisplayedCarriers() {
-        allCarriers = _filteredCarriers
+        
         updateEmptyState()
     }
     
