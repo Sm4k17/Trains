@@ -20,7 +20,7 @@ struct ProgressBarView: View {
                 // Background
                 RoundedRectangle(cornerRadius: progressBarCornerRadius)
                     .frame(width: geometry.size.width, height: progressBarHeight)
-                    .foregroundColor(.white)
+                    .foregroundStyle(.white)
                 
                 // Progress Fill
                 RoundedRectangle(cornerRadius: progressBarCornerRadius)
@@ -28,7 +28,7 @@ struct ProgressBarView: View {
                         width: min(progress * geometry.size.width, geometry.size.width),
                         height: progressBarHeight
                     )
-                    .foregroundColor(.blue)
+                    .foregroundStyle(.blue)
             }
             .mask {
                 MaskView(numberOfSections: numberOfSections)

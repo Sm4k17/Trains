@@ -90,7 +90,7 @@ struct RouteInputSectionView: View {
         } label: {
             HStack {
                 Text(from.isEmpty ? RouteInputSectionViewModel.Constants.Placeholder.from : from)
-                    .foregroundColor(from.isEmpty ? RouteInputSectionViewModel.Constants.Colors.textField : .ypBlackUniversal)
+                    .foregroundStyle(from.isEmpty ? RouteInputSectionViewModel.Constants.Colors.textField : .ypBlackUniversal)
                     .font(.system(size: RouteInputSectionViewModel.Constants.FontSize.label, weight: .regular))
                     .animation(.default, value: from)
                 Spacer()
@@ -112,7 +112,7 @@ struct RouteInputSectionView: View {
         } label: {
             HStack {
                 Text(to.isEmpty ? RouteInputSectionViewModel.Constants.Placeholder.to : to)
-                    .foregroundColor(to.isEmpty ? RouteInputSectionViewModel.Constants.Colors.textField : .ypBlackUniversal)
+                    .foregroundStyle(to.isEmpty ? RouteInputSectionViewModel.Constants.Colors.textField : .ypBlackUniversal)
                     .font(.system(size: RouteInputSectionViewModel.Constants.FontSize.label, weight: .regular))
                     .animation(.default, value: to)
                 Spacer()
@@ -132,7 +132,7 @@ struct RouteInputSectionView: View {
             }
         } label: {
             Image(systemName: RouteInputSectionViewModel.Constants.Images.System.squarePathButton)
-                .foregroundColor(.ypBlue)
+                .foregroundStyle(.ypBlue)
                 .frame(
                     width: RouteInputSectionViewModel.Constants.Size.button,
                     height: RouteInputSectionViewModel.Constants.Size.button
@@ -150,7 +150,7 @@ struct RouteInputSectionView: View {
         } label: {
             Text(RouteInputSectionViewModel.Constants.Titles.searchButton)
                 .font(.system(size: RouteInputSectionViewModel.Constants.FontSize.labelButton, weight: .bold))
-                .foregroundColor(.ypWhiteUniversal)
+                .foregroundStyle(.ypWhiteUniversal)
                 .frame(
                     width: RouteInputSectionViewModel.Constants.Size.searchButtonWidth,
                     height: RouteInputSectionViewModel.Constants.Size.searchButtonHeight

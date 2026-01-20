@@ -61,7 +61,7 @@ struct ScheduleFilterView: View {
             .font(.system(size: 17, weight: .bold))
             .frame(maxWidth: .infinity, minHeight: 56)
             .background(Color.ypBlue)
-            .foregroundColor(.ypWhiteUniversal)
+            .foregroundStyle(.ypWhiteUniversal)
             .cornerRadius(16)
         }
         .padding(.horizontal, 16)

@@ -8,29 +8,34 @@
 import Foundation
 import OpenAPIURLSession
 
-class NetworkService {
+final class NetworkService {
     
     private let apiKey = "17a7b5d3-ce93-4508-bdd7-5058909c0fbd"
     
-    // MARK: - Shared Instance (синглтон для кэша)
+    // MARK: - Shared Instance
     static let shared = NetworkService()
     
-    // MARK: - Shared NetworkClient
+    // MARK: - Shared NetworkClient (ленивая инициализация)
     private lazy var sharedNetworkClient: NetworkClient = {
+        guard let url = try? Servers.Server1.url() else {
+            fatalError("Failed to create server URL. Please check server configuration.")
+        }
+        
         let client = Client(
-            serverURL: try! Servers.Server1.url(),
+            serverURL: url,
             transport: URLSessionTransport()
         )
         return NetworkClient(client: client, apikey: apiKey)
     }()
     
-    private init() {}
-    
-    func createNetworkClient() -> NetworkClient {
-        return sharedNetworkClient
+    // MARK: - Public Interface
+    var networkClient: NetworkClient {
+        sharedNetworkClient
     }
     
-    // MARK: - Методы для сброса кэша (опционально)
+    private init() {}
+    
+    // MARK: - Cache Management
     func clearCache() async {
         await sharedNetworkClient.clearCache()
     }

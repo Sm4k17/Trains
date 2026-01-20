@@ -42,11 +42,11 @@ struct DayPartSectionView: View {
             HStack {
                 Text(part.rawValue)
                     .font(.system(size: Constants.fontSize, weight: .regular))
-                    .foregroundColor(.ypBlack)
+                    .foregroundStyle(.ypBlack)
                 Spacer()
                 Image(viewModel.hasSelectedDayPart(part) ? "excludeOn" : "excludeOff")
                     .renderingMode(.template)
-                    .foregroundColor(.ypBlack)
+                    .foregroundStyle(.ypBlack)
                     .frame(width: Constants.iconSize, height: Constants.iconSize)
             }
             .frame(width: Constants.sectionWidth, height: Constants.rowHeight)
@@ -65,6 +65,6 @@ struct DayPartSectionView: View {
         Text("Время отправления")
             .textCase(nil)
             .font(.system(size: Constants.headerFontSize, weight: .bold))
-            .foregroundColor(.ypBlack)
+            .foregroundStyle(.ypBlack)
     }
 }

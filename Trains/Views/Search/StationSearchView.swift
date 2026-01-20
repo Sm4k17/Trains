@@ -124,12 +124,12 @@ struct StationSearchView: View {
         HStack {
             Text(station)
                 .font(.system(size: Constants.FontSize.station, weight: .regular))
-                .foregroundColor(.ypBlack)
+                .foregroundStyle(.ypBlack)
             
             Spacer()
             
             Image(systemName: "chevron.right")
-                .foregroundColor(.ypBlack)
+                .foregroundStyle(.ypBlack)
                 .opacity(Constants.Opacity.chevronRight)
         }
         .frame(height: Constants.Size.rowHeight)
@@ -172,7 +172,7 @@ struct StationSearchView: View {
             
             Text(viewModel.notFoundText)
                 .font(.system(size: Constants.FontSize.notFound, weight: .bold))
-                .foregroundColor(.ypBlack)
+                .foregroundStyle(.ypBlack)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
             

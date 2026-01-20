@@ -53,7 +53,7 @@ struct CarrierListView: View {
         self._headerTo = headerTo
         self._navigationPath = navigationPath
         
-        let networkClient = NetworkService.shared.createNetworkClient()
+        let networkClient = NetworkService.shared.networkClient
         
         self._viewModel = State(initialValue: CarrierListViewModel(
             fromText: headerFrom.wrappedValue,
@@ -71,7 +71,7 @@ struct CarrierListView: View {
             VStack(alignment: .leading, spacing: Constants.Spacing.view) {
                 Text(viewModel.headerTitle)
                     .font(.system(size: Constants.FontSize.title, weight: .bold))
-                    .foregroundColor(.ypBlack)
+                    .foregroundStyle(.ypBlack)
                     .padding(.horizontal, Constants.Spacing.horizontal)
                     .padding(.top, Constants.Spacing.titleTop)
                 
@@ -123,15 +123,15 @@ struct CarrierListView: View {
         VStack(spacing: 12) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 48))
-                .foregroundColor(.ypRed)
+                .foregroundStyle(.ypRed)
             
             Text("Ошибка")
                 .font(.system(size: Constants.FontSize.error, weight: .semibold))
-                .foregroundColor(.ypBlack)
+                .foregroundStyle(.ypBlack)
             
             Text(message)
                 .font(.system(size: Constants.FontSize.error, weight: .regular))
-                .foregroundColor(.ypGray)
+                .foregroundStyle(.ypGray)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
         }
@@ -144,7 +144,7 @@ struct CarrierListView: View {
             Text(viewModel.hasActiveFilter ?
                  "Нет подходящих маршрутов" : "Маршрутов не найдено")
             .font(.system(size: Constants.FontSize.emptyState, weight: .bold))
-            .foregroundColor(.ypBlack)
+            .foregroundStyle(.ypBlack)
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -203,7 +203,7 @@ struct CarrierListView: View {
             }
             .frame(maxWidth: .infinity, minHeight: Constants.Size.bottomButtonHeight)
             .background(Color.ypBlue)
-            .foregroundColor(.ypWhiteUniversal)
+            .foregroundStyle(.ypWhiteUniversal)
             .cornerRadius(Constants.Corner.bottomButton)
         }
         .padding(.horizontal, Constants.Spacing.horizontal)

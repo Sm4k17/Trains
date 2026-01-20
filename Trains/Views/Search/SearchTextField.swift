@@ -39,10 +39,10 @@ struct SearchTextField: View {
     var body: some View {
         HStack {
             Image(systemName: leadingSystemImage)
-                .foregroundColor(.gray)
+                .foregroundStyle(.gray)
             
             TextField(placeholder, text: $text)
-                .foregroundColor(.primary)
+                .foregroundStyle(.primary)
                 .disableAutocorrection(true)
                 .textInputAutocapitalization(.never)
                 .padding(.trailing, Constants.textTrailingInsetForClear)
@@ -64,7 +64,7 @@ struct SearchTextField: View {
                 withAnimation(.default) { text = "" }
             } label: {
                 Image(systemName: Constants.Images.clearIcon)
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .imageScale(.medium)
                     .padding(.vertical, Constants.clearHitVPadding)
             }

@@ -48,7 +48,7 @@ struct SettingsView: View {
         HStack {
             Text("Темная тема")
                 .font(.system(size: 17, weight: .regular))
-                .foregroundColor(.ypBlack)
+                .foregroundStyle(.ypBlack)
             Spacer()
             Toggle("", isOn: $viewModel.isDarkThemeEnabled)
                 .labelsHidden()
@@ -67,11 +67,11 @@ struct SettingsView: View {
             HStack {
                 Text("Пользовательское соглашение")
                     .font(.system(size: 17, weight: .regular))
-                    .foregroundColor(.ypBlack)
+                    .foregroundStyle(.ypBlack)
                 Spacer()
                 Image(systemName: "chevron.right")
                     .frame(width: 24.0, height: 24.0)
-                    .foregroundColor(.ypBlack)
+                    .foregroundStyle(.ypBlack)
             }
         }
         .listRowInsets(.init(top: 12, leading: 16, bottom: 12, trailing: 16))
@@ -83,11 +83,11 @@ struct SettingsView: View {
         VStack(spacing: 6) {
             Text(viewModel.apiInfoText)
                 .font(.system(size: 12, weight: .regular))
-                .foregroundColor(.ypBlack)
+                .foregroundStyle(.ypBlack)
                 .multilineTextAlignment(.center)
             Text(viewModel.fullVersionString)
                 .font(.system(size: 12, weight: .regular))
-                .foregroundColor(.ypBlack)
+                .foregroundStyle(.ypBlack)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)

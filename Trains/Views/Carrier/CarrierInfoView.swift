@@ -49,7 +49,7 @@ struct CarrierInfoView: View {
     init(code: String, logoAssetName: String? = nil, navigationPath: Binding<NavigationPath>) {
         self._navigationPath = navigationPath
         
-        let networkClient = NetworkService.shared.createNetworkClient()
+        let networkClient = NetworkService.shared.networkClient
         
         self._viewModel = State(initialValue: CarrierInfoViewModel(
             code: code,
@@ -108,15 +108,15 @@ struct CarrierInfoView: View {
             VStack(spacing: 8) {
                 Image(systemName: "exclamationmark.triangle")
                     .font(.system(size: 48))
-                    .foregroundColor(.ypRed)
+                    .foregroundStyle(.ypRed)
                 
                 Text("Ошибка загрузки")
                     .font(.headline)
-                    .foregroundColor(.ypBlack)
+                    .foregroundStyle(.ypBlack)
                 
                 Text(error.localizedDescription)
                     .font(.subheadline)
-                    .foregroundColor(.ypGray)
+                    .foregroundStyle(.ypGray)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
             }
@@ -141,7 +141,7 @@ struct CarrierInfoView: View {
                 
                 Text(carrierData.title)
                     .font(.system(size: Constants.FontSize.title, weight: .bold))
-                    .foregroundColor(.ypBlack)
+                    .foregroundStyle(.ypBlack)
                 
                 // Email поле
                 makeField(title: "E-mail") {
@@ -237,7 +237,7 @@ struct CarrierInfoView: View {
             .resizable()
             .scaledToFit()
             .frame(maxHeight: Constants.Size.logoMaxHeight)
-            .foregroundColor(.ypGray)
+            .foregroundStyle(.ypGray)
             .padding(.horizontal, Constants.Size.logoHorizontalPadding)
     }
     
@@ -247,11 +247,11 @@ struct CarrierInfoView: View {
         VStack(alignment: .leading, spacing: Constants.Spacing.fieldSpacing) {
             Text(title)
                 .font(.system(size: Constants.FontSize.fieldTitle, weight: .regular))
-                .foregroundColor(.ypBlack)
+                .foregroundStyle(.ypBlack)
             
             content()
                 .font(.system(size: Constants.FontSize.fieldValue, weight: .regular))
-                .foregroundColor(.ypBlue)
+                .foregroundStyle(.ypBlue)
         }
     }
 }

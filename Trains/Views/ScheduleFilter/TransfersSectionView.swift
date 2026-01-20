@@ -39,12 +39,12 @@ struct TransfersSectionView: View {
         HStack {
             Text(option.title)
                 .font(.system(size: Constants.fontSize, weight: .regular))
-                .foregroundColor(.ypBlack)
+                .foregroundStyle(.ypBlack)
             Spacer()
             Image(viewModel.transfers == option ? "circleOn" : "circleOff")
                 .resizable()
                 .renderingMode(.template)
-                .foregroundColor(.ypBlack)
+                .foregroundStyle(.ypBlack)
                 .frame(width: Constants.iconSize, height: Constants.iconSize)
         }
         .contentShape(Rectangle())
@@ -62,6 +62,6 @@ struct TransfersSectionView: View {
     private var sectionHeader: some View {
         Text("Показывать варианты с пересадками")
             .font(.system(size: Constants.headerFontSize, weight: .bold))
-            .foregroundColor(.ypBlack)
+            .foregroundStyle(.ypBlack)
     }
 }

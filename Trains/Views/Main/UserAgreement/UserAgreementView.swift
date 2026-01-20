@@ -83,7 +83,7 @@ struct UserAgreementWebScreen: View {
                     .ignoresSafeArea(edges: .bottom)
             } else {
                 Text("Не удалось загрузить соглашение")
-                    .foregroundColor(.ypBlack)
+                    .foregroundStyle(.ypBlack)
             }
         }
         .navigationBarBackButtonHidden(true)
@@ -97,7 +97,7 @@ struct UserAgreementWebScreen: View {
             ToolbarItem(placement: .principal) {
                 Text("Пользовательское соглашение")
                     .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(.ypBlack)
+                    .foregroundStyle(.ypBlack)
             }
         }
     }

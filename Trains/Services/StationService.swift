@@ -23,12 +23,12 @@ final class StationService: StationServiceProtocol {
     }
     
     func getStationsByCity(_ cityName: String, cached: Bool = true) async throws -> [String] {
-        let networkClient = networkService.createNetworkClient()
+        let networkClient = NetworkService.shared.networkClient
         return try await networkClient.getStationsByCity(cityName, cached: cached)
     }
     
     func getStationID(cityName: String, stationName: String) async throws -> String? {
-        let networkClient = networkService.createNetworkClient()
+        let networkClient = NetworkService.shared.networkClient
         return try await networkClient.getStationID(cityName: cityName, stationName: stationName)
     }
 }

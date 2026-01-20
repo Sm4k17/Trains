@@ -10,6 +10,7 @@ import OpenAPIURLSession
 actor NetworkClient {
     private let client: Client
     private let apikey: String
+    private let jsonDecoder: JSONDecoder  // Одноразовый decoder
     
     private var citiesCache: [String]?
     private var stationsCache: [String: [String]] = [:]
@@ -19,6 +20,9 @@ actor NetworkClient {
     init(client: Client, apikey: String) {
         self.client = client
         self.apikey = apikey
+        
+        // Создаем один экземпляр JSONDecoder
+        self.jsonDecoder = JSONDecoder()
     }
     
     // MARK: - Кэшированные методы
@@ -314,40 +318,32 @@ actor NetworkClient {
     }
     
     func getCarrier(
-            code: String,
-            system: Operations.getCarrier.Input.Query.systemPayload? = nil
-        ) async throws -> Components.Schemas.CarrierResponse {
-            // Исправление: Проверяем валидность кода перевозчика
-            guard let intCode = Int(code), intCode > 0 else {
-                throw NSError(
-                    domain: "NetworkClient",
-                    code: 400,
-                    userInfo: [NSLocalizedDescriptionKey: "Неверный код перевозчика: \(code)"]
-                )
-            }
-            
-            let determinedSystem: Operations.getCarrier.Input.Query.systemPayload?
-            
-            if let system = system {
-                determinedSystem = system
+        code: String,
+        system: Operations.getCarrier.Input.Query.systemPayload? = nil
+    ) async throws -> Components.Schemas.CarrierResponse {
+        // УБИРАЕМ ВАЛИДАЦИЮ - оставляем как в рабочем коде
+        let determinedSystem: Operations.getCarrier.Input.Query.systemPayload?
+        
+        if let system = system {
+            determinedSystem = system
+        } else {
+            if code.rangeOfCharacter(from: .letters) != nil {
+                determinedSystem = .iata
             } else {
-                if code.rangeOfCharacter(from: .letters) != nil {
-                    determinedSystem = .iata
-                } else {
-                    determinedSystem = nil
-                }
+                determinedSystem = nil
             }
-            
-            let response = try await client.getCarrier(query: .init(
-                apikey: apikey,
-                code: code,
-                format: "json",
-                lang: "ru_RU",
-                system: determinedSystem
-            ))
-            
-            return try await response.ok.body.json
         }
+        
+        let response = try await client.getCarrier(query: .init(
+            apikey: apikey,
+            code: code,
+            format: "json",
+            lang: "ru_RU",
+            system: determinedSystem
+        ))
+        
+        return try await response.ok.body.json
+    }
     
     func getStations() async throws -> getStationsResponse {
         do {
@@ -364,13 +360,23 @@ actor NetworkClient {
             let fullData = try await Data(collecting: responseBody, upTo: limit)
             
             return try await MainActor.run {
+                // Используем общий jsonDecoder
                 do {
-                    let decoder = JSONDecoder()
-                    return try decoder.decode(getStationsResponse.self, from: fullData)
+                    return try self.jsonDecoder.decode(getStationsResponse.self, from: fullData)
                 } catch {
                     let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                     let filePath = documentsPath.appendingPathComponent("stations_response.json")
                     try? fullData.write(to: filePath)
+                    
+                    // Детальная информация об ошибке декодирования
+                    print("🔥 DEBUG: JSON Decoding Error in getStations:")
+                    print("   Error: \(error)")
+                    
+                    // Пробуем проанализировать структуру данных
+                    if let jsonString = String(data: fullData, encoding: .utf8)?.prefix(500) {
+                        print("   First 500 chars of response: \(jsonString)")
+                    }
+                    
                     throw error
                 }
             }

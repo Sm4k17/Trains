@@ -77,13 +77,13 @@ struct CarrierTableRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(viewModel.carrierName)
                     .font(.system(size: Constants.FontSize.name, weight: .regular))
-                    .foregroundColor(.ypBlackUniversal)
+                    .foregroundStyle(.ypBlackUniversal)
                     .lineLimit(2)
                 
                 if let note = viewModel.note {
                     Text(note)
                         .font(.system(size: Constants.FontSize.note, weight: .regular))
-                        .foregroundColor(.ypRed)
+                        .foregroundStyle(.ypRed)
                 }
             }
             
@@ -91,7 +91,7 @@ struct CarrierTableRow: View {
             
             Text(viewModel.dateText)
                 .font(.system(size: Constants.FontSize.date, weight: .regular))
-                .foregroundColor(.ypBlackUniversal)
+                .foregroundStyle(.ypBlackUniversal)
         }
     }
     
@@ -101,7 +101,7 @@ struct CarrierTableRow: View {
         HStack(spacing: Constants.Spacing.inner) {
             Text(viewModel.departTime)
                 .font(.system(size: Constants.FontSize.time, weight: .regular))
-                .foregroundColor(.ypBlackUniversal)
+                .foregroundStyle(.ypBlackUniversal)
             
             Rectangle()
                 .fill(Color.ypGray)
@@ -110,7 +110,7 @@ struct CarrierTableRow: View {
             
             Text(viewModel.durationText)
                 .font(.system(size: Constants.FontSize.duration, weight: .regular))
-                .foregroundColor(.ypBlackUniversal)
+                .foregroundStyle(.ypBlackUniversal)
             
             Rectangle()
                 .fill(Color.ypGray)
@@ -119,7 +119,7 @@ struct CarrierTableRow: View {
             
             Text(viewModel.arriveTime)
                 .font(.system(size: Constants.FontSize.time, weight: .regular))
-                .foregroundColor(.ypBlackUniversal)
+                .foregroundStyle(.ypBlackUniversal)
         }
     }
     
@@ -156,7 +156,7 @@ struct CarrierTableRow: View {
             .resizable()
             .scaledToFit()
             .frame(width: 24, height: 24)
-            .foregroundColor(.ypBlue)
+            .foregroundStyle(.ypBlue)
             .frame(width: Constants.Size.logo, height: Constants.Size.logo)
     }
     

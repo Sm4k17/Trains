@@ -67,7 +67,7 @@ struct ErrorStateView: View {
                 size: Constants.FontSize.title,
                 weight: Constants.FontWeight.title
             ))
-            .foregroundColor(.primary)
+            .foregroundStyle(.primary)
     }
     
     @ViewBuilder
@@ -75,7 +75,7 @@ struct ErrorStateView: View {
         if case .custom(let message) = state, message != state.title {
             Text(message)
                 .font(.system(size: Constants.FontSize.message))
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, Constants.messageHorizontalPadding)
         }
