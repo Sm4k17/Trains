@@ -14,7 +14,7 @@ struct MaskFragmentView: View {
     var body: some View {
         RoundedRectangle(cornerRadius: progressBarCornerRadius)
             .frame(height: progressBarHeight)
-            .foregroundColor(.white)
+            .foregroundStyle(.white)
     }
 }
 

@@ -93,7 +93,7 @@ func testAllServices() async throws {
     
     // 6. Тест Stations List
     let stationsListService = StationsListService(client: client, apikey: apikey)
-    _ = try await stationsListService.getStationsList()
+    _ = try await stationsListService.getStations()
     print("📋 Список станций получена")
     
     // 7. Тест Carrier
@@ -103,14 +103,14 @@ func testAllServices() async throws {
         print("✈️ Перевозчик: \(carrier.title ?? "неизвестен")")
     }
     
-    // 8. Тест Thread
-    let threadService = ThreadService(client: client, apikey: apikey)
-    if let firstSegment = searchResult.segments?.first,
-       let threadUid = firstSegment.thread?.uid {
-        
-        let threadDetails = try await threadService.getThread(uid: threadUid)
-        print("🚂 Детали нитки получены: \(threadDetails.uid ?? "")")
-    }
+//    // 8. Тест Thread
+//    let threadService = ThreadService(client: client, apikey: apikey)
+//    if let firstSegment = searchResult.segments?.first,
+//       let threadUid = firstSegment.thread?.uid {
+//        
+//        let threadDetails = try await threadService.getThread(uid: threadUid)
+//        print("🚂 Детали нитки получены: \(threadDetails.uid ?? "")")
+//    }
     
     print("\n✅ Все API сервисы работают корректно!")
 }

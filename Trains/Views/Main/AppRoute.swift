@@ -8,7 +8,7 @@
 enum AppRoute: Hashable {
     // Routes Tab
     case carrierList(from: String, to: String)
-    case carrierInfo(carrierCode: String, logoAssetName: String)
+    case carrierInfo(carrierCode: String, logoAssetName: String?)
     case scheduleFilter
     case citySearch(context: CitySearchContext, city: String = "", station: String = "")
     case stationSearch(context: CitySearchContext, city: String, station: String = "")

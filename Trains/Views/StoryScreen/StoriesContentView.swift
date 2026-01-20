@@ -34,11 +34,11 @@ struct StoriesContentView: View {
                     Text(story.title)
                         .font(.system(size: 34, weight: .bold))
                         .lineLimit(2)
-                        .foregroundColor(.ypWhiteUniversal)
+                        .foregroundStyle(.ypWhiteUniversal)
                     Text(story.description)
                         .font(.system(size: 20, weight: .regular))
                         .lineLimit(3)
-                        .foregroundColor(.ypWhiteUniversal)
+                        .foregroundStyle(.ypWhiteUniversal)
                 }
                 .padding(.init(top: 0, leading: horizontalPadding, bottom: bottomContentPadding, trailing: horizontalPadding))
             }

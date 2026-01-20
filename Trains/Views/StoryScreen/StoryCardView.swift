@@ -33,7 +33,7 @@ struct StoryCardView: View {
             
             Text(story.title)
                 .font(.system(size: 12, weight: .regular))
-                .foregroundColor(.ypWhiteUniversal)
+                .foregroundStyle(.ypWhiteUniversal)
                 .lineLimit(3)
                 .padding(8)
         }

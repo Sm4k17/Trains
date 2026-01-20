@@ -10,7 +10,6 @@ import SwiftUI
 struct StationSearchView: View {
     
     // MARK: - Properties
-    
     let city: String
     let initialStation: String
     let context: AppRoute.CitySearchContext
@@ -18,20 +17,65 @@ struct StationSearchView: View {
     @Binding var fromCity: String
     @Binding var toCity: String
     
-    // MARK: - State
+    @State private var viewModel: StationSearchViewModel
     
-    @State private var searchText: String = ""
+    // MARK: - Initialization
+    init(
+        city: String,
+        initialStation: String,
+        context: AppRoute.CitySearchContext,
+        navigationPath: Binding<NavigationPath>,
+        fromCity: Binding<String>,
+        toCity: Binding<String>
+    ) {
+        self.city = city
+        self.initialStation = initialStation
+        self.context = context
+        self._navigationPath = navigationPath
+        self._fromCity = fromCity
+        self._toCity = toCity
+        self._viewModel = State(initialValue: StationSearchViewModel(
+            city: city,
+            initialStation: initialStation,
+            context: context
+        ))
+    }
     
-    // MARK: - Constants
+    // MARK: - Body
+    var body: some View {
+        VStack(spacing: 0) {
+            searchField
+            
+            if viewModel.isLoading {
+                loadingView
+            } else if viewModel.filteredStations.isEmpty {
+                notFoundView
+            } else {
+                stationList
+            }
+        }
+        .navigationTitle(viewModel.navigationTitle)
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                BackButton {
+                    navigationPath.removeLast()
+                }
+            }
+        }
+        .task {
+            await viewModel.loadStations()
+        }
+    }
     
+    // MARK: - Constants (оставляем в View)
     private struct Constants {
         enum Padding {
             static let horizontal: CGFloat = 16
             static let rowVertical: CGFloat = 4
             static let searchTop: CGFloat = 8
             static let searchBottom: CGFloat = 4
-            static let clearHit: CGFloat = 8
-            static let clearTrailing: CGFloat = 14
         }
         
         enum Size {
@@ -39,12 +83,8 @@ struct StationSearchView: View {
             static let backButton: CGFloat = 44
         }
         
-        enum CornerRadius {
-            static let search: CGFloat = 10
-        }
-        
         enum FontSize {
-            static let notFound: CGFloat = 24
+            static let notFound: CGFloat = 18
             static let station: CGFloat = 17
         }
         
@@ -55,67 +95,13 @@ struct StationSearchView: View {
         enum Offset {
             static let notFoundTop: CGFloat = 228
         }
-        
-        enum ClearButton {
-            static let clearIcon = "xmark.circle.fill"
-            static let textTrailingInsetForClear: CGFloat = 34
-        }
-    }
-    
-    // MARK: - Mock Data
-    
-    private let stations = [
-        "Киевский вокзал",
-        "Курский вокзал",
-        "Ярославский вокзал",
-        "Белорусский вокзал",
-        "Савеловский вокзал",
-        "Ленинградский вокзал"
-    ]
-    
-    // MARK: - Computed Properties
-    
-    private var filteredStations: [String] {
-        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        return query.isEmpty
-        ? stations
-        : stations.filter { $0.localizedCaseInsensitiveContains(query) }
-    }
-    
-    // MARK: - Body
-    
-    var body: some View {
-        VStack(spacing: 0) {
-            searchField
-            
-            if filteredStations.isEmpty {
-                notFoundView
-            } else {
-                stationList
-            }
-        }
-        .navigationTitle("Станции в \(city)")
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                BackButton {
-                    // Возвращаемся к CitySearchView
-                    navigationPath.removeLast()
-                }
-            }
-        }
-        .onAppear {
-            searchText = initialStation
-        }
     }
     
     // MARK: - UI Components
-    
     private var searchField: some View {
         SearchTextField(
-            text: $searchText,
-            placeholder: "Введите запрос"
+            text: $viewModel.searchText,
+            placeholder: viewModel.searchPlaceholder
         )
         .padding(.horizontal, Constants.Padding.horizontal)
         .padding(.top, Constants.Padding.searchTop)
@@ -123,29 +109,33 @@ struct StationSearchView: View {
     }
     
     private var stationList: some View {
-        List(filteredStations, id: \.self) { station in
-            stationRow(for: station)
+        List(viewModel.filteredStations) { stationItem in
+            stationRow(for: stationItem.name)
         }
         .listStyle(.plain)
+        .animation(.easeInOut(duration: 0.2), value: viewModel.filteredStations)
+        .transition(.opacity)
+        .refreshable {
+            await viewModel.loadStations()
+        }
     }
     
     private func stationRow(for station: String) -> some View {
         HStack {
             Text(station)
                 .font(.system(size: Constants.FontSize.station, weight: .regular))
-                .foregroundColor(.ypBlack)
+                .foregroundStyle(.ypBlack)
             
             Spacer()
             
             Image(systemName: "chevron.right")
-                .foregroundColor(.ypBlack)
+                .foregroundStyle(.ypBlack)
                 .opacity(Constants.Opacity.chevronRight)
         }
         .frame(height: Constants.Size.rowHeight)
         .contentShape(Rectangle())
         .onTapGesture {
-            // Сохраняем выбранную станцию
-            let fullText = "\(city) (\(station))"
+            let fullText = viewModel.selectStation(station)
             
             if context == .from {
                 fromCity = fullText
@@ -153,7 +143,7 @@ struct StationSearchView: View {
                 toCity = fullText
             }
             
-            navigationPath.removeLast(navigationPath.count)
+            navigationPath = NavigationPath()
         }
         .listRowSeparator(.hidden)
         .listRowInsets(EdgeInsets(
@@ -164,41 +154,29 @@ struct StationSearchView: View {
         ))
     }
     
+    private var loadingView: some View {
+        VStack {
+            Spacer()
+                .frame(height: Constants.Offset.notFoundTop)
+            
+            ProgressView()
+            
+            Spacer()
+        }
+    }
+
     private var notFoundView: some View {
         VStack {
             Spacer()
                 .frame(height: Constants.Offset.notFoundTop)
             
-            Text("Станция не найдена")
+            Text(viewModel.notFoundText)
                 .font(.system(size: Constants.FontSize.notFound, weight: .bold))
-                .foregroundColor(.ypBlack)
+                .foregroundStyle(.ypBlack)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
             
             Spacer()
         }
     }
-}
-
-// MARK: - Preview
-
-#Preview {
-    struct PreviewWrapper: View {
-        @State private var navigationPath = NavigationPath()
-        @State private var fromCity = ""
-        @State private var toCity = ""
-        
-        var body: some View {
-            NavigationStack {
-                StationSearchView(
-                    city: "Москва",
-                    initialStation: "",
-                    context: .from,
-                    navigationPath: $navigationPath,
-                    fromCity: $fromCity,
-                    toCity: $toCity
-                )
-            }
-        }
-    }
-    
-    return PreviewWrapper()
 }

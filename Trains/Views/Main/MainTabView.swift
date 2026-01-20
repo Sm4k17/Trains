@@ -7,128 +7,86 @@ struct MainTabView: View {
         case settings
     }
     
-    // MARK: - Constants
-    private enum Constants {
-        static let routesTabActive = "routesTabActive"
-        static let routesTabInactive = "routesTabInactive"
-        static let settingsTabActive = "settingsTabActive"
-        static let settingsTabInactive = "settingsTabInactive"
-        
-        // Отступы
-        static let storiesTopPadding: CGFloat = 24
-        static let gapToSearchBlock: CGFloat = 44
-    }
-    
     // MARK: - Properties
-    @Environment(AppState.self) private var appState
+    @State private var viewModel = MainTabViewModel()
     @Environment(\.colorScheme) private var colorScheme
-    
-    @State private var routesNavigationPath = NavigationPath()
-    @State private var settingsNavigationPath = NavigationPath()
-    
-    @State private var fromCity: String = ""
-    @State private var toCity: String = ""
-    @State private var selectedTab: Tab = .routes
-    
-    // Stories
-    @State private var startIndex = 0
-    @State private var seenStoryIndices: Set<Int> = []
-    @State private var isShowingStories = false
     
     // MARK: - Body
     var body: some View {
-        TabView(selection: $selectedTab) {
+        TabView(selection: $viewModel.selectedTab) {
             
             // ВКЛАДКА 1: МАРШРУТЫ
-            NavigationStack(path: $routesNavigationPath) {
+            NavigationStack(path: $viewModel.routesNavigationPath) {
                 RouteInputSectionView(
-                    navigationPath: $routesNavigationPath,
-                    from: $fromCity,
-                    to: $toCity
+                    navigationPath: $viewModel.routesNavigationPath,
+                    from: $viewModel.fromCity,
+                    to: $viewModel.toCity
                 )
                 .toolbar(.hidden, for: .navigationBar)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 .safeAreaInset(edge: .top, spacing: 0) {
-                    if routesNavigationPath.isEmpty {
+                    if viewModel.routesNavigationPath.isEmpty {
                         StoriesStripView(
                             stories: Story.pairs.compactMap { $0.first },
-                            seenIndices: seenStoryIndices
+                            seenIndices: viewModel.seenStoryIndices
                         ) { groupIndex in
-                            print("🔵 StoriesStripView tapped: groupIndex = \(groupIndex)")
-                            print("🔵 Setting startIndex from \(self.startIndex) to \(groupIndex)")
-                            self.startIndex = groupIndex
-                            print("🔵 Setting isShowingStories to true")
-                            self.isShowingStories = true
-                            print("🔵 After setting: startIndex = \(self.startIndex), isShowingStories = \(self.isShowingStories)")
+                            viewModel.showStories(at: groupIndex)
                         }
-                        .padding(.top, Constants.storiesTopPadding)
-                        .padding(.bottom, Constants.gapToSearchBlock)
+                        .padding(.top, MainTabViewModel.Constants.storiesTopPadding)
+                        .padding(.bottom, MainTabViewModel.Constants.gapToSearchBlock)
                     }
                 }
                 .navigationDestination(for: AppRoute.self) { route in
-                    routeView(for: route, navigationPath: $routesNavigationPath)
+                    routeView(for: route, navigationPath: $viewModel.routesNavigationPath)
                 }
-                .toolbar(routesNavigationPath.isEmpty ? .visible : .hidden, for: .tabBar)
+                .toolbar(viewModel.routesNavigationPath.isEmpty ? .visible : .hidden, for: .tabBar)
             }
             .tabItem {
-                Image(selectedTab == .routes
-                      ? Constants.routesTabActive
-                      : Constants.routesTabInactive)
+                Image(viewModel.selectedTab == .routes
+                      ? MainTabViewModel.Constants.routesTabActive
+                      : MainTabViewModel.Constants.routesTabInactive)
             }
             .tag(Tab.routes)
             
             // ВКЛАДКА 2: НАСТРОЙКИ
-            NavigationStack(path: $settingsNavigationPath) {
-                SettingsView(navigationPath: $settingsNavigationPath)
-                    .toolbar(settingsNavigationPath.isEmpty ? .visible : .hidden, for: .tabBar)
+            NavigationStack(path: $viewModel.settingsNavigationPath) {
+                SettingsView(navigationPath: $viewModel.settingsNavigationPath)
+                    .toolbar(viewModel.settingsNavigationPath.isEmpty ? .visible : .hidden, for: .tabBar)
                     .navigationDestination(for: AppRoute.self) { route in
-                        settingsRouteView(for: route, navigationPath: $settingsNavigationPath)
+                        settingsRouteView(for: route, navigationPath: $viewModel.settingsNavigationPath)
                     }
             }
             .tabItem {
-                Image(selectedTab == .settings
-                      ? Constants.settingsTabActive
-                      : Constants.settingsTabInactive)
+                Image(viewModel.selectedTab == .settings
+                      ? MainTabViewModel.Constants.settingsTabActive
+                      : MainTabViewModel.Constants.settingsTabInactive)
             }
             .tag(Tab.settings)
         }
         // Разделитель таб-бара
         .overlay(alignment: .bottom) {
-            let isRoutesEmpty = routesNavigationPath.isEmpty
-            let isSettingsEmpty = settingsNavigationPath.isEmpty
-            
-            // Проверяем, что мы на главных экранах вкладок, а не внутри UserAgreement
-            if colorScheme == .light && (
-                (selectedTab == .settings && isSettingsEmpty) ||
-                (selectedTab == .routes && isRoutesEmpty)
-            ) {
+            if viewModel.shouldShowTabBarDivider(colorScheme: colorScheme) {
                 Rectangle()
                     .fill(Color.ypGray)
                     .frame(height: 1.0 / UIScreen.main.scale)
                     .offset(y: -49)
             }
         }
-        .fullScreenCover(isPresented: $isShowingStories) {
+        .fullScreenCover(isPresented: $viewModel.isShowingStories) {
             StoriesContainerView(
                 groups: Story.pairs,
-                startIndex: startIndex,
+                startIndex: viewModel.startIndex,
                 onClose: {
-                    print("🔴 Closing stories")
-                    isShowingStories = false
+                    viewModel.closeStories()
                 },
                 onStorySeen: { index in
-                    print("✅ Story seen: \(index)")
-                    seenStoryIndices.insert(index)
+                    viewModel.markStoryAsSeen(index)
                 }
             )
-            .id(startIndex)
+            .id(viewModel.startIndex)
         }
-        .onChange(of: isShowingStories) { oldValue, newValue in
-            if newValue {
-                print("🟢 isShowingStories changed to true, startIndex = \(startIndex)")
-            } else {
-                print("🟡 isShowingStories changed to false")
-            }
+        .onChange(of: viewModel.isShowingStories) { oldValue, newValue in
+            viewModel.onStoriesVisibilityChange(newValue: newValue)
         }
     }
     
@@ -165,8 +123,8 @@ struct MainTabView: View {
                 context: context,
                 initialCity: city,
                 navigationPath: navigationPath,
-                fromCity: $fromCity,
-                toCity: $toCity
+                fromCity: $viewModel.fromCity,
+                toCity: $viewModel.toCity
             )
             
         case .stationSearch(let context, let city, let station):
@@ -175,12 +133,12 @@ struct MainTabView: View {
                 initialStation: station,
                 context: context,
                 navigationPath: navigationPath,
-                fromCity: $fromCity,
-                toCity: $toCity
+                fromCity: $viewModel.fromCity,
+                toCity: $viewModel.toCity
             )
             
         case .userAgreement:
-            UserAgreementWebScreen()
+            UserAgreementWebScreen(navigationPath: navigationPath)
                 .toolbar(.hidden, for: .tabBar)
         }
     }
@@ -194,7 +152,7 @@ struct MainTabView: View {
     ) -> some View {
         switch route {
         case .userAgreement:
-            UserAgreementWebScreen()
+            UserAgreementWebScreen(navigationPath: navigationPath)
                 .toolbar(.hidden, for: .tabBar)
             
         default:

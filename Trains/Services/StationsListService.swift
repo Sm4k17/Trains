@@ -5,15 +5,18 @@
 //  Created by Рустам Ханахмедов on 20.11.2025.
 //
 
-import Foundation
 import OpenAPIRuntime
-import OpenAPIURLSession
+import Foundation
 
-protocol StationsListServiceProtocol {
-    func getStationsList() async throws -> String
+typealias getStationsResponse = Components.Schemas.getStationsResponse
+
+protocol StationsListServiceProtocol: Sendable {
+    /// полный список станций, информацию о которых предоставляют Яндекс Расписания
+    func getStations() async throws -> getStationsResponse
 }
 
-final class StationsListService: StationsListServiceProtocol {
+final class StationsListService: StationsListServiceProtocol, @unchecked Sendable {
+    
     private let client: Client
     private let apikey: String
     
@@ -22,14 +25,21 @@ final class StationsListService: StationsListServiceProtocol {
         self.apikey = apikey
     }
     
-    func getStationsList() async throws -> String {
-        let response = try await client.getStationsList(query: .init(
+    func getStations() async throws -> getStationsResponse {
+        let response = try await client.getStations(query: .init(
             apikey: apikey,
-            format: "json"
+            format: nil,
+            lang: nil
         ))
         
-        // Простой подход - используем description для получения строки
-        let body = try response.ok.body
-        return String(describing: body)
+        let responseBody = try response.ok.body.html
+        
+        let limit = 50 * 1024 * 1024 // 50Mb
+
+        let fullData = try await Data(collecting: responseBody, upTo: limit)
+        
+        let allStations = try JSONDecoder().decode(getStationsResponse.self, from: fullData)
+        
+        return allStations
     }
 }

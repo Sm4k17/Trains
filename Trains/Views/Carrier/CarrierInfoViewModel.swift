@@ -10,16 +10,44 @@ import Observation
 
 // MARK: - ViewModel
 
+@MainActor
 @Observable
 final class CarrierInfoViewModel {
     
     // MARK: - State
     
-    enum State {
+    enum State: Sendable {
         case idle
         case loading
-        case loaded(CarrierResponse)
+        case loaded(CarrierDisplayData)
         case failed(Error)
+    }
+    
+    // MARK: - Display Data Model
+    
+    struct CarrierDisplayData: Sendable {
+        let title: String
+        let logoURL: String?
+        let contactInfo: ContactInfo?
+        
+        init(
+            title: String = "Перевозчик",
+            logoURL: String? = nil,
+            contactInfo: ContactInfo? = nil
+        ) {
+            self.title = title
+            self.logoURL = logoURL
+            self.contactInfo = contactInfo
+        }
+        
+        // Convenience properties
+        var firstEmail: ContactInfo.Email? {
+            contactInfo?.firstEmail
+        }
+        
+        var firstPhoneNumber: ContactInfo.PhoneNumber? {
+            contactInfo?.firstPhoneNumber
+        }
     }
     
     // MARK: - Properties
@@ -27,30 +55,111 @@ final class CarrierInfoViewModel {
     var state: State = .idle
     
     private let code: String
-    private let service: CarrierServiceProtocol
+    private let networkClient: NetworkClient
     
     // MARK: - Init
     
-    init(code: String, service: CarrierServiceProtocol) {
+    init(
+        code: String,
+        networkClient: NetworkClient
+    ) {
         self.code = code
-        self.service = service
+        self.networkClient = networkClient
     }
     
     // MARK: - Public Methods
     
     func load() async {
         guard case .idle = state else { return }
+        
+        // Исправление: Проверяем валидность кода перевозчика перед запросом
+        guard let intCode = Int(code), intCode > 0 else {
+            state = .failed(NSError(
+                domain: "InvalidCarrierCode",
+                code: 400,
+                userInfo: [NSLocalizedDescriptionKey: "Неверный код перевозчика"]
+            ))
+            return
+        }
+        
         state = .loading
         
         do {
-            let resp = try await service.getCarrier(code: code)
-            state = .loaded(resp)
+            let response = try await networkClient.getCarrier(code: code)
+            let displayData = processResponse(response)
+            state = .loaded(displayData)
         } catch {
-            state = .failed(error)
+            // Исправление: Обрабатываем специфические ошибки
+            let errorDescription: String
+            if let urlError = error as? URLError {
+                switch urlError.code {
+                case .badServerResponse:
+                    errorDescription = "Перевозчик не найден"
+                case .timedOut:
+                    errorDescription = "Таймаут соединения"
+                default:
+                    errorDescription = "Ошибка сети: \(error.localizedDescription)"
+                }
+            } else if (error as NSError).code == 404 {
+                errorDescription = "Информация о перевозчике не найдена"
+            } else {
+                errorDescription = "Ошибка загрузки: \(error.localizedDescription)"
+            }
+            
+            state = .failed(NSError(
+                domain: "CarrierInfoError",
+                code: (error as NSError).code,
+                userInfo: [NSLocalizedDescriptionKey: errorDescription]
+            ))
         }
     }
     
-    func retry() {
-        state = .idle
+    func retry() async {
+        // Исправление: Сбрасываем состояние только для валидных кодов
+        if let intCode = Int(code), intCode > 0 {
+            state = .loading
+            await load()
+        }
+    }
+    
+    // MARK: - Private Methods
+    
+    private func processResponse(_ response: Components.Schemas.CarrierResponse) -> CarrierDisplayData {
+        guard let carrier = response.carrier else {
+            return CarrierDisplayData()
+        }
+        
+        let contactInfo = extractContactInfo(from: carrier)
+        
+        return CarrierDisplayData(
+            title: carrier.title ?? "Перевозчик",
+            logoURL: carrier.logo,
+            contactInfo: contactInfo
+        )
+    }
+    
+    private func extractContactInfo(from carrier: Components.Schemas.Carrier) -> ContactInfo? {
+        var contactStrings: [String] = []
+        
+        // Собираем все возможные строки с контактами
+        if let email = carrier.email, !email.isEmpty {
+            contactStrings.append(email)
+        }
+        
+        if let phone = carrier.phone, !phone.isEmpty {
+            contactStrings.append(phone)
+        }
+        
+        if let contacts = carrier.contacts, !contacts.isEmpty {
+            contactStrings.append(contacts)
+        }
+        
+        // Если есть контакты, парсим их
+        if !contactStrings.isEmpty {
+            let combinedText = contactStrings.joined(separator: " ")
+            return ContactParser.parseContacts(combinedText)
+        }
+        
+        return nil
     }
 }

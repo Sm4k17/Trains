@@ -30,61 +30,61 @@ paths:
             type: string
         - name: lat
           in: query
-          description: широта
+          description: Широта согласно WGS84
           required: true
           schema:
             type: number
         - name: lng
           in: query
-          description: долгота
+          description: Долгота согласно WGS84
           required: true
           schema:
             type: number
         - name: distance
           in: query
-          description: радиус охвата
+          description: Радиус охвата в километрах
           required: true
           schema:
             type: integer
-        - name: format
-          in: query
-          description: json или xml
-          required: false
-          schema:
-            type: string
         - name: lang
           in: query
-          description: язык
+          description: Язык возвращаемой информации (например, ru_RU)
           required: false
           schema:
             type: string
-        - name: offset
+        - name: format
           in: query
-          description: сдвиг
+          description: Формат ответа (json или xml)
           required: false
           schema:
-            type: integer
-        - name: limit
-          in: query
-          description: лимит
-          required: false
-          schema:
-            type: integer
+            type: string
         - name: station_types
           in: query
-          description: тип станции
+          description: Типы запрашиваемых станций (например, station, bus_station)
           required: false
           schema:
             type: string
         - name: transport_types
           in: query
-          description: тип транспорта
+          description: Тип транспортного средства (например, plane, train, bus)
           required: false
           schema:
             type: string
+        - name: offset
+          in: query
+          description: Смещение относительно первого результата
+          required: false
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Ограничение на количество возвращаемых станций
+          required: false
+          schema:
+            type: integer
       responses:
         "200":
-          description: success
+          description: Успешный ответ
           content:
             application/json:
               schema:
@@ -94,7 +94,10 @@ paths:
     get:
       tags:
         - Поиск расписания
-      summary: Расписание рейсов между станциями
+      summary: Расписание рейсов между станций
+      description: >
+        Поиск маршрутов между пунктами.
+        Используйте параметр transfers=true для получения маршрутов с пересадками.
       operationId: getSearch
       parameters:
         - name: apikey
@@ -105,37 +108,37 @@ paths:
             type: string
         - name: from
           in: query
-          description: код станции отправления
+          description: Код станции отправления
           required: true
           schema:
             type: string
         - name: to
           in: query
-          description: код станции прибытия
+          description: Код станции прибытия
           required: true
           schema:
             type: string
         - name: format
           in: query
-          description: формат
+          description: Формат ответа, по умолчанию JSON
           required: false
           schema:
             type: string
         - name: lang
           in: query
-          description: язык
+          description: Язык ответа (например, ru_RU)
           required: false
           schema:
             type: string
         - name: date
           in: query
-          description: дата
+          description: Дата в формате YYYY-MM-DD
           required: false
           schema:
             type: string
         - name: transport_types
           in: query
-          description: тип транспорта
+          description: Тип транспорта (plane, train, bus и т.д.)
           required: false
           schema:
             type: string
@@ -153,37 +156,32 @@ paths:
             type: string
         - name: offset
           in: query
-          description: сдвиг
+          description: Смещение результатов
           required: false
           schema:
             type: integer
         - name: limit
           in: query
-          description: лимит
+          description: Лимит на количество результатов, по умолчанию 100
           required: false
           schema:
             type: integer
-        - name: add_days_mask
-          in: query
-          description: календарь хождения рейсов
-          required: false
-          schema:
-            type: boolean
         - name: result_timezone
           in: query
-          description: часовой пояс
+          description: Часовой пояс для дат и времени в ответе
           required: false
           schema:
             type: string
         - name: transfers
           in: query
-          description: маршруты с пересадками
+          description: Включить маршруты с пересадками (true/false)
           required: false
           schema:
             type: boolean
+            default: true
       responses:
         "200":
-          description: success
+          description: Успешный ответ
           content:
             application/json:
               schema:
@@ -204,67 +202,61 @@ paths:
             type: string
         - name: station
           in: query
-          description: код станции
+          description: Код станции
           required: true
           schema:
             type: string
         - name: lang
           in: query
-          description: язык
+          description: Язык возвращаемой информации (например, ru_RU)
           required: false
           schema:
             type: string
         - name: format
           in: query
-          description: формат
+          description: Формат ответа (json по умолчанию)
           required: false
           schema:
             type: string
         - name: date
           in: query
-          description: дата
+          description: Дата, на которую требуется расписание (формат YYYY-MM-DD)
           required: false
           schema:
             type: string
         - name: transport_types
           in: query
-          description: тип транспорта
+          description: Тип транспорта (plane, train, bus и т.д.)
           required: false
           schema:
             type: string
         - name: event
           in: query
-          description: прибытие или отправление
-          required: false
-          schema:
-            type: string
-        - name: system
-          in: query
-          description: система кодирования
-          required: false
-          schema:
-            type: string
-        - name: show_systems
-          in: query
-          description: коды в ответе
+          description: Событие для фильтрации (arrival/отправление)
           required: false
           schema:
             type: string
         - name: direction
           in: query
-          description: направление
+          description: Направление (например, на Москву)
+          required: false
+          schema:
+            type: string
+        - name: system
+          in: query
+          description: Система кодирования для параметра station
           required: false
           schema:
             type: string
         - name: result_timezone
           in: query
-          description: часовой пояс
+          description: Часовой пояс для отображения времени
           required: false
           schema:
             type: string
       responses:
         "200":
-          description: success
+          description: Успешный ответ
           content:
             application/json:
               schema:
@@ -303,7 +295,7 @@ paths:
             type: string
         - name: format
           in: query
-          description: формат
+          description: формат ответа
           required: false
           schema:
             type: string
@@ -315,7 +307,7 @@ paths:
             type: string
         - name: date
           in: query
-          description: дата
+          description: дата в формате YYYY-MM-DD
           required: false
           schema:
             type: string
@@ -327,7 +319,7 @@ paths:
             type: string
       responses:
         "200":
-          description: success
+          description: Успешный ответ
           content:
             application/json:
               schema:
@@ -348,41 +340,41 @@ paths:
             type: string
         - name: lat
           in: query
-          description: широта
+          description: Широта согласно WGS84
           required: true
           schema:
             type: number
         - name: lng
           in: query
-          description: долгота
+          description: Долгота согласно WGS84
           required: true
           schema:
             type: number
         - name: distance
           in: query
-          description: радиус охвата
+          description: Радиус поиска ближайшего города (в километрах)
           required: false
           schema:
             type: integer
         - name: lang
           in: query
-          description: язык
+          description: Язык возвращаемой информации (например, ru_RU)
           required: false
           schema:
             type: string
         - name: format
           in: query
-          description: формат
+          description: Формат ответа (json по умолчанию)
           required: false
           schema:
             type: string
       responses:
         "200":
-          description: success
+          description: Успешный ответ
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Settlement'
+                $ref: '#/components/schemas/NearestSettlement'
 
   /v3.0/carrier/:
     get:
@@ -405,7 +397,7 @@ paths:
             type: string
         - name: format
           in: query
-          description: формат
+          description: формат ответа
           required: false
           schema:
             type: string
@@ -424,7 +416,7 @@ paths:
             enum: [yandex, iata, sirena, express, esr]
       responses:
         "200":
-          description: success
+          description: Успешный ответ
           content:
             application/json:
               schema:
@@ -435,7 +427,7 @@ paths:
       tags:
         - Список станций
       summary: Список всех доступных станций
-      operationId: getStationsList
+      operationId: getStations
       parameters:
         - name: apikey
           in: query
@@ -445,10 +437,11 @@ paths:
             type: string
         - name: format
           in: query
-          description: формат
+          description: формат ответа
           required: false
           schema:
             type: string
+            enum: [json, xml]
         - name: lang
           in: query
           description: язык
@@ -457,8 +450,11 @@ paths:
             type: string
       responses:
         "200":
-          description: success
+          description: Успешный ответ
           content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/getStationsResponse'
             text/html:
               schema:
                 type: string
@@ -478,14 +474,13 @@ paths:
             type: string
         - name: format
           in: query
-          description: формат ответа
+          description: Формат ответа (json или xml)
           required: true
           schema:
             type: string
-            enum: [json, xml]
       responses:
         "200":
-          description: success
+          description: Успешный ответ
           content:
             application/json:
               schema:
@@ -493,6 +488,179 @@ paths:
 
 components:
   schemas:
+    # ==================== ПОИСК И СЕГМЕНТЫ ====================
+    SearchResponse:
+      type: object
+      properties:
+        search:
+          $ref: '#/components/schemas/SearchQuery'
+        segments:
+          type: array
+          description: Массив сегментов маршрутов (прямых и с пересадками)
+          items:
+            $ref: '#/components/schemas/Segment'
+        interval_segments:
+          type: array
+          items:
+            $ref: '#/components/schemas/IntervalSegment'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    Segment:
+      type: object
+      description: >
+        Универсальный сегмент маршрута.
+        Если has_transfers = false — прямой маршрут (используются поля thread, from, to).
+        Если has_transfers = true — маршрут с пересадками (используется поле details).
+      properties:
+        has_transfers:
+          type: boolean
+          description: |
+            true — маршрут с пересадками
+            false — прямой маршрут без пересадок
+
+        # Общие поля (присутствуют всегда)
+        departure:
+          type: string
+          description: Дата и время отправления
+        arrival:
+          type: string
+          description: Дата и время прибытия
+        duration:
+          type: number
+          description: Общая продолжительность маршрута в секундах
+        start_date:
+          type: string
+          description: Дата начала маршрута
+        tickets_info:
+          $ref: '#/components/schemas/TicketsInfo'
+          nullable: true
+          
+        transfers:
+          type: array
+          nullable: true
+          description: >
+            Массив пунктов пересадок.
+            Используется только если has_transfers = true.
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/Location'
+              - $ref: '#/components/schemas/Station'
+
+        # Поля для прямых маршрутов (has_transfers = false)
+        thread:
+          $ref: '#/components/schemas/Thread'
+          nullable: true
+          description: Информация о нитке (для прямых маршрутов)
+        from:
+          $ref: '#/components/schemas/Station'
+          nullable: true
+          description: Станция отправления (для прямых маршрутов)
+        to:
+          $ref: '#/components/schemas/Station'
+          nullable: true
+          description: Станция прибытия (для прямых маршрутов)
+        transport_types:
+          type: array
+          items:
+            type: string
+          nullable: true
+          description: Типы транспорта (есть у сегментов с пересадками)
+        stops:
+          type: string
+          nullable: true
+          description: Остановки (для прямых маршрутов)
+        departure_platform:
+          type: string
+          nullable: true
+        arrival_platform:
+          type: string
+          nullable: true
+        departure_terminal:
+          type: string
+          nullable: true
+        arrival_terminal:
+          type: string
+          nullable: true
+        days:
+          type: string
+          nullable: true
+        except_days:
+          type: string
+          nullable: true
+
+        # Поле для маршрутов с пересадками (has_transfers = true)
+        details:
+          type: array
+          nullable: true
+          description: >
+            Детали маршрута с пересадками.
+            Содержит чередующиеся JourneySegment (участки движения) и TransferStop (пересадки).
+            Используется только если has_transfers = true.
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/JourneySegment'
+              - $ref: '#/components/schemas/TransferStop'
+
+    JourneySegment:
+      type: object
+      description: Участок движения между двумя пунктами в маршруте с пересадками
+      properties:
+        thread:
+          $ref: '#/components/schemas/Thread'
+        from:
+          $ref: '#/components/schemas/Location'
+        to:
+          $ref: '#/components/schemas/Location'
+        departure:
+          type: string
+        arrival:
+          type: string
+        duration:
+          type: number
+        start_date:
+          type: string
+        departure_platform:
+          type: string
+          nullable: true
+        arrival_platform:
+          type: string
+          nullable: true
+        departure_terminal:
+          type: string
+          nullable: true
+        arrival_terminal:
+          type: string
+          nullable: true
+        stops:
+          type: string
+          nullable: true
+
+    TransferStop:
+      type: object
+      description: Точка пересадки между сегментами маршрута
+      required:
+        - is_transfer
+      properties:
+        is_transfer:
+          type: boolean
+          description: Всегда true
+          enum: [true]
+        duration:
+          type: number
+          description: Время пересадки в секундах
+        transfer_point:
+          $ref: '#/components/schemas/TransferPoint'
+          nullable: true
+          description: Пункт пересадки (город или станция)
+        transfer_from:
+          $ref: '#/components/schemas/Station'
+          nullable: true
+        transfer_to:
+          $ref: '#/components/schemas/Station'
+          nullable: true
+
+    # ==================== БАЗОВЫЕ МОДЕЛИ ====================
     Stations:
       type: object
       properties:
@@ -503,19 +671,50 @@ components:
           items:
             $ref: '#/components/schemas/Station'
 
-    SearchResponse:
+    SearchQuery:
       type: object
       properties:
-        pagination:
-          $ref: '#/components/schemas/Pagination'
-        segments:
-          type: array
-          items:
-            $ref: '#/components/schemas/Segment'
-        interval_segments:
-          type: array
-          items:
-            $ref: '#/components/schemas/IntervalSegment'
+        from:
+          $ref: '#/components/schemas/Location'
+        to:
+          $ref: '#/components/schemas/Location'
+        date:
+          type: string
+
+    TransferPoint:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [settlement, station]
+          description: Тип пункта пересадки
+        title:
+          type: string
+          description: Название пункта пересадки
+        short_title:
+          type: string
+          description: Краткое название
+        popular_title:
+          type: string
+          description: Популярное название
+        code:
+          type: string
+          description: Код в системе Яндекс
+
+    Location:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [settlement, station]
+        title:
+          type: string
+        short_title:
+          type: string
+        popular_title:
+          type: string
+        code:
+          type: string
 
     ScheduleResponse:
       type: object
@@ -555,7 +754,7 @@ components:
         transport_subtype:
           $ref: '#/components/schemas/TransportSubtype'
 
-    Settlement:
+    NearestSettlement:
       type: object
       properties:
         distance:
@@ -577,28 +776,6 @@ components:
           items:
             $ref: '#/components/schemas/Carrier'
 
-    Carrier:
-      type: object
-      properties:
-        code:
-          type: integer
-        contacts:
-          type: string
-        url:
-          type: string
-        title:
-          type: string
-        phone:
-          type: string
-        codes:
-          $ref: '#/components/schemas/CarrierCodes'
-        address:
-          type: string
-        logo:
-          type: string
-        email:
-          type: string
-
     Copyright:
       type: object
       properties:
@@ -610,6 +787,7 @@ components:
             url:
               type: string
 
+    # ==================== ВСПОМОГАТЕЛЬНЫЕ МОДЕЛИ ====================
     Pagination:
       type: object
       properties:
@@ -647,30 +825,15 @@ components:
           type: number
         majority:
           type: integer
-
-    Segment:
-      type: object
-      properties:
-        arrival:
-          type: string
-        from:
-          $ref: '#/components/schemas/Station'
-        thread:
-          $ref: '#/components/schemas/Thread'
-        departure:
-          type: string
-        stop_time:
-          type: string
-        to:
-          $ref: '#/components/schemas/Station'
-        has_transfers:
-          type: boolean
-        tickets_info:
-          $ref: '#/components/schemas/TicketsInfo'
-        duration:
-          type: number
-        start_date:
-          type: string
+        codes:
+          type: object
+          properties:
+            express:
+              type: string
+            yandex:
+              type: string
+            esr:
+              type: string
 
     IntervalSegment:
       type: object
@@ -745,6 +908,8 @@ components:
           $ref: '#/components/schemas/TransportSubtype'
         express_type:
           type: string
+        thread_method_link:
+          type: string
 
     TicketsInfo:
       type: object
@@ -774,6 +939,32 @@ components:
         whole:
           type: integer
 
+    Carrier:
+      type: object
+      properties:
+        code:
+          type: integer
+        contacts:
+          type: string
+        url:
+          type: string
+        title:
+          type: string
+        phone:
+          type: string
+        codes:
+          $ref: '#/components/schemas/CarrierCodes'
+        address:
+          type: string
+        logo:
+          type: string
+          nullable: true
+        logo_svg:
+          type: string
+          nullable: true
+        email:
+          type: string
+
     CarrierCodes:
       type: object
       properties:
@@ -783,3 +974,62 @@ components:
           type: string
         iata:
           type: string
+
+    getStationsResponse:
+      type: object
+      properties:
+        countries:
+          type: array
+          items:
+            $ref: '#/components/schemas/Country'
+
+    Country:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Название страны
+        codes:
+          type: object
+          properties:
+            yandex_code:
+              type: string
+              description: Код страны в системе Яндекс Расписаний
+        regions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Region'
+
+    Region:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Название региона
+        codes:
+          type: object
+          properties:
+            yandex_code:
+              type: string
+              description: Код региона в системе Яндекс Расписаний
+        settlements:
+          type: array
+          items:
+            $ref: '#/components/schemas/SettlementDetail'
+
+    SettlementDetail:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Название населенного пункта
+        codes:
+          type: object
+          properties:
+            yandex_code:
+              type: string
+              description: Код населенного пункта в системе Яндекс Расписаний
+        stations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Station'

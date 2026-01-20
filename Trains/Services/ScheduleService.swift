@@ -9,13 +9,16 @@ import Foundation
 import OpenAPIRuntime
 import OpenAPIURLSession
 
-typealias ScheduleResponse = Components.Schemas.ScheduleResponse
-
-protocol ScheduleServiceProtocol {
-    func getSchedule(station: String, date: String?) async throws -> ScheduleResponse
+protocol ScheduleServiceProtocol: Sendable {
+    func getSchedule(
+        station: String,
+        date: String?,
+        transportTypes: String?,
+        event: String?
+    ) async throws -> Components.Schemas.ScheduleResponse
 }
 
-final class ScheduleService: ScheduleServiceProtocol {
+final class ScheduleService: ScheduleServiceProtocol, @unchecked Sendable {
     private let client: Client
     private let apikey: String
     
@@ -24,12 +27,20 @@ final class ScheduleService: ScheduleServiceProtocol {
         self.apikey = apikey
     }
     
-    func getSchedule(station: String, date: String? = nil) async throws -> ScheduleResponse {
+    func getSchedule(
+        station: String,
+        date: String? = nil,
+        transportTypes: String? = nil,
+        event: String? = nil
+    ) async throws -> Components.Schemas.ScheduleResponse {
         let response = try await client.getSchedule(query: .init(
             apikey: apikey,
             station: station,
-            format: "json",  
-            date: date
+            lang: "ru_RU",
+            format: "json",
+            date: date,
+            transport_types: transportTypes,
+            event: event
         ))
         return try response.ok.body.json
     }

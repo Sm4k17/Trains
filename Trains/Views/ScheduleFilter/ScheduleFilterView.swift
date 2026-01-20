@@ -10,22 +10,14 @@ import SwiftUI
 struct ScheduleFilterView: View {
     
     // MARK: - Properties
-    
     @Binding var navigationPath: NavigationPath
-    
-    @State private var selectedParts: Set<DayPart> = []
-    @State private var transfers: TransfersOption? = nil
-    
-    // MARK: - Computed Properties
-    
-    private var isApplyEnabled: Bool {
-        !selectedParts.isEmpty && transfers != nil
-    }
+    @State private var viewModel = ScheduleFilterViewModel()
     
     // MARK: - Body
-    
     var body: some View {
         ZStack {
+            Color(.systemBackground).ignoresSafeArea()
+            
             filterList
         }
         .navigationBarTitleDisplayMode(.inline)
@@ -34,24 +26,25 @@ struct ScheduleFilterView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 BackButton {
-                    // Возвращаемся к CarrierListView
                     navigationPath.removeLast()
                 }
             }
         }
         .safeAreaInset(edge: .bottom) {
-            if isApplyEnabled {
+            if viewModel.isApplyEnabled {
                 applyButtonView
             }
+        }
+        .onAppear {
+            viewModel.loadSavedFilter()
         }
     }
     
     // MARK: - Main Content
-    
     private var filterList: some View {
         List {
-            DayPartSectionView(selectedParts: $selectedParts)
-            TransfersSectionView(transfers: $transfers)
+            DayPartSectionView(viewModel: viewModel)
+            TransfersSectionView(viewModel: viewModel)
         }
         .listStyle(.plain)
         .scrollIndicators(.hidden)
@@ -59,36 +52,19 @@ struct ScheduleFilterView: View {
     }
     
     // MARK: - UI Components
-    
     private var applyButtonView: some View {
         HStack {
             Button("Применить") {
-                // Возвращаемся к CarrierListView
+                viewModel.applyFilter()
                 navigationPath.removeLast()
             }
             .font(.system(size: 17, weight: .bold))
             .frame(maxWidth: .infinity, minHeight: 56)
             .background(Color.ypBlue)
-            .foregroundColor(.ypWhiteUniversal)
+            .foregroundStyle(.ypWhiteUniversal)
             .cornerRadius(16)
         }
         .padding(.horizontal, 16)
         .padding(.bottom, 24)
     }
-}
-
-// MARK: - Preview
-
-#Preview {
-    struct PreviewWrapper: View {
-        @State private var navigationPath = NavigationPath()
-        
-        var body: some View {
-            NavigationStack {
-                ScheduleFilterView(navigationPath: $navigationPath)
-            }
-        }
-    }
-    
-    return PreviewWrapper()
 }

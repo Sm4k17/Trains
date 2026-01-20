@@ -7,27 +7,12 @@
 
 import SwiftUI
 
-// MARK: - DayPart Enum
-
-enum DayPart: String, CaseIterable, Identifiable, Hashable {
-    case morning = "Утро 06:00 – 12:00"
-    case day     = "День 12:00 – 18:00"
-    case evening = "Вечер 18:00 – 00:00"
-    case night   = "Ночь 00:00 – 06:00"
-    
-    var id: Self { self }
-}
-
-// MARK: - DayPartSectionView
-
 struct DayPartSectionView: View {
     
     // MARK: - Properties
-    
-    @Binding var selectedParts: Set<DayPart>
+    let viewModel: ScheduleFilterViewModel
     
     // MARK: - Constants
-    
     private struct Constants {
         static let hInset: CGFloat = 16
         static let rowHeight: CGFloat = 60
@@ -38,7 +23,6 @@ struct DayPartSectionView: View {
     }
     
     // MARK: - Body
-    
     var body: some View {
         Section {
             ForEach(DayPart.allCases) { part in
@@ -51,19 +35,18 @@ struct DayPartSectionView: View {
     }
     
     // MARK: - UI Components
-    
     private func dayPartRow(for part: DayPart) -> some View {
         Button {
-            toggle(part)
+            viewModel.toggleDayPart(part)
         } label: {
             HStack {
                 Text(part.rawValue)
                     .font(.system(size: Constants.fontSize, weight: .regular))
-                    .foregroundColor(.ypBlack)
+                    .foregroundStyle(.ypBlack)
                 Spacer()
-                Image(selectedParts.contains(part) ? "excludeOn" : "excludeOff")
+                Image(viewModel.hasSelectedDayPart(part) ? "excludeOn" : "excludeOff")
                     .renderingMode(.template)
-                    .foregroundColor(.ypBlack)
+                    .foregroundStyle(.ypBlack)
                     .frame(width: Constants.iconSize, height: Constants.iconSize)
             }
             .frame(width: Constants.sectionWidth, height: Constants.rowHeight)
@@ -82,16 +65,6 @@ struct DayPartSectionView: View {
         Text("Время отправления")
             .textCase(nil)
             .font(.system(size: Constants.headerFontSize, weight: .bold))
-            .foregroundColor(.ypBlack)
-    }
-    
-    // MARK: - Private Methods
-    
-    private func toggle(_ part: DayPart) {
-        if selectedParts.contains(part) {
-            selectedParts.remove(part)
-        } else {
-            selectedParts.insert(part)
-        }
+            .foregroundStyle(.ypBlack)
     }
 }

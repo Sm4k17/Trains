@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import OpenAPIURLSession
 
 struct CarrierListView: View {
     
@@ -17,7 +16,7 @@ struct CarrierListView: View {
             static let view: CGFloat = 12
             static let horizontal: CGFloat = 16
             static let titleTop: CGFloat = 12
-            static let rowVerticalInset: CGFloat = 8
+            static let rowVerticalInset: CGFloat = 4
             static let rowHorizontalInset: CGFloat = 16
             static let listBottom: CGFloat = 10
             static let bottom: CGFloat = 24
@@ -26,6 +25,7 @@ struct CarrierListView: View {
             static let title: CGFloat = 24
             static let bottomButton: CGFloat = 17
             static let emptyState: CGFloat = 24
+            static let error: CGFloat = 16
         }
         enum Size {
             static let bottomButtonHeight: CGFloat = 60
@@ -37,55 +37,30 @@ struct CarrierListView: View {
     
     // MARK: - Properties
     
+    @State private var viewModel: CarrierListViewModel
     @Binding var headerFrom: String
     @Binding var headerTo: String
     @Binding var navigationPath: NavigationPath
     
-    @State private var isLoading = true
+    // MARK: - Initialization
     
-    // MARK: - Сервис
-    
-    private let carrierService: CarrierServiceProtocol
-    
-    // MARK: - Init
-    
-    init(headerFrom: Binding<String>, headerTo: Binding<String>, navigationPath: Binding<NavigationPath>) {
+    init(
+        headerFrom: Binding<String>,
+        headerTo: Binding<String>,
+        navigationPath: Binding<NavigationPath>
+    ) {
         self._headerFrom = headerFrom
         self._headerTo = headerTo
         self._navigationPath = navigationPath
         
-        // Создаем реальный сервис
-        let client = Client(
-            serverURL: try! Servers.Server1.url(),
-            transport: URLSessionTransport()
-        )
-        let apikey = "a63c3bd4-fd50-47a4-a56b-def74416d733"
-        self.carrierService = CarrierService(client: client, apikey: apikey)
+        let networkClient = NetworkService.shared.networkClient
+        
+        self._viewModel = State(initialValue: CarrierListViewModel(
+            fromText: headerFrom.wrappedValue,
+            toText: headerTo.wrappedValue,
+            networkClient: networkClient
+        ))
     }
-    
-    // MARK: - Mock Data
-    
-    private let mockItems = [
-        (carrierName: "РЖД", logoSystemName: "train.side.front.car", carrierCode: "680",
-         dateText: "14 января", departTime: "22:30", arriveTime: "08:15",
-         durationText: "20 часов", note: "С пересадкой в Костроме"),
-        
-        (carrierName: "ФГК", logoSystemName: "box.truck.fill", carrierCode: "104",
-         dateText: "15 января", departTime: "01:15", arriveTime: "09:00",
-         durationText: "9 часов", note: nil),
-        
-        (carrierName: "S7 Airlines", logoSystemName: "airplane", carrierCode: "S7",
-         dateText: "15 января", departTime: "12:30", arriveTime: "21:00",
-         durationText: "9 часов", note: "Прямой рейс"),
-        
-        (carrierName: "Аэрофлот", logoSystemName: "airplane", carrierCode: "SU",
-         dateText: "16 января", departTime: "08:45", arriveTime: "11:30",
-         durationText: "2 часа 45 минут", note: nil),
-        
-        (carrierName: "ТрансКонтейнер", logoSystemName: "shippingbox.fill", carrierCode: "113",
-         dateText: "17 января", departTime: "14:00", arriveTime: "06:00+1",
-         durationText: "16 часов", note: "Грузовой поезд")
-    ]
     
     // MARK: - Body
     
@@ -94,15 +69,17 @@ struct CarrierListView: View {
             Color(.systemBackground).ignoresSafeArea()
             
             VStack(alignment: .leading, spacing: Constants.Spacing.view) {
-                Text("\(headerFrom) → \(headerTo)")
+                Text(viewModel.headerTitle)
                     .font(.system(size: Constants.FontSize.title, weight: .bold))
-                    .foregroundColor(.ypBlack)
+                    .foregroundStyle(.ypBlack)
                     .padding(.horizontal, Constants.Spacing.horizontal)
                     .padding(.top, Constants.Spacing.titleTop)
                 
-                if isLoading {
+                if viewModel.isLoading {
                     loadingView
-                } else if mockItems.isEmpty {
+                } else if let error = viewModel.errorMessage {
+                    errorView(error)
+                } else if viewModel.showEmptyState {
                     emptyStateView
                 } else {
                     listView
@@ -114,8 +91,7 @@ struct CarrierListView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 BackButton {
-                    // Возвращаемся к RouteInputSectionView
-                    navigationPath.removeLast(navigationPath.count)
+                    navigationPath.removeLast()
                 }
             }
         }
@@ -124,7 +100,15 @@ struct CarrierListView: View {
             bottomButtonView
         }
         .task {
-            await loadData()
+            await viewModel.loadCarriers()
+        }
+        .onAppear {
+            viewModel.applySavedFilter()
+        }
+        .onChange(of: ScheduleFilterViewModel.savedFilter) { oldValue, newValue in
+            // Применяем новый фильтр и перезагружаем данные
+            viewModel.applySavedFilter()
+            viewModel.reloadWithCurrentFilter()
         }
     }
     
@@ -135,70 +119,91 @@ struct CarrierListView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
+    private func errorView(_ message: String) -> some View {
+        VStack(spacing: 12) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 48))
+                .foregroundStyle(.ypRed)
+            
+            Text("Ошибка")
+                .font(.system(size: Constants.FontSize.error, weight: .semibold))
+                .foregroundStyle(.ypBlack)
+            
+            Text(message)
+                .font(.system(size: Constants.FontSize.error, weight: .regular))
+                .foregroundStyle(.ypGray)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+    
     private var emptyStateView: some View {
         VStack {
             Spacer()
-            Text("Вариантов нет")
-                .font(.system(size: Constants.FontSize.emptyState, weight: .bold))
-                .foregroundColor(.ypBlack)
+            Text(viewModel.hasActiveFilter ?
+                 "Нет подходящих маршрутов" : "Маршрутов не найдено")
+            .font(.system(size: Constants.FontSize.emptyState, weight: .bold))
+            .foregroundStyle(.ypBlack)
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     private var listView: some View {
-        List(0..<mockItems.count, id: \.self) { index in
-            let item = mockItems[index]
-            
-            Button {
-                // Переход к информации о перевозчике
-                navigationPath.append(
-                    AppRoute.carrierInfo(
-                        carrierCode: item.carrierCode,
-                        logoAssetName: item.logoSystemName
-                    )
-                )
-            } label: {
-                CarrierTableRow(
-                    viewModel: CarrierRowModel(
-                        carrierName: item.carrierName,
-                        logoSystemName: item.logoSystemName,
-                        carrierCode: item.carrierCode,
-                        dateText: item.dateText,
-                        departTime: item.departTime,
-                        arriveTime: item.arriveTime,
-                        durationText: item.durationText,
-                        note: item.note
-                    )
-                )
+        List {
+            ForEach(Array(viewModel.carriers.enumerated()), id: \.element.id) { index, carrier in
+                Button {
+                    if let info = viewModel.getCarrierInfo(for: index) {
+                        navigationPath.append(
+                            AppRoute.carrierInfo(
+                                carrierCode: info.code,
+                                logoAssetName: info.logoName
+                            )
+                        )
+                    }
+                } label: {
+                    CarrierTableRow(viewModel: carrier)
+                }
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+                .listRowInsets(.init(
+                    top: Constants.Spacing.rowVerticalInset,
+                    leading: Constants.Spacing.rowHorizontalInset,
+                    bottom: Constants.Spacing.rowVerticalInset,
+                    trailing: Constants.Spacing.rowHorizontalInset
+                ))
             }
-            .listRowSeparator(.hidden)
-            .listRowBackground(Color.clear)
-            .listRowInsets(.init(top: Constants.Spacing.rowVerticalInset,
-                                 leading: Constants.Spacing.rowHorizontalInset,
-                                 bottom: Constants.Spacing.rowVerticalInset,
-                                 trailing: Constants.Spacing.rowHorizontalInset))
         }
         .listStyle(.plain)
         .scrollIndicators(.hidden)
         .scrollContentBackground(.hidden)
         .listSectionSeparator(.hidden, edges: .all)
         .listRowSeparator(.hidden, edges: .all)
-        .contentMargins(.bottom, Constants.Spacing.listBottom,
-                        for: .scrollContent)
+        .contentMargins(.bottom, Constants.Spacing.listBottom, for: .scrollContent)
     }
     
     // MARK: - UI Components
     
     private var bottomButtonView: some View {
         HStack {
-            Button("Уточнить время") {
+            Button {
                 navigationPath.append(AppRoute.scheduleFilter)
+            } label: {
+                HStack(spacing: 8) {
+                    Text("Уточнить время")
+                        .font(.system(size: Constants.FontSize.bottomButton, weight: .bold))
+                    
+                    if ScheduleFilterViewModel.savedFilter.isActive {
+                        Circle()
+                            .fill(Color.ypRed)
+                            .frame(width: 8, height: 8)
+                    }
+                }
             }
-            .font(.system(size: Constants.FontSize.bottomButton, weight: .bold))
             .frame(maxWidth: .infinity, minHeight: Constants.Size.bottomButtonHeight)
             .background(Color.ypBlue)
-            .foregroundColor(.ypWhiteUniversal)
+            .foregroundStyle(.ypWhiteUniversal)
             .cornerRadius(Constants.Corner.bottomButton)
         }
         .padding(.horizontal, Constants.Spacing.horizontal)
@@ -206,34 +211,25 @@ struct CarrierListView: View {
         .background(Color(.systemBackground))
     }
     
-    // MARK: - Private Methods
+    // MARK: - Preview
     
-    private func loadData() async {
-        // Имитация загрузки данных
-        isLoading = true
-        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 секунды
-        isLoading = false
-    }
-}
-
-// MARK: - Preview
-
-#Preview {
-    struct PreviewWrapper: View {
-        @State private var navigationPath = NavigationPath()
-        @State private var from = "Москва"
-        @State private var to = "Санкт-Петербург"
-        
-        var body: some View {
-            NavigationStack {
-                CarrierListView(
-                    headerFrom: $from,
-                    headerTo: $to,
-                    navigationPath: $navigationPath
-                )
+    #Preview {
+        struct PreviewWrapper: View {
+            @State private var navigationPath = NavigationPath()
+            @State private var from = "Москва"
+            @State private var to = "Санкт-Петербург"
+            
+            var body: some View {
+                NavigationStack {
+                    CarrierListView(
+                        headerFrom: $from,
+                        headerTo: $to,
+                        navigationPath: $navigationPath
+                    )
+                }
             }
         }
+        
+        return PreviewWrapper()
     }
-    
-    return PreviewWrapper()
 }
